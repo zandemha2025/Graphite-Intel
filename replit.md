@@ -95,6 +95,16 @@ Generated React Query hooks and fetch client from the OpenAPI spec (e.g. `useHea
 
 Utility scripts package. Each script is a `.ts` file in `src/` with a corresponding npm script in `package.json`. Run scripts via `pnpm --filter @workspace/scripts run <script>`. Scripts can import any workspace package (e.g., `@workspace/db`) by adding it as a dependency in `scripts/package.json`.
 
+## GitHub Repository
+
+- **Repo**: https://github.com/zandemha2025/Graphite-Intel (private)
+- **Remote name**: `origin` → `git@github-graphite:zandemha2025/Graphite-Intel.git`
+- **Push command**: `GIT_SSH_COMMAND="ssh -F ~/.ssh/config" git push origin main`
+- SSH deploy key stored at `~/.ssh/graphite_intel_deploy_key` (added as a write-access deploy key on the repo)
+- The SSH host alias `github-graphite` is configured in `~/.ssh/config`
+
+> **Why SSH instead of HTTPS?** Replit sets `GIT_ASKPASS=replit-git-askpass` which intercepts all HTTPS git credential prompts and strips token-authenticated URLs, causing 403 errors regardless of PAT validity. SSH deploy keys bypass this entirely and are the correct approach in this environment.
+
 ## Stratix Intelligence Platform
 
 A full-stack strategic intelligence platform for executives. Frontend at `artifacts/stratix`, API at `artifacts/api-server`.
