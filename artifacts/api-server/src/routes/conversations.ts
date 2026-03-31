@@ -1,6 +1,6 @@
 import { Router, type IRouter, type Request, type Response } from "express";
-import { db, conversations, messages, companyProfiles } from "@workspace/db";
-import { eq, desc, and } from "drizzle-orm";
+import { db, conversations, messages, companyProfiles, documents, conversationDocuments } from "@workspace/db";
+import { eq, desc, and, inArray } from "drizzle-orm";
 import { openai } from "@workspace/integrations-openai-ai-server";
 
 const router: IRouter = Router();
@@ -27,15 +27,17 @@ Your expertise spans: market strategy, competitive intelligence, growth framewor
 
 Always respond as a senior partner would in a client engagement — authoritative, incisive, and immediately valuable.`;
 
-async function buildSystemPrompt(userId: string): Promise<string> {
+async function buildSystemPrompt(userId: string, conversationId?: number): Promise<string> {
   const [profile] = await db
     .select()
     .from(companyProfiles)
     .where(eq(companyProfiles.userId, userId));
 
-  if (!profile) return BASE_SYSTEM_PROMPT;
+  let prompt = BASE_SYSTEM_PROMPT;
 
-  const contextBlock = `
+  if (profile) {
+    const contextBlock = `
+
 CLIENT CONTEXT (always reference this when relevant):
 - Company: ${profile.companyName}
 - Industry: ${profile.industry}
@@ -46,8 +48,41 @@ ${profile.strategicPriorities ? `- Strategic Priorities: ${profile.strategicPrio
 ${profile.researchSummary ? `\nCompany Intelligence (AI-researched):\n${profile.researchSummary}` : ""}
 
 Always tailor your advice to this specific company context. Reference their industry, stage, and competitive landscape where relevant.`;
+    prompt += contextBlock;
+  }
 
-  return BASE_SYSTEM_PROMPT + contextBlock;
+  if (conversationId) {
+    const links = await db
+      .select()
+      .from(conversationDocuments)
+      .where(eq(conversationDocuments.conversationId, conversationId));
+
+    if (links.length > 0) {
+      const docIds = links.map((l) => l.documentId);
+      const docs = await db
+        .select()
+        .from(documents)
+        .where(inArray(documents.id, docIds));
+
+      const readyDocs = docs.filter((d) => d.status === "ready" && d.extractedText);
+      if (readyDocs.length > 0) {
+        const MAX_CHARS_PER_DOC = Math.floor(80000 / readyDocs.length);
+        const docBlocks = readyDocs.map((d) => {
+          const text = (d.extractedText || "").slice(0, MAX_CHARS_PER_DOC);
+          return `--- Document: "${d.title}" ---\n${text}\n--- End of "${d.title}" ---`;
+        });
+
+        prompt += `
+
+ATTACHED DOCUMENTS (the user has provided these documents as context for this conversation):
+${docBlocks.join("\n\n")}
+
+When answering questions, draw from these documents where relevant. At the end of your response, include a brief "Sources:" line listing which documents you referenced (e.g., "Sources: Q3 Board Deck, Financial Model").`;
+      }
+    }
+  }
+
+  return prompt;
 }
 
 router.get("/openai/conversations", async (req: Request, res: Response) => {
@@ -214,7 +249,7 @@ router.post(
         content: m.content,
       }));
 
-      const systemPrompt = await buildSystemPrompt(userId);
+      const systemPrompt = await buildSystemPrompt(userId, id);
       let fullResponse = "";
 
       const stream = await openai.chat.completions.create({

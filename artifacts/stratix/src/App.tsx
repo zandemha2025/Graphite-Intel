@@ -19,6 +19,7 @@ import { Security } from "@/pages/security";
 import { Workflows } from "@/pages/workflows";
 import { WorkflowRunner } from "@/pages/workflow-runner";
 import { WorkflowView } from "@/pages/workflow-view";
+import { Knowledge } from "@/pages/knowledge";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -139,7 +140,8 @@ function Router() {
       <Route path="/workflows/:id" component={() => <ProtectedRoute component={WorkflowView} />} />
       <Route path="/workflows" component={() => <ProtectedRoute component={Workflows} />} />
       <Route path="/profile" component={() => <ProtectedRoute component={Profile} />} />
-      <Route path="/security" component={Security} />
+      <Route path="/security" component={() => <ProtectedRoute component={Security} />} />
+      <Route path="/knowledge" component={() => <ProtectedRoute component={Knowledge} />} />
       <Route component={NotFound} />
     </Switch>
   );

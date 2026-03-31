@@ -236,6 +236,44 @@ export interface ResearchCompanyProfile {
   followUpQuestions: string[];
 }
 
+export interface RequestUploadUrlBody {
+  name: string;
+  size: number;
+  contentType: string;
+}
+
+export type RequestUploadUrlResponseMetadata = {
+  name: string;
+  size: number;
+  contentType: string;
+};
+
+export interface RequestUploadUrlResponse {
+  uploadURL: string;
+  objectPath: string;
+  metadata: RequestUploadUrlResponseMetadata;
+}
+
+export interface Document {
+  id: number;
+  userId: string;
+  title: string;
+  fileType: string;
+  objectKey: string;
+  status: string;
+  createdAt: string;
+}
+
+export interface CreateDocumentBody {
+  title: string;
+  fileType: string;
+  objectKey: string;
+}
+
+export interface LinkDocumentBody {
+  documentId: number;
+}
+
 /**
  * Opaque session token — `Bearer <sid>`.
  */

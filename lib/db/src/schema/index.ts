@@ -4,3 +4,4 @@ export * from "./messages";
 export * from "./reports";
 export * from "./company-profiles";
 export * from "./workflow-runs";
+export * from "./documents";

@@ -111,10 +111,11 @@ A full-stack strategic intelligence platform for executives. Frontend at `artifa
 - **Onboarding flow** (`/onboarding`): Multi-step intake form if user has no company profile
 - **Company profile page** (`/profile`): Edit company context from sidebar user menu
 - **Contextual dashboard**: Shows company profile strip, workflow quick-launch buttons, recent intelligence
-- **Chat "Engagements"**: Renamed from "Strategic Advisor", persistent context bar, suggested starters
+- **Chat "Engagements"**: Renamed from "Strategic Advisor", persistent context bar, suggested starters, document attachment via paperclip button
 - **Reports**: Editorial list view, commission form with framework selection grid, publication-quality report viewer
 - **Landing page**: Cinematic full-bleed hero with Unsplash boardroom image, flat editorial header
 - **Workflow Agents** (`/workflows`): Library of 6 pre-built AI agent templates. Each has a focused intake form (2-4 questions), executes as SSE streaming, and saves completed runs to history. Templates: Board Deck Audit, Competitor Deep-Dive, Market Entry Analysis, M&A Target Evaluation, Series B/Growth Narrative, Quarterly Strategy Brief.
+- **Knowledge Vault** (`/knowledge`): Upload PDFs and DOCX files, stored in Replit Object Storage (GCS), extracted server-side with pdf-parse/mammoth. Document library with status badges (Processing, Ready, Failed). Documents can be attached to conversations (up to 5). Extracted text injected into AI system prompt. AI responses include "Sources:" attribution.
 
 ### DB Schema
 - `company_profiles` — one per user, stores company context
@@ -122,15 +123,30 @@ A full-stack strategic intelligence platform for executives. Frontend at `artifa
 - `messages` — chat messages
 - `reports` — generated intelligence reports
 - `workflow_runs` — workflow agent run history (templateKey, inputs as jsonb, output, status)
+- `documents` — uploaded documents (id, userId, title, fileType, objectKey, extractedText, status)
+- `conversation_documents` — join table linking conversations to documents (conversationId, documentId)
+
+### Object Storage
+- Provisioned Replit Object Storage (GCS-backed) for document files
+- Files uploaded via presigned URL flow: client requests URL from `/api/storage/uploads/request-url`, uploads directly to GCS, then registers document metadata with `/api/documents`
+- Server routes: `artifacts/api-server/src/lib/objectStorage.ts`, `src/lib/objectAcl.ts`, `src/routes/storage.ts`
 
 ### API Routes
 - `GET/POST/PUT /api/company-profile` — CRUD for company profile
 - `GET /api/openai/conversations` — list engagements
 - `POST /api/openai/conversations` — create engagement
-- `POST /api/openai/conversations/:id/messages` — send message (SSE stream)
+- `POST /api/openai/conversations/:id/messages` — send message (SSE stream, injects linked document text)
 - `POST /api/reports` — generate report (SSE stream, injects company context)
 - `GET /api/dashboard/summary` — dashboard stats
 - `GET /api/workflows/templates` — list 6 workflow templates (no auth)
 - `GET /api/workflows` — list user's workflow runs
 - `POST /api/workflows` — launch workflow run (SSE stream)
 - `GET /api/workflows/:id` — get workflow run detail
+- `GET /api/documents` — list user's documents
+- `POST /api/documents` — register new document after upload
+- `DELETE /api/documents/:id` — delete document
+- `POST /api/documents/:id/process` — extract text from document (pdf-parse / mammoth)
+- `GET /api/conversations/:id/documents` — list documents linked to a conversation
+- `POST /api/conversations/:id/documents` — link document to conversation
+- `DELETE /api/conversations/:id/documents` — unlink document from conversation
+- `POST /api/storage/uploads/request-url` — request presigned GCS upload URL

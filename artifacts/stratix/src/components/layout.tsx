@@ -4,6 +4,7 @@ import {
   LayoutDashboard,
   MessageSquareText,
   Library,
+  BookOpen,
   LogOut,
   Settings,
   ChevronDown,
@@ -17,6 +18,7 @@ const NAV_ITEMS = [
   { href: "/chat", label: "Engagements", icon: MessageSquareText },
   { href: "/workflows", label: "Workflows", icon: Zap },
   { href: "/reports", label: "Report Library", icon: Library },
+  { href: "/knowledge", label: "Knowledge", icon: BookOpen },
 ];
 
 const PAGE_TITLES: Record<string, string> = {
@@ -26,6 +28,7 @@ const PAGE_TITLES: Record<string, string> = {
   "/reports/new": "Commission Report",
   "/workflows": "Workflow Agents",
   "/profile": "Company Profile",
+  "/knowledge": "Knowledge Vault",
 };
 
 export function Layout({ children }: { children: React.ReactNode }) {

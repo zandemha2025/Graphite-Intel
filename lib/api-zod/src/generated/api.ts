@@ -8,6 +8,114 @@
 import * as zod from "zod";
 
 /**
+ * @summary Request a presigned URL for file upload
+ */
+export const RequestUploadUrlBody = zod.object({
+  name: zod.string(),
+  size: zod.number(),
+  contentType: zod.string(),
+});
+
+export const RequestUploadUrlResponse = zod.object({
+  uploadURL: zod.string(),
+  objectPath: zod.string(),
+  metadata: zod.object({
+    name: zod.string(),
+    size: zod.number(),
+    contentType: zod.string(),
+  }),
+});
+
+/**
+ * @summary List all documents for the current user
+ */
+export const ListDocumentsResponseItem = zod.object({
+  id: zod.number(),
+  userId: zod.string(),
+  title: zod.string(),
+  fileType: zod.string(),
+  objectKey: zod.string(),
+  status: zod.string(),
+  createdAt: zod.coerce.date(),
+});
+export const ListDocumentsResponse = zod.array(ListDocumentsResponseItem);
+
+/**
+ * @summary Register a newly uploaded document
+ */
+export const CreateDocumentBody = zod.object({
+  title: zod.string(),
+  fileType: zod.string(),
+  objectKey: zod.string(),
+});
+
+/**
+ * @summary Delete a document
+ */
+export const DeleteDocumentParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+/**
+ * @summary Extract text from a document
+ */
+export const ProcessDocumentParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const ProcessDocumentResponse = zod.object({
+  id: zod.number(),
+  userId: zod.string(),
+  title: zod.string(),
+  fileType: zod.string(),
+  objectKey: zod.string(),
+  status: zod.string(),
+  createdAt: zod.coerce.date(),
+});
+
+/**
+ * @summary List documents linked to a conversation
+ */
+export const ListConversationDocumentsParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const ListConversationDocumentsResponseItem = zod.object({
+  id: zod.number(),
+  userId: zod.string(),
+  title: zod.string(),
+  fileType: zod.string(),
+  objectKey: zod.string(),
+  status: zod.string(),
+  createdAt: zod.coerce.date(),
+});
+export const ListConversationDocumentsResponse = zod.array(
+  ListConversationDocumentsResponseItem,
+);
+
+/**
+ * @summary Link a document to a conversation
+ */
+export const LinkDocumentToConversationParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const LinkDocumentToConversationBody = zod.object({
+  documentId: zod.number(),
+});
+
+/**
+ * @summary Unlink a document from a conversation
+ */
+export const UnlinkDocumentFromConversationParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const UnlinkDocumentFromConversationBody = zod.object({
+  documentId: zod.number(),
+});
+
+/**
  * Returns server health status
  * @summary Health check
  */
