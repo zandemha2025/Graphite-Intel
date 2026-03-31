@@ -1,6 +1,39 @@
 import { useGetCurrentAuthUser } from "@workspace/api-client-react";
 import { Link } from "wouter";
 
+const TESTIMONIALS = [
+  {
+    quote:
+      "Stratix gave our board prep a completely different quality of depth. The competitive landscape brief we generated in forty minutes would have cost six figures from a consulting firm.",
+    name: "Alexandra Mercer",
+    title: "Chief Strategy Officer",
+    company: "Vantage Capital Partners",
+  },
+  {
+    quote:
+      "We use it before every major negotiation. The counter-party analysis alone has changed how we approach deal rooms. Our team calls it unfair advantage.",
+    name: "Jonathan Reeves",
+    title: "Managing Director",
+    company: "Northgate Advisors",
+  },
+  {
+    quote:
+      "The platform understood our market before I finished onboarding. The quality of the strategic context it holds is unlike anything else we have evaluated.",
+    name: "Priya Nambiar",
+    title: "VP of Corporate Development",
+    company: "Meridian Group",
+  },
+];
+
+const LOGO_SLOTS = [
+  "Vantage Capital",
+  "Northgate Advisors",
+  "Meridian Group",
+  "Axiom Partners",
+  "Clearwater Ventures",
+  "Summit Advisory",
+];
+
 export function Landing() {
   const { data: auth, isLoading } = useGetCurrentAuthUser();
 
@@ -16,7 +49,13 @@ export function Landing() {
           </div>
           <span className="font-serif font-semibold text-lg tracking-tight text-[#E8E4DC] uppercase letter-spacing-wide">Stratix</span>
         </div>
-        <div>
+        <nav className="flex items-center gap-6">
+          <Link
+            href="/security"
+            className="text-xs font-medium text-[#E8E4DC]/50 hover:text-[#E8E4DC]/80 transition-colors tracking-widest uppercase"
+          >
+            Security
+          </Link>
           {auth?.user ? (
             <Link
               href="/dashboard"
@@ -34,7 +73,7 @@ export function Landing() {
               Sign In
             </a>
           )}
-        </div>
+        </nav>
       </header>
 
       {/* Cinematic hero */}
@@ -103,6 +142,87 @@ export function Landing() {
           </div>
         </div>
       </main>
+
+      {/* Client logo strip */}
+      <section className="border-t border-white/8 px-12 py-10">
+        <p className="text-[10px] uppercase tracking-[0.25em] text-[#E8E4DC]/30 text-center mb-8">Trusted by leading firms</p>
+        <div className="grid grid-cols-3 md:grid-cols-6 gap-6 max-w-4xl mx-auto">
+          {LOGO_SLOTS.map((name) => (
+            <div
+              key={name}
+              className="border border-white/8 px-4 py-4 flex items-center justify-center opacity-40 hover:opacity-60 transition-opacity"
+            >
+              <span className="text-[10px] font-medium uppercase tracking-widest text-[#E8E4DC]/70 text-center leading-tight">
+                {name}
+              </span>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* Testimonials */}
+      <section className="border-t border-white/8 px-12 py-16 bg-[#0A0908]">
+        <div className="max-w-5xl mx-auto">
+          <div className="mb-10">
+            <span className="text-[10px] font-medium uppercase tracking-[0.25em] text-[#E8E4DC]/35 border border-[#E8E4DC]/12 px-3 py-1">
+              In Their Words
+            </span>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {TESTIMONIALS.map((t) => (
+              <div key={t.name} className="border border-white/8 p-7 flex flex-col justify-between">
+                <p className="font-serif text-base text-[#E8E4DC]/75 leading-relaxed font-light mb-8">
+                  &ldquo;{t.quote}&rdquo;
+                </p>
+                <div>
+                  <div className="w-6 h-px bg-[#E8E4DC]/20 mb-4" />
+                  <p className="text-xs font-medium text-[#E8E4DC]/80 uppercase tracking-wider">{t.name}</p>
+                  <p className="text-[10px] text-[#E8E4DC]/40 mt-0.5">{t.title}</p>
+                  <p className="text-[10px] text-[#E8E4DC]/30 mt-0.5">{t.company}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Footer */}
+      <footer className="border-t border-white/8 px-12 py-8">
+        <div className="max-w-5xl mx-auto flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+          <div>
+            <div className="flex items-center gap-2.5 mb-2">
+              <div className="h-5 w-5 border border-[#E8E4DC]/30 flex items-center justify-center">
+                <span className="font-serif font-semibold text-[#E8E4DC] text-[10px] leading-none">S</span>
+              </div>
+              <span className="font-serif font-medium text-sm tracking-tight text-[#E8E4DC]/60 uppercase">Stratix</span>
+            </div>
+            <p className="text-[10px] text-[#E8E4DC]/25 font-light">Executive Intelligence Platform &mdash; &copy; {new Date().getFullYear()}</p>
+          </div>
+          <nav className="flex items-center gap-6">
+            <Link
+              href="/security"
+              className="text-xs text-[#E8E4DC]/40 hover:text-[#E8E4DC]/70 transition-colors uppercase tracking-wider"
+              data-testid="footer-link-security"
+            >
+              Security
+            </Link>
+            <a
+              href="#"
+              className="text-xs text-[#E8E4DC]/40 hover:text-[#E8E4DC]/70 transition-colors uppercase tracking-wider"
+              data-testid="footer-link-privacy"
+            >
+              Privacy Policy
+            </a>
+            <a
+              href="#"
+              className="text-xs text-[#E8E4DC]/40 hover:text-[#E8E4DC]/70 transition-colors uppercase tracking-wider"
+              data-testid="footer-link-terms"
+            >
+              Terms
+            </a>
+          </nav>
+        </div>
+      </footer>
     </div>
   );
 }

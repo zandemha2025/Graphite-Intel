@@ -15,6 +15,7 @@ import { ReportNew } from "@/pages/report-new";
 import { ReportView } from "@/pages/report-view";
 import { Onboarding } from "@/pages/onboarding";
 import { Profile } from "@/pages/profile";
+import { Security } from "@/pages/security";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -132,6 +133,7 @@ function Router() {
       <Route path="/reports/:id" component={() => <ProtectedRoute component={ReportView} />} />
       <Route path="/reports" component={() => <ProtectedRoute component={ReportsList} />} />
       <Route path="/profile" component={() => <ProtectedRoute component={Profile} />} />
+      <Route path="/security" component={Security} />
       <Route component={NotFound} />
     </Switch>
   );
