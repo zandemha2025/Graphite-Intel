@@ -24,6 +24,15 @@ function requireAuth(req: Request, res: Response): boolean {
   return true;
 }
 
+function reportsFilter(req: Request) {
+  const userId = req.user!.id;
+  const orgId = req.user!.orgId;
+  if (orgId) {
+    return eq(reportsTable.orgId, orgId);
+  }
+  return eq(reportsTable.userId, userId);
+}
+
 const BASE_SYSTEM_PROMPT = `You are a world-class strategic consultant with 20 years of experience at McKinsey, Bain, and BCG.
 You produce executive-grade reports for CMOs, CEOs, and CFOs of Fortune 500 companies and high-growth startups.
 
@@ -65,11 +74,18 @@ Format your reports using Markdown with the following structure:
 Include specific data points, market statistics, competitor benchmarks, and industry best practices throughout.
 Reference real companies, case studies, and published research when relevant.`;
 
-async function buildSystemPrompt(userId: string): Promise<string> {
+async function buildSystemPrompt(req: Request): Promise<string> {
+  const userId = req.user!.id;
+  const orgId = req.user!.orgId;
+
+  const filter = orgId
+    ? eq(companyProfiles.orgId, orgId)
+    : eq(companyProfiles.userId, userId);
+
   const [profile] = await db
     .select()
     .from(companyProfiles)
-    .where(eq(companyProfiles.userId, userId));
+    .where(filter);
 
   if (!profile) return BASE_SYSTEM_PROMPT;
 
@@ -117,7 +133,6 @@ Produce a comprehensive, McKinsey-quality ${typeLabel} report. Use specific data
 router.get("/reports", async (req: Request, res: Response) => {
   if (!requireAuth(req, res)) return;
 
-  const userId = req.user!.id;
   const limit = Math.min(parseInt(req.query.limit as string) || 20, 100);
   const offset = parseInt(req.query.offset as string) || 0;
 
@@ -125,7 +140,7 @@ router.get("/reports", async (req: Request, res: Response) => {
     const reports = await db
       .select()
       .from(reportsTable)
-      .where(eq(reportsTable.userId, userId))
+      .where(reportsFilter(req))
       .orderBy(desc(reportsTable.createdAt))
       .limit(limit)
       .offset(offset);
@@ -153,6 +168,7 @@ router.post("/reports", async (req: Request, res: Response) => {
   }
 
   const userId = req.user!.id;
+  const orgId = req.user!.orgId;
   const typeLabel = REPORT_TYPE_LABELS[reportType];
   const title = `${typeLabel}: ${company}`;
 
@@ -162,6 +178,7 @@ router.post("/reports", async (req: Request, res: Response) => {
       .insert(reportsTable)
       .values({
         userId,
+        ...(orgId !== undefined && { orgId }),
         title,
         reportType,
         company,
@@ -189,7 +206,7 @@ router.post("/reports", async (req: Request, res: Response) => {
   let fullContent = "";
 
   try {
-    const systemPrompt = await buildSystemPrompt(userId);
+    const systemPrompt = await buildSystemPrompt(req);
     const userPrompt = buildUserPrompt(reportType, company, context);
 
     const stream = await openai.chat.completions.create({
@@ -220,7 +237,7 @@ router.post("/reports", async (req: Request, res: Response) => {
     await db
       .update(reportsTable)
       .set({ status: "complete", content: fullContent, summary, updatedAt: new Date() })
-      .where(and(eq(reportsTable.id, report.id), eq(reportsTable.userId, userId)));
+      .where(eq(reportsTable.id, report.id));
 
     sendEvent("complete", { id: report.id, status: "complete" });
   } catch (err) {
@@ -229,7 +246,7 @@ router.post("/reports", async (req: Request, res: Response) => {
     await db
       .update(reportsTable)
       .set({ status: "failed", updatedAt: new Date() })
-      .where(and(eq(reportsTable.id, report.id), eq(reportsTable.userId, userId)));
+      .where(eq(reportsTable.id, report.id));
 
     sendEvent("error", { error: "Report generation failed" });
   } finally {
@@ -250,7 +267,7 @@ router.get("/reports/:id", async (req: Request, res: Response) => {
     const [report] = await db
       .select()
       .from(reportsTable)
-      .where(and(eq(reportsTable.id, id), eq(reportsTable.userId, req.user!.id)));
+      .where(and(eq(reportsTable.id, id), reportsFilter(req)));
 
     if (!report) {
       res.status(404).json({ error: "Report not found" });
@@ -276,7 +293,7 @@ router.delete("/reports/:id", async (req: Request, res: Response) => {
   try {
     const [deleted] = await db
       .delete(reportsTable)
-      .where(and(eq(reportsTable.id, id), eq(reportsTable.userId, req.user!.id)))
+      .where(and(eq(reportsTable.id, id), reportsFilter(req)))
       .returning();
 
     if (!deleted) {
@@ -304,7 +321,7 @@ router.get("/reports/:id/download", async (req: Request, res: Response) => {
     const [report] = await db
       .select()
       .from(reportsTable)
-      .where(and(eq(reportsTable.id, id), eq(reportsTable.userId, req.user!.id)));
+      .where(and(eq(reportsTable.id, id), reportsFilter(req)));
 
     if (!report) {
       res.status(404).json({ error: "Report not found" });

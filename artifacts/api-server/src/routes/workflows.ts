@@ -351,11 +351,15 @@ export const WORKFLOW_TEMPLATE_MAP: Record<string, WorkflowTemplate> = Object.fr
   WORKFLOW_TEMPLATES.map((t) => [t.key, t])
 );
 
-async function buildCompanyContext(userId: string): Promise<string> {
+async function buildCompanyContext(userId: string, orgId?: number): Promise<string> {
+  const filter = orgId
+    ? eq(companyProfiles.orgId, orgId)
+    : eq(companyProfiles.userId, userId);
+
   const [profile] = await db
     .select()
     .from(companyProfiles)
-    .where(eq(companyProfiles.userId, userId));
+    .where(filter);
 
   if (!profile) return "";
 
@@ -383,14 +387,19 @@ router.get("/workflows", async (req: Request, res: Response) => {
   if (!requireAuth(req, res)) return;
 
   const userId = req.user!.id;
+  const orgId = req.user!.orgId;
   const limit = Math.min(parseInt(req.query.limit as string) || 20, 100);
   const offset = parseInt(req.query.offset as string) || 0;
+
+  const filter = orgId
+    ? eq(workflowRuns.orgId, orgId)
+    : eq(workflowRuns.userId, userId);
 
   try {
     const runs = await db
       .select()
       .from(workflowRuns)
-      .where(eq(workflowRuns.userId, userId))
+      .where(filter)
       .orderBy(desc(workflowRuns.createdAt))
       .limit(limit)
       .offset(offset);
@@ -412,10 +421,14 @@ router.get("/workflows/:id", async (req: Request, res: Response) => {
   }
 
   try {
+    const runFilter = req.user!.orgId
+      ? and(eq(workflowRuns.id, id), eq(workflowRuns.orgId, req.user!.orgId))
+      : and(eq(workflowRuns.id, id), eq(workflowRuns.userId, req.user!.id));
+
     const [run] = await db
       .select()
       .from(workflowRuns)
-      .where(and(eq(workflowRuns.id, id), eq(workflowRuns.userId, req.user!.id)));
+      .where(runFilter);
 
     if (!run) {
       res.status(404).json({ error: "Workflow run not found" });
@@ -451,6 +464,7 @@ router.post("/workflows", async (req: Request, res: Response) => {
   }
 
   const userId = req.user!.id;
+  const orgId = req.user!.orgId;
   const title = `${template.name}`;
 
   let run;
@@ -459,6 +473,7 @@ router.post("/workflows", async (req: Request, res: Response) => {
       .insert(workflowRuns)
       .values({
         userId,
+        ...(orgId !== undefined && { orgId }),
         templateKey,
         title,
         inputs,
@@ -486,7 +501,7 @@ router.post("/workflows", async (req: Request, res: Response) => {
   let fullOutput = "";
 
   try {
-    const companyContext = await buildCompanyContext(userId);
+    const companyContext = await buildCompanyContext(userId, orgId);
     const systemPrompt = template.systemPrompt(companyContext, inputs as Record<string, string>);
 
     const stream = await openai.chat.completions.create({
@@ -510,7 +525,7 @@ router.post("/workflows", async (req: Request, res: Response) => {
     await db
       .update(workflowRuns)
       .set({ status: "complete", output: fullOutput, updatedAt: new Date() })
-      .where(and(eq(workflowRuns.id, run.id), eq(workflowRuns.userId, userId)));
+      .where(eq(workflowRuns.id, run.id));
 
     sendEvent("complete", { id: run.id, status: "complete" });
   } catch (err) {
@@ -519,7 +534,7 @@ router.post("/workflows", async (req: Request, res: Response) => {
     await db
       .update(workflowRuns)
       .set({ status: "failed", updatedAt: new Date() })
-      .where(and(eq(workflowRuns.id, run.id), eq(workflowRuns.userId, userId)));
+      .where(eq(workflowRuns.id, run.id));
 
     sendEvent("error", { error: "Workflow execution failed" });
   } finally {

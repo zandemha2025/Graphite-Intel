@@ -9,6 +9,7 @@ import researchRouter from "./research";
 import workflowsRouter from "./workflows";
 import storageRouter from "./storage";
 import documentsRouter from "./documents";
+import orgRouter from "./org";
 
 const router: IRouter = Router();
 
@@ -22,5 +23,6 @@ router.use(researchRouter);
 router.use(workflowsRouter);
 router.use(storageRouter);
 router.use(documentsRouter);
+router.use(orgRouter);
 
 export default router;

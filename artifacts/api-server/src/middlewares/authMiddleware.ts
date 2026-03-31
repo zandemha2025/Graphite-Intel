@@ -1,6 +1,8 @@
 import * as oidc from "openid-client";
 import { type Request, type Response, type NextFunction } from "express";
 import type { AuthUser } from "@workspace/api-zod";
+import { db, orgMembers } from "@workspace/db";
+import { eq } from "drizzle-orm";
 import {
   clearSession,
   getOidcConfig,
@@ -12,7 +14,10 @@ import {
 
 declare global {
   namespace Express {
-    interface User extends AuthUser {}
+    interface User extends AuthUser {
+      orgId?: number;
+      orgRole?: string;
+    }
 
     interface Request {
       isAuthenticated(): this is AuthedRequest;
@@ -82,6 +87,19 @@ export async function authMiddleware(
     return;
   }
 
-  req.user = refreshed.user;
+  const user: Express.User = { ...refreshed.user };
+
+  const [membership] = await db
+    .select()
+    .from(orgMembers)
+    .where(eq(orgMembers.userId, user.id))
+    .limit(1);
+
+  if (membership) {
+    user.orgId = membership.orgId;
+    user.orgRole = membership.role;
+  }
+
+  req.user = user;
   next();
 }

@@ -1,5 +1,6 @@
 import { Link, useLocation } from "wouter";
 import { useGetCurrentAuthUser } from "@workspace/api-client-react";
+import { useState, useEffect } from "react";
 import {
   LayoutDashboard,
   MessageSquareText,
@@ -9,9 +10,10 @@ import {
   Settings,
   ChevronDown,
   Zap,
+  Users,
 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 
 const NAV_ITEMS = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
@@ -29,12 +31,29 @@ const PAGE_TITLES: Record<string, string> = {
   "/workflows": "Workflow Agents",
   "/profile": "Company Profile",
   "/knowledge": "Knowledge Vault",
+  "/settings/team": "Team",
 };
+
+function useOrgName() {
+  const [orgName, setOrgName] = useState<string | null>(null);
+
+  useEffect(() => {
+    fetch("/api/org")
+      .then((r) => (r.ok ? r.json() : null))
+      .then((data) => {
+        if (data?.name) setOrgName(data.name);
+      })
+      .catch(() => {});
+  }, []);
+
+  return orgName;
+}
 
 export function Layout({ children }: { children: React.ReactNode }) {
   const [location] = useLocation();
   const { data: auth } = useGetCurrentAuthUser();
-  const user = auth?.user;
+  const user = auth?.user as any;
+  const orgName = useOrgName();
 
   const pageTitle =
     PAGE_TITLES[location] ||
@@ -43,16 +62,23 @@ export function Layout({ children }: { children: React.ReactNode }) {
     location.startsWith("/workflows/") ? "Workflow Run" :
     "Stratix");
 
+  const isAdmin = user?.orgRole === "admin";
+
   return (
     <div className="flex h-screen bg-[#0D0C0B]">
-      {/* Sidebar — same color as background, minimal chrome */}
+      {/* Sidebar */}
       <div className="w-56 bg-[#0D0C0B] text-[#E8E4DC] flex flex-col border-r border-white/8 z-10">
         <div className="px-5 py-5 border-b border-white/8">
           <Link href="/dashboard" className="flex items-center gap-2.5" data-testid="link-home">
             <div className="h-6 w-6 border border-[#E8E4DC]/30 flex items-center justify-center">
               <span className="font-serif font-semibold text-[#E8E4DC] text-xs leading-none">S</span>
             </div>
-            <span className="font-serif font-medium text-base tracking-tight text-[#E8E4DC] uppercase">Stratix</span>
+            <div className="flex flex-col min-w-0">
+              <span className="font-serif font-medium text-base tracking-tight text-[#E8E4DC] uppercase leading-none">Stratix</span>
+              {orgName && (
+                <span className="text-[9px] text-[#E8E4DC]/35 uppercase tracking-wider truncate mt-0.5">{orgName}</span>
+              )}
+            </div>
           </Link>
         </div>
 
@@ -96,7 +122,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
                       {user.firstName ? `${user.firstName} ${user.lastName || ''}` : "Executive"}
                     </div>
                     <div className="text-[10px] text-[#E8E4DC]/40 truncate">
-                      {user.email}
+                      {user.orgRole === "admin" ? "Admin" : "Member"} · {user.email}
                     </div>
                   </div>
                   <ChevronDown className="h-3 w-3 text-[#E8E4DC]/30 shrink-0" />
@@ -112,6 +138,17 @@ export function Layout({ children }: { children: React.ReactNode }) {
                     <span>Company Profile</span>
                   </Link>
                 </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link
+                    href="/settings/team"
+                    className="flex items-center cursor-pointer text-[#E8E4DC]/70 hover:text-[#E8E4DC] text-xs w-full px-2 py-1.5"
+                    data-testid="nav-link-team"
+                  >
+                    <Users className="mr-2 h-3.5 w-3.5" />
+                    <span>Team</span>
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuSeparator className="bg-white/8" />
                 <DropdownMenuItem asChild>
                   <a href="/api/logout" className="flex items-center text-[#E8E4DC]/70 hover:text-[#E8E4DC] cursor-pointer w-full text-xs px-2 py-1.5">
                     <LogOut className="mr-2 h-3.5 w-3.5" />

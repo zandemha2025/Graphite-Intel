@@ -1,7 +1,6 @@
 import * as oidc from "openid-client";
 import { Router, type IRouter, type Request, type Response } from "express";
 import {
-  GetCurrentAuthUserResponse,
   ExchangeMobileAuthorizationCodeBody,
   ExchangeMobileAuthorizationCodeResponse,
   LogoutMobileSessionResponse,
@@ -83,11 +82,15 @@ async function upsertUser(claims: Record<string, unknown>) {
 }
 
 router.get("/auth/user", (req: Request, res: Response) => {
-  res.json(
-    GetCurrentAuthUserResponse.parse({
-      user: req.isAuthenticated() ? req.user : null,
-    }),
-  );
+  if (!req.isAuthenticated()) {
+    res.json({ user: null });
+    return;
+  }
+
+  const { id, email, firstName, lastName, profileImageUrl, orgId, orgRole } = req.user;
+  res.json({
+    user: { id, email, firstName, lastName, profileImageUrl, orgId, orgRole },
+  });
 });
 
 router.get("/login", async (req: Request, res: Response) => {

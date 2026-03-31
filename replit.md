@@ -107,22 +107,29 @@ A full-stack strategic intelligence platform for executives. Frontend at `artifa
 - Fonts: Cormorant Garamond (serif headings), Inter (sans body)
 
 ### Key Features
-- **Company Intelligence Profile** (`company_profiles` DB table): Users complete intake on first login (company name, industry, stage, revenue range, competitors, priorities). Context injected into all AI chats and reports.
-- **Onboarding flow** (`/onboarding`): Multi-step intake form if user has no company profile
-- **Company profile page** (`/profile`): Edit company context from sidebar user menu
+- **Team Collaboration & Workspaces**: Organizations with shared data. Users create or join an org on first login. All content (conversations, reports, workflows, company profile) is org-scoped and shared with all team members. Two roles: Admin (can invite/remove) and Member.
+- **Company Intelligence Profile** (`company_profiles` DB table): Org-scoped company context (company name, industry, stage, revenue range, competitors, priorities). Shared across all org members. Context injected into all AI chats and reports.
+- **Org Setup flow** (`/org-setup`): New users without an org are redirected here to create their organization before proceeding to onboarding
+- **Onboarding flow** (`/onboarding`): Multi-step intake form if org has no company profile
+- **Team Settings** (`/settings/team`): Admin can view all members, their roles and join dates, generate invite links, and remove members. Invite links are 7-day-expiring UUIDs.
+- **Invite flow** (`/api/join?token=xxx`): Admin creates invite → link sent to team member → member clicks link and is added to org
+- **Company profile page** (`/profile`): Edit company context from sidebar user menu (org-scoped)
 - **Contextual dashboard**: Shows company profile strip, workflow quick-launch buttons, recent intelligence
-- **Chat "Engagements"**: Renamed from "Strategic Advisor", persistent context bar, suggested starters, document attachment via paperclip button
-- **Reports**: Editorial list view, commission form with framework selection grid, publication-quality report viewer
+- **Chat "Engagements"**: Renamed from "Strategic Advisor", org-scoped conversations, persistent context bar, suggested starters, document attachment via paperclip button
+- **Reports**: Org-scoped, editorial list view, commission form with framework selection grid, publication-quality report viewer
 - **Landing page**: Cinematic full-bleed hero with Unsplash boardroom image, flat editorial header
-- **Workflow Agents** (`/workflows`): Library of 6 pre-built AI agent templates. Each has a focused intake form (2-4 questions), executes as SSE streaming, and saves completed runs to history. Templates: Board Deck Audit, Competitor Deep-Dive, Market Entry Analysis, M&A Target Evaluation, Series B/Growth Narrative, Quarterly Strategy Brief.
+- **Workflow Agents** (`/workflows`): Library of 6 pre-built AI agent templates. Org-scoped. Each has a focused intake form (2-4 questions), executes as SSE streaming, and saves completed runs to history. Templates: Board Deck Audit, Competitor Deep-Dive, Market Entry Analysis, M&A Target Evaluation, Series B/Growth Narrative, Quarterly Strategy Brief.
 - **Knowledge Vault** (`/knowledge`): Upload PDFs and DOCX files, stored in Replit Object Storage (GCS), extracted server-side with pdf-parse/mammoth. Document library with status badges (Processing, Ready, Failed). Documents can be attached to conversations (up to 5). Extracted text injected into AI system prompt. AI responses include "Sources:" attribution.
 
 ### DB Schema
-- `company_profiles` — one per user, stores company context
-- `conversations` — chat conversations (renamed "Engagements" in UI)
+- `organizations` — orgs with name and slug
+- `org_members` — userId, orgId, role (admin|member), joinedAt
+- `org_invites` — UUID tokens with expiry for team invites
+- `company_profiles` — one per org (orgId unique), stores shared company context
+- `conversations` — chat conversations (renamed "Engagements" in UI), org-scoped
 - `messages` — chat messages
-- `reports` — generated intelligence reports
-- `workflow_runs` — workflow agent run history (templateKey, inputs as jsonb, output, status)
+- `reports` — generated intelligence reports, org-scoped
+- `workflow_runs` — workflow agent run history (templateKey, inputs as jsonb, output, status), org-scoped
 - `documents` — uploaded documents (id, userId, title, fileType, objectKey, extractedText, status)
 - `conversation_documents` — join table linking conversations to documents (conversationId, documentId)
 
@@ -132,14 +139,22 @@ A full-stack strategic intelligence platform for executives. Frontend at `artifa
 - Server routes: `artifacts/api-server/src/lib/objectStorage.ts`, `src/lib/objectAcl.ts`, `src/routes/storage.ts`
 
 ### API Routes
-- `GET/POST/PUT /api/company-profile` — CRUD for company profile
-- `GET /api/openai/conversations` — list engagements
+- `GET /api/org` — get current user's organization
+- `POST /api/org` — create organization (first-time users)
+- `GET /api/org/members` — list org members with user details
+- `DELETE /api/org/members/:userId` — remove a member (admin only)
+- `GET /api/org/invites` — list pending invites (admin only)
+- `POST /api/org/invites` — create invite link (admin only)
+- `DELETE /api/org/invites/:id` — revoke invite (admin only)
+- `GET /api/join?token=xxx` — join org via invite token
+- `GET/POST/PUT /api/company-profile` — CRUD for org company profile
+- `GET /api/openai/conversations` — list engagements (org-scoped)
 - `POST /api/openai/conversations` — create engagement
 - `POST /api/openai/conversations/:id/messages` — send message (SSE stream, injects linked document text)
 - `POST /api/reports` — generate report (SSE stream, injects company context)
 - `GET /api/dashboard/summary` — dashboard stats
 - `GET /api/workflows/templates` — list 6 workflow templates (no auth)
-- `GET /api/workflows` — list user's workflow runs
+- `GET /api/workflows` — list org's workflow runs
 - `POST /api/workflows` — launch workflow run (SSE stream)
 - `GET /api/workflows/:id` — get workflow run detail
 - `GET /api/documents` — list user's documents

@@ -14,12 +14,14 @@ import { ReportsList } from "@/pages/reports-list";
 import { ReportNew } from "@/pages/report-new";
 import { ReportView } from "@/pages/report-view";
 import { Onboarding } from "@/pages/onboarding";
+import { OrgSetup } from "@/pages/org-setup";
 import { Profile } from "@/pages/profile";
 import { Security } from "@/pages/security";
 import { Workflows } from "@/pages/workflows";
 import { WorkflowRunner } from "@/pages/workflow-runner";
 import { WorkflowView } from "@/pages/workflow-view";
 import { Knowledge } from "@/pages/knowledge";
+import { Team } from "@/pages/team";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -40,6 +42,12 @@ function Spinner() {
   );
 }
 
+function useAuthAndOrg() {
+  const { data: auth, isLoading: authLoading } = useGetCurrentAuthUser();
+  const user = auth?.user as (typeof auth extends { user: infer U } ? U : never) & { orgId?: number; orgRole?: string } | null | undefined;
+  return { user, authLoading };
+}
+
 function ProtectedRoute({ component: Component }: { component: React.ComponentType }) {
   const { data: auth, isLoading: authLoading } = useGetCurrentAuthUser();
   const {
@@ -51,6 +59,8 @@ function ProtectedRoute({ component: Component }: { component: React.ComponentTy
   } = useGetCompanyProfile({ query: { enabled: !!auth?.user } });
   const [, setLocation] = useLocation();
 
+  const user = auth?.user as any;
+
   useEffect(() => {
     if (!authLoading && !auth?.user) {
       setLocation("/");
@@ -58,10 +68,16 @@ function ProtectedRoute({ component: Component }: { component: React.ComponentTy
   }, [authLoading, auth, setLocation]);
 
   useEffect(() => {
-    // Only redirect when auth and profile queries are fully settled (not loading or re-fetching).
-    // Only redirect on a confirmed 404 (no company profile) — not on transient network errors.
-    // This prevents a race where a stale error state triggers a redirect mid-refetch after onboarding.
-    if (!authLoading && !profileLoading && !profileFetching && auth?.user && profileStatus === "error") {
+    if (!authLoading && auth?.user && !user?.orgId) {
+      const current = window.location.pathname;
+      if (!current.endsWith("/org-setup")) {
+        setLocation("/org-setup");
+      }
+    }
+  }, [authLoading, auth, user, setLocation]);
+
+  useEffect(() => {
+    if (!authLoading && !profileLoading && !profileFetching && auth?.user && user?.orgId && profileStatus === "error") {
       const is404 =
         profileError != null &&
         typeof (profileError as { status?: unknown }).status === "number" &&
@@ -71,7 +87,7 @@ function ProtectedRoute({ component: Component }: { component: React.ComponentTy
         setLocation("/onboarding");
       }
     }
-  }, [authLoading, profileLoading, profileFetching, profileStatus, auth, profile, profileError, setLocation]);
+  }, [authLoading, profileLoading, profileFetching, profileStatus, auth, profile, profileError, setLocation, user]);
 
   if (authLoading || (auth?.user && profileLoading)) {
     return <Spinner />;
@@ -92,13 +108,41 @@ function HomeRedirect() {
 
   useEffect(() => {
     if (!isLoading && auth?.user) {
-      setLocation("/dashboard");
+      const user = auth.user as any;
+      if (!user?.orgId) {
+        setLocation("/org-setup");
+      } else {
+        setLocation("/dashboard");
+      }
     }
   }, [isLoading, auth, setLocation]);
 
   if (isLoading) return <Spinner />;
 
   return <Landing />;
+}
+
+function OrgSetupRoute() {
+  const { data: auth, isLoading: authLoading } = useGetCurrentAuthUser();
+  const [, setLocation] = useLocation();
+
+  useEffect(() => {
+    if (!authLoading && !auth?.user) {
+      setLocation("/");
+    }
+  }, [authLoading, auth, setLocation]);
+
+  useEffect(() => {
+    const user = auth?.user as any;
+    if (!authLoading && auth?.user && user?.orgId) {
+      setLocation("/dashboard");
+    }
+  }, [authLoading, auth, setLocation]);
+
+  if (authLoading) return <Spinner />;
+  if (!auth?.user) return null;
+
+  return <OrgSetup />;
 }
 
 function OnboardingRoute() {
@@ -111,6 +155,13 @@ function OnboardingRoute() {
   useEffect(() => {
     if (!authLoading && !auth?.user) {
       setLocation("/");
+    }
+  }, [authLoading, auth, setLocation]);
+
+  useEffect(() => {
+    const user = auth?.user as any;
+    if (!authLoading && auth?.user && !user?.orgId) {
+      setLocation("/org-setup");
     }
   }, [authLoading, auth, setLocation]);
 
@@ -130,6 +181,7 @@ function Router() {
   return (
     <Switch>
       <Route path="/" component={HomeRedirect} />
+      <Route path="/org-setup" component={OrgSetupRoute} />
       <Route path="/onboarding" component={OnboardingRoute} />
       <Route path="/dashboard" component={() => <ProtectedRoute component={Dashboard} />} />
       <Route path="/chat" component={() => <ProtectedRoute component={Chat} />} />
@@ -140,7 +192,8 @@ function Router() {
       <Route path="/workflows/:id" component={() => <ProtectedRoute component={WorkflowView} />} />
       <Route path="/workflows" component={() => <ProtectedRoute component={Workflows} />} />
       <Route path="/profile" component={() => <ProtectedRoute component={Profile} />} />
-      <Route path="/security" component={() => <ProtectedRoute component={Security} />} />
+      <Route path="/settings/team" component={() => <ProtectedRoute component={Team} />} />
+      <Route path="/security" component={Security} />
       <Route path="/knowledge" component={() => <ProtectedRoute component={Knowledge} />} />
       <Route component={NotFound} />
     </Switch>

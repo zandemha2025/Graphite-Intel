@@ -13,6 +13,15 @@ function requireAuth(req: Request, res: Response): boolean {
   return true;
 }
 
+function conversationFilter(req: Request) {
+  const userId = req.user!.id;
+  const orgId = req.user!.orgId;
+  if (orgId) {
+    return eq(conversations.orgId, orgId);
+  }
+  return eq(conversations.userId, userId);
+}
+
 const BASE_SYSTEM_PROMPT = `You are Stratix, an elite AI strategic advisor serving C-suite executives (CMOs, CEOs, CFOs) at top-tier companies.
 
 You deliver McKinsey-quality strategic insight in every response:
@@ -27,11 +36,18 @@ Your expertise spans: market strategy, competitive intelligence, growth framewor
 
 Always respond as a senior partner would in a client engagement — authoritative, incisive, and immediately valuable.`;
 
-async function buildSystemPrompt(userId: string, conversationId?: number): Promise<string> {
+async function buildSystemPrompt(req: Request, conversationId?: number): Promise<string> {
+  const userId = req.user!.id;
+  const orgId = req.user!.orgId;
+
+  const filter = orgId
+    ? eq(companyProfiles.orgId, orgId)
+    : eq(companyProfiles.userId, userId);
+
   const [profile] = await db
     .select()
     .from(companyProfiles)
-    .where(eq(companyProfiles.userId, userId));
+    .where(filter);
 
   let prompt = BASE_SYSTEM_PROMPT;
 
@@ -88,13 +104,11 @@ When answering questions, draw from these documents where relevant. At the end o
 router.get("/openai/conversations", async (req: Request, res: Response) => {
   if (!requireAuth(req, res)) return;
 
-  const userId = req.user!.id;
-
   try {
     const convos = await db
       .select()
       .from(conversations)
-      .where(eq(conversations.userId, userId))
+      .where(conversationFilter(req))
       .orderBy(desc(conversations.createdAt))
       .limit(50);
 
@@ -109,12 +123,13 @@ router.post("/openai/conversations", async (req: Request, res: Response) => {
   if (!requireAuth(req, res)) return;
 
   const userId = req.user!.id;
+  const orgId = req.user!.orgId;
   const title = req.body.title || "New Engagement";
 
   try {
     const [convo] = await db
       .insert(conversations)
-      .values({ userId, title })
+      .values({ userId, ...(orgId !== undefined && { orgId }), title })
       .returning();
 
     res.json(convo);
@@ -127,7 +142,6 @@ router.post("/openai/conversations", async (req: Request, res: Response) => {
 router.get("/openai/conversations/:id", async (req: Request, res: Response) => {
   if (!requireAuth(req, res)) return;
 
-  const userId = req.user!.id;
   const id = parseInt(req.params.id);
   if (isNaN(id)) {
     res.status(400).json({ error: "Invalid conversation id" });
@@ -138,7 +152,7 @@ router.get("/openai/conversations/:id", async (req: Request, res: Response) => {
     const [convo] = await db
       .select()
       .from(conversations)
-      .where(and(eq(conversations.id, id), eq(conversations.userId, userId)));
+      .where(and(eq(conversations.id, id), conversationFilter(req)));
 
     if (!convo) {
       res.status(404).json({ error: "Conversation not found" });
@@ -161,7 +175,6 @@ router.get("/openai/conversations/:id", async (req: Request, res: Response) => {
 router.delete("/openai/conversations/:id", async (req: Request, res: Response) => {
   if (!requireAuth(req, res)) return;
 
-  const userId = req.user!.id;
   const id = parseInt(req.params.id);
   if (isNaN(id)) {
     res.status(400).json({ error: "Invalid conversation id" });
@@ -171,11 +184,11 @@ router.delete("/openai/conversations/:id", async (req: Request, res: Response) =
   try {
     const [deleted] = await db
       .delete(conversations)
-      .where(and(eq(conversations.id, id), eq(conversations.userId, userId)))
+      .where(and(eq(conversations.id, id), conversationFilter(req)))
       .returning();
 
     if (!deleted) {
-      res.status(404).json({ error: "Conversation not found" });
+      res.status(404).send();
       return;
     }
 
@@ -208,7 +221,7 @@ router.post(
       const [convo] = await db
         .select()
         .from(conversations)
-        .where(and(eq(conversations.id, id), eq(conversations.userId, userId)));
+        .where(and(eq(conversations.id, id), conversationFilter(req)));
 
       if (!convo) {
         res.status(404).json({ error: "Conversation not found" });
@@ -226,7 +239,7 @@ router.post(
         await db
           .update(conversations)
           .set({ title: shortTitle })
-          .where(and(eq(conversations.id, id), eq(conversations.userId, userId)));
+          .where(eq(conversations.id, id));
       }
 
       const allMessages = await db
@@ -249,7 +262,7 @@ router.post(
         content: m.content,
       }));
 
-      const systemPrompt = await buildSystemPrompt(userId, id);
+      const systemPrompt = await buildSystemPrompt(req, id);
       let fullResponse = "";
 
       const stream = await openai.chat.completions.create({

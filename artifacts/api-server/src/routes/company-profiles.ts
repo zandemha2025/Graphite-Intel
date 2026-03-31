@@ -12,16 +12,23 @@ function requireAuth(req: Request, res: Response): boolean {
   return true;
 }
 
+function profileFilter(req: Request) {
+  const userId = req.user!.id;
+  const orgId = req.user!.orgId;
+  if (orgId) {
+    return eq(companyProfiles.orgId, orgId);
+  }
+  return eq(companyProfiles.userId, userId);
+}
+
 router.get("/company-profile", async (req: Request, res: Response) => {
   if (!requireAuth(req, res)) return;
-
-  const userId = req.user!.id;
 
   try {
     const [profile] = await db
       .select()
       .from(companyProfiles)
-      .where(eq(companyProfiles.userId, userId));
+      .where(profileFilter(req));
 
     if (!profile) {
       res.status(404).json({ error: "No profile found" });
@@ -39,6 +46,7 @@ router.post("/company-profile", async (req: Request, res: Response) => {
   if (!requireAuth(req, res)) return;
 
   const userId = req.user!.id;
+  const orgId = req.user!.orgId;
   const { companyName, industry, stage, revenueRange, competitors, strategicPriorities, companyUrl, researchSummary } = req.body;
 
   if (!companyName || !industry || !stage || !revenueRange) {
@@ -50,7 +58,7 @@ router.post("/company-profile", async (req: Request, res: Response) => {
     const [existing] = await db
       .select()
       .from(companyProfiles)
-      .where(eq(companyProfiles.userId, userId));
+      .where(profileFilter(req));
 
     if (existing) {
       const [updated] = await db
@@ -66,7 +74,7 @@ router.post("/company-profile", async (req: Request, res: Response) => {
           ...(researchSummary !== undefined && { researchSummary }),
           updatedAt: new Date(),
         })
-        .where(eq(companyProfiles.userId, userId))
+        .where(eq(companyProfiles.id, existing.id))
         .returning();
       res.json(updated);
     } else {
@@ -74,6 +82,7 @@ router.post("/company-profile", async (req: Request, res: Response) => {
         .insert(companyProfiles)
         .values({
           userId,
+          ...(orgId !== undefined && { orgId }),
           companyName,
           industry,
           stage,
@@ -95,10 +104,19 @@ router.post("/company-profile", async (req: Request, res: Response) => {
 router.put("/company-profile", async (req: Request, res: Response) => {
   if (!requireAuth(req, res)) return;
 
-  const userId = req.user!.id;
   const { companyName, industry, stage, revenueRange, competitors, strategicPriorities, companyUrl, researchSummary } = req.body;
 
   try {
+    const [existing] = await db
+      .select()
+      .from(companyProfiles)
+      .where(profileFilter(req));
+
+    if (!existing) {
+      res.status(404).json({ error: "Profile not found" });
+      return;
+    }
+
     const [updated] = await db
       .update(companyProfiles)
       .set({
@@ -112,13 +130,8 @@ router.put("/company-profile", async (req: Request, res: Response) => {
         ...(researchSummary !== undefined && { researchSummary }),
         updatedAt: new Date(),
       })
-      .where(eq(companyProfiles.userId, userId))
+      .where(eq(companyProfiles.id, existing.id))
       .returning();
-
-    if (!updated) {
-      res.status(404).json({ error: "Profile not found" });
-      return;
-    }
 
     res.json(updated);
   } catch (err) {

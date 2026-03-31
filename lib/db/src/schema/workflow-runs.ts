@@ -1,10 +1,11 @@
-import { pgTable, serial, text, timestamp, varchar, jsonb } from "drizzle-orm/pg-core";
+import { pgTable, serial, text, timestamp, varchar, jsonb, integer } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod/v4";
 
 export const workflowRuns = pgTable("workflow_runs", {
   id: serial("id").primaryKey(),
   userId: varchar("user_id").notNull(),
+  orgId: integer("org_id"),
   templateKey: varchar("template_key").notNull(),
   title: text("title").notNull(),
   inputs: jsonb("inputs").notNull().default({}),

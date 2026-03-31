@@ -5,3 +5,4 @@ export * from "./reports";
 export * from "./company-profiles";
 export * from "./workflow-runs";
 export * from "./documents";
+export * from "./organizations";
