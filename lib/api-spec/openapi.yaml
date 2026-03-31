@@ -20,6 +20,8 @@ tags:
     description: Dashboard and summary data
   - name: company-profile
     description: Company profile management
+  - name: workflows
+    description: Workflow agent templates and runs
 paths:
   /healthz:
     get:
@@ -377,6 +379,93 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ReportError"
+
+  /workflows/templates:
+    get:
+      operationId: listWorkflowTemplates
+      tags: [workflows]
+      summary: List all workflow templates
+      responses:
+        "200":
+          description: List of workflow templates
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/WorkflowTemplate"
+
+  /workflows:
+    get:
+      operationId: listWorkflowRuns
+      tags: [workflows]
+      summary: List all workflow runs for the current user
+      parameters:
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+        - name: offset
+          in: query
+          required: false
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: List of workflow runs
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/WorkflowRun"
+    post:
+      operationId: createWorkflowRun
+      tags: [workflows]
+      summary: Launch a workflow run (SSE stream)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateWorkflowRunBody"
+      responses:
+        "200":
+          description: SSE stream of workflow execution progress
+          content:
+            text/event-stream: {}
+        "400":
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+
+  /workflows/{id}:
+    get:
+      operationId: getWorkflowRun
+      tags: [workflows]
+      summary: Get a specific workflow run
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Workflow run details
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WorkflowRun"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
 
   /research/company:
     post:
@@ -871,6 +960,90 @@ components:
           type: string
         researchSummary:
           type: string
+
+    WorkflowQuestion:
+      type: object
+      properties:
+        key:
+          type: string
+        label:
+          type: string
+        placeholder:
+          type: string
+        required:
+          type: boolean
+      required:
+        - key
+        - label
+        - placeholder
+        - required
+
+    WorkflowTemplate:
+      type: object
+      properties:
+        key:
+          type: string
+        name:
+          type: string
+        description:
+          type: string
+        questions:
+          type: array
+          items:
+            $ref: "#/components/schemas/WorkflowQuestion"
+      required:
+        - key
+        - name
+        - description
+        - questions
+
+    WorkflowRun:
+      type: object
+      properties:
+        id:
+          type: integer
+        userId:
+          type: string
+        templateKey:
+          type: string
+        title:
+          type: string
+        inputs:
+          type: object
+          additionalProperties:
+            type: string
+        status:
+          type: string
+        output:
+          type: [string, 'null']
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - userId
+        - templateKey
+        - title
+        - inputs
+        - status
+        - createdAt
+        - updatedAt
+
+    CreateWorkflowRunBody:
+      type: object
+      properties:
+        templateKey:
+          type: string
+        inputs:
+          type: object
+          additionalProperties:
+            type: string
+      required:
+        - templateKey
+        - inputs
 
     ResearchCompanyBody:
       type: object

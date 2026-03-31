@@ -261,6 +261,74 @@ export const DownloadReportResponse = zod.object({
 });
 
 /**
+ * @summary List all workflow templates
+ */
+export const ListWorkflowTemplatesResponseItem = zod.object({
+  key: zod.string(),
+  name: zod.string(),
+  description: zod.string(),
+  questions: zod.array(
+    zod.object({
+      key: zod.string(),
+      label: zod.string(),
+      placeholder: zod.string(),
+      required: zod.boolean(),
+    }),
+  ),
+});
+export const ListWorkflowTemplatesResponse = zod.array(
+  ListWorkflowTemplatesResponseItem,
+);
+
+/**
+ * @summary List all workflow runs for the current user
+ */
+export const ListWorkflowRunsQueryParams = zod.object({
+  limit: zod.coerce.number().optional(),
+  offset: zod.coerce.number().optional(),
+});
+
+export const ListWorkflowRunsResponseItem = zod.object({
+  id: zod.number(),
+  userId: zod.string(),
+  templateKey: zod.string(),
+  title: zod.string(),
+  inputs: zod.record(zod.string(), zod.string()),
+  status: zod.string(),
+  output: zod.string().nullish(),
+  createdAt: zod.coerce.date(),
+  updatedAt: zod.coerce.date(),
+});
+export const ListWorkflowRunsResponse = zod.array(ListWorkflowRunsResponseItem);
+
+/**
+ * @summary Launch a workflow run (SSE stream)
+ */
+export const CreateWorkflowRunBody = zod.object({
+  templateKey: zod.string(),
+  inputs: zod.record(zod.string(), zod.string()),
+});
+
+/**
+ * @summary Get a specific workflow run
+ */
+export const GetWorkflowRunParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const GetWorkflowRunResponse = zod.object({
+  id: zod.number(),
+  userId: zod.string(),
+  templateKey: zod.string(),
+  title: zod.string(),
+  inputs: zod.record(zod.string(), zod.string()),
+  status: zod.string(),
+  output: zod.string().nullish(),
+  createdAt: zod.coerce.date(),
+  updatedAt: zod.coerce.date(),
+});
+
+/**
  * @summary Research a company from its website URL (SSE stream)
  */
 export const ResearchCompanyBody = zod.object({

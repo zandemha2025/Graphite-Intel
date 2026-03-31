@@ -6,7 +6,8 @@ import {
   Library,
   LogOut,
   Settings,
-  ChevronDown
+  ChevronDown,
+  Zap,
 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
@@ -14,6 +15,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 const NAV_ITEMS = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { href: "/chat", label: "Engagements", icon: MessageSquareText },
+  { href: "/workflows", label: "Workflows", icon: Zap },
   { href: "/reports", label: "Report Library", icon: Library },
 ];
 
@@ -22,6 +24,7 @@ const PAGE_TITLES: Record<string, string> = {
   "/chat": "Engagements",
   "/reports": "Report Library",
   "/reports/new": "Commission Report",
+  "/workflows": "Workflow Agents",
   "/profile": "Company Profile",
 };
 
@@ -30,7 +33,12 @@ export function Layout({ children }: { children: React.ReactNode }) {
   const { data: auth } = useGetCurrentAuthUser();
   const user = auth?.user;
 
-  const pageTitle = PAGE_TITLES[location] || (location.startsWith("/reports/") ? "Intelligence Brief" : "Stratix");
+  const pageTitle =
+    PAGE_TITLES[location] ||
+    (location.startsWith("/reports/") ? "Intelligence Brief" :
+    location.startsWith("/workflows/new/") ? "Launch Workflow" :
+    location.startsWith("/workflows/") ? "Workflow Run" :
+    "Stratix");
 
   return (
     <div className="flex h-screen bg-[#0D0C0B]">

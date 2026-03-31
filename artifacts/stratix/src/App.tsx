@@ -16,6 +16,9 @@ import { ReportView } from "@/pages/report-view";
 import { Onboarding } from "@/pages/onboarding";
 import { Profile } from "@/pages/profile";
 import { Security } from "@/pages/security";
+import { Workflows } from "@/pages/workflows";
+import { WorkflowRunner } from "@/pages/workflow-runner";
+import { WorkflowView } from "@/pages/workflow-view";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -132,6 +135,9 @@ function Router() {
       <Route path="/reports/new" component={() => <ProtectedRoute component={ReportNew} />} />
       <Route path="/reports/:id" component={() => <ProtectedRoute component={ReportView} />} />
       <Route path="/reports" component={() => <ProtectedRoute component={ReportsList} />} />
+      <Route path="/workflows/new/:templateKey" component={() => <ProtectedRoute component={WorkflowRunner} />} />
+      <Route path="/workflows/:id" component={() => <ProtectedRoute component={WorkflowView} />} />
+      <Route path="/workflows" component={() => <ProtectedRoute component={Workflows} />} />
       <Route path="/profile" component={() => <ProtectedRoute component={Profile} />} />
       <Route path="/security" component={Security} />
       <Route component={NotFound} />

@@ -185,6 +185,42 @@ export interface UpdateCompanyProfileBody {
   researchSummary?: string;
 }
 
+export interface WorkflowQuestion {
+  key: string;
+  label: string;
+  placeholder: string;
+  required: boolean;
+}
+
+export interface WorkflowTemplate {
+  key: string;
+  name: string;
+  description: string;
+  questions: WorkflowQuestion[];
+}
+
+export type WorkflowRunInputs = { [key: string]: string };
+
+export interface WorkflowRun {
+  id: number;
+  userId: string;
+  templateKey: string;
+  title: string;
+  inputs: WorkflowRunInputs;
+  status: string;
+  /** @nullable */
+  output?: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export type CreateWorkflowRunBodyInputs = { [key: string]: string };
+
+export interface CreateWorkflowRunBody {
+  templateKey: string;
+  inputs: CreateWorkflowRunBodyInputs;
+}
+
 export interface ResearchCompanyBody {
   url: string;
 }
@@ -221,4 +257,9 @@ export type HandleBrowserLoginCallbackParams = {
 export type ListReportsParams = {
   reportType?: string;
   limit?: number;
+};
+
+export type ListWorkflowRunsParams = {
+  limit?: number;
+  offset?: number;
 };

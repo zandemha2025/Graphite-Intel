@@ -6,6 +6,7 @@ import conversationsRouter from "./conversations";
 import dashboardRouter from "./dashboard";
 import companyProfilesRouter from "./company-profiles";
 import researchRouter from "./research";
+import workflowsRouter from "./workflows";
 
 const router: IRouter = Router();
 
@@ -16,5 +17,6 @@ router.use(conversationsRouter);
 router.use(dashboardRouter);
 router.use(companyProfilesRouter);
 router.use(researchRouter);
+router.use(workflowsRouter);
 
 export default router;

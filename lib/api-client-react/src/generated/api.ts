@@ -22,11 +22,13 @@ import type {
   CompanyProfile,
   CreateOpenaiConversationBody,
   CreateReportBody,
+  CreateWorkflowRunBody,
   DashboardSummary,
   ErrorEnvelope,
   HandleBrowserLoginCallbackParams,
   HealthStatus,
   ListReportsParams,
+  ListWorkflowRunsParams,
   LogoutSuccess,
   MobileTokenExchangeRequest,
   MobileTokenExchangeSuccess,
@@ -42,6 +44,8 @@ import type {
   SaveCompanyProfileBody,
   SendOpenaiMessageBody,
   UpdateCompanyProfileBody,
+  WorkflowRun,
+  WorkflowTemplate,
 } from "./api.schemas";
 
 import { customFetch } from "../custom-fetch";
@@ -1593,6 +1597,351 @@ export function useDownloadReport<
   },
 ): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
   const queryOptions = getDownloadReportQueryOptions(id, options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * @summary List all workflow templates
+ */
+export const getListWorkflowTemplatesUrl = () => {
+  return `/api/workflows/templates`;
+};
+
+export const listWorkflowTemplates = async (
+  options?: RequestInit,
+): Promise<WorkflowTemplate[]> => {
+  return customFetch<WorkflowTemplate[]>(getListWorkflowTemplatesUrl(), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getListWorkflowTemplatesQueryKey = () => {
+  return [`/api/workflows/templates`] as const;
+};
+
+export const getListWorkflowTemplatesQueryOptions = <
+  TData = Awaited<ReturnType<typeof listWorkflowTemplates>>,
+  TError = ErrorType<unknown>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof listWorkflowTemplates>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getListWorkflowTemplatesQueryKey();
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof listWorkflowTemplates>>
+  > = ({ signal }) => listWorkflowTemplates({ signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof listWorkflowTemplates>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type ListWorkflowTemplatesQueryResult = NonNullable<
+  Awaited<ReturnType<typeof listWorkflowTemplates>>
+>;
+export type ListWorkflowTemplatesQueryError = ErrorType<unknown>;
+
+/**
+ * @summary List all workflow templates
+ */
+
+export function useListWorkflowTemplates<
+  TData = Awaited<ReturnType<typeof listWorkflowTemplates>>,
+  TError = ErrorType<unknown>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof listWorkflowTemplates>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getListWorkflowTemplatesQueryOptions(options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * @summary List all workflow runs for the current user
+ */
+export const getListWorkflowRunsUrl = (params?: ListWorkflowRunsParams) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? "null" : value.toString());
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0
+    ? `/api/workflows?${stringifiedParams}`
+    : `/api/workflows`;
+};
+
+export const listWorkflowRuns = async (
+  params?: ListWorkflowRunsParams,
+  options?: RequestInit,
+): Promise<WorkflowRun[]> => {
+  return customFetch<WorkflowRun[]>(getListWorkflowRunsUrl(params), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getListWorkflowRunsQueryKey = (
+  params?: ListWorkflowRunsParams,
+) => {
+  return [`/api/workflows`, ...(params ? [params] : [])] as const;
+};
+
+export const getListWorkflowRunsQueryOptions = <
+  TData = Awaited<ReturnType<typeof listWorkflowRuns>>,
+  TError = ErrorType<unknown>,
+>(
+  params?: ListWorkflowRunsParams,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof listWorkflowRuns>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey =
+    queryOptions?.queryKey ?? getListWorkflowRunsQueryKey(params);
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof listWorkflowRuns>>
+  > = ({ signal }) => listWorkflowRuns(params, { signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof listWorkflowRuns>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type ListWorkflowRunsQueryResult = NonNullable<
+  Awaited<ReturnType<typeof listWorkflowRuns>>
+>;
+export type ListWorkflowRunsQueryError = ErrorType<unknown>;
+
+/**
+ * @summary List all workflow runs for the current user
+ */
+
+export function useListWorkflowRuns<
+  TData = Awaited<ReturnType<typeof listWorkflowRuns>>,
+  TError = ErrorType<unknown>,
+>(
+  params?: ListWorkflowRunsParams,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof listWorkflowRuns>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getListWorkflowRunsQueryOptions(params, options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * @summary Launch a workflow run (SSE stream)
+ */
+export const getCreateWorkflowRunUrl = () => {
+  return `/api/workflows`;
+};
+
+export const createWorkflowRun = async (
+  createWorkflowRunBody: CreateWorkflowRunBody,
+  options?: RequestInit,
+): Promise<unknown> => {
+  return customFetch<unknown>(getCreateWorkflowRunUrl(), {
+    ...options,
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(createWorkflowRunBody),
+  });
+};
+
+export const getCreateWorkflowRunMutationOptions = <
+  TError = ErrorType<ErrorEnvelope>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof createWorkflowRun>>,
+    TError,
+    { data: BodyType<CreateWorkflowRunBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof createWorkflowRun>>,
+  TError,
+  { data: BodyType<CreateWorkflowRunBody> },
+  TContext
+> => {
+  const mutationKey = ["createWorkflowRun"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof createWorkflowRun>>,
+    { data: BodyType<CreateWorkflowRunBody> }
+  > = (props) => {
+    const { data } = props ?? {};
+
+    return createWorkflowRun(data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type CreateWorkflowRunMutationResult = NonNullable<
+  Awaited<ReturnType<typeof createWorkflowRun>>
+>;
+export type CreateWorkflowRunMutationBody = BodyType<CreateWorkflowRunBody>;
+export type CreateWorkflowRunMutationError = ErrorType<ErrorEnvelope>;
+
+/**
+ * @summary Launch a workflow run (SSE stream)
+ */
+export const useCreateWorkflowRun = <
+  TError = ErrorType<ErrorEnvelope>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof createWorkflowRun>>,
+    TError,
+    { data: BodyType<CreateWorkflowRunBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof createWorkflowRun>>,
+  TError,
+  { data: BodyType<CreateWorkflowRunBody> },
+  TContext
+> => {
+  return useMutation(getCreateWorkflowRunMutationOptions(options));
+};
+
+/**
+ * @summary Get a specific workflow run
+ */
+export const getGetWorkflowRunUrl = (id: number) => {
+  return `/api/workflows/${id}`;
+};
+
+export const getWorkflowRun = async (
+  id: number,
+  options?: RequestInit,
+): Promise<WorkflowRun> => {
+  return customFetch<WorkflowRun>(getGetWorkflowRunUrl(id), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getGetWorkflowRunQueryKey = (id: number) => {
+  return [`/api/workflows/${id}`] as const;
+};
+
+export const getGetWorkflowRunQueryOptions = <
+  TData = Awaited<ReturnType<typeof getWorkflowRun>>,
+  TError = ErrorType<ErrorEnvelope>,
+>(
+  id: number,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof getWorkflowRun>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getGetWorkflowRunQueryKey(id);
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof getWorkflowRun>>> = ({
+    signal,
+  }) => getWorkflowRun(id, { signal, ...requestOptions });
+
+  return {
+    queryKey,
+    queryFn,
+    enabled: !!id,
+    ...queryOptions,
+  } as UseQueryOptions<
+    Awaited<ReturnType<typeof getWorkflowRun>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type GetWorkflowRunQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getWorkflowRun>>
+>;
+export type GetWorkflowRunQueryError = ErrorType<ErrorEnvelope>;
+
+/**
+ * @summary Get a specific workflow run
+ */
+
+export function useGetWorkflowRun<
+  TData = Awaited<ReturnType<typeof getWorkflowRun>>,
+  TError = ErrorType<ErrorEnvelope>,
+>(
+  id: number,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof getWorkflowRun>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getGetWorkflowRunQueryOptions(id, options);
 
   const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
     queryKey: QueryKey;

@@ -114,12 +114,14 @@ A full-stack strategic intelligence platform for executives. Frontend at `artifa
 - **Chat "Engagements"**: Renamed from "Strategic Advisor", persistent context bar, suggested starters
 - **Reports**: Editorial list view, commission form with framework selection grid, publication-quality report viewer
 - **Landing page**: Cinematic full-bleed hero with Unsplash boardroom image, flat editorial header
+- **Workflow Agents** (`/workflows`): Library of 6 pre-built AI agent templates. Each has a focused intake form (2-4 questions), executes as SSE streaming, and saves completed runs to history. Templates: Board Deck Audit, Competitor Deep-Dive, Market Entry Analysis, M&A Target Evaluation, Series B/Growth Narrative, Quarterly Strategy Brief.
 
 ### DB Schema
 - `company_profiles` — one per user, stores company context
 - `conversations` — chat conversations (renamed "Engagements" in UI)
 - `messages` — chat messages
 - `reports` — generated intelligence reports
+- `workflow_runs` — workflow agent run history (templateKey, inputs as jsonb, output, status)
 
 ### API Routes
 - `GET/POST/PUT /api/company-profile` — CRUD for company profile
@@ -128,3 +130,7 @@ A full-stack strategic intelligence platform for executives. Frontend at `artifa
 - `POST /api/openai/conversations/:id/messages` — send message (SSE stream)
 - `POST /api/reports` — generate report (SSE stream, injects company context)
 - `GET /api/dashboard/summary` — dashboard stats
+- `GET /api/workflows/templates` — list 6 workflow templates (no auth)
+- `GET /api/workflows` — list user's workflow runs
+- `POST /api/workflows` — launch workflow run (SSE stream)
+- `GET /api/workflows/:id` — get workflow run detail
