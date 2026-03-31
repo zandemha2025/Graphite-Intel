@@ -1,5 +1,5 @@
 import { Router, type IRouter, type Request, type Response } from "express";
-import { db, conversations, messages } from "@workspace/db";
+import { db, conversations, messages, companyProfiles } from "@workspace/db";
 import { eq, desc, and } from "drizzle-orm";
 import { openai } from "@workspace/integrations-openai-ai-server";
 
@@ -13,7 +13,7 @@ function requireAuth(req: Request, res: Response): boolean {
   return true;
 }
 
-const SYSTEM_PROMPT = `You are Stratix, an elite AI strategic advisor serving C-suite executives (CMOs, CEOs, CFOs) at top-tier companies.
+const BASE_SYSTEM_PROMPT = `You are Stratix, an elite AI strategic advisor serving C-suite executives (CMOs, CEOs, CFOs) at top-tier companies.
 
 You deliver McKinsey-quality strategic insight in every response:
 - Data-driven analysis backed by market research, industry benchmarks, and case studies
@@ -27,13 +27,38 @@ Your expertise spans: market strategy, competitive intelligence, growth framewor
 
 Always respond as a senior partner would in a client engagement — authoritative, incisive, and immediately valuable.`;
 
+async function buildSystemPrompt(userId: string): Promise<string> {
+  const [profile] = await db
+    .select()
+    .from(companyProfiles)
+    .where(eq(companyProfiles.userId, userId));
+
+  if (!profile) return BASE_SYSTEM_PROMPT;
+
+  const contextBlock = `
+CLIENT CONTEXT (always reference this when relevant):
+- Company: ${profile.companyName}
+- Industry: ${profile.industry}
+- Stage: ${profile.stage}
+- Revenue Range: ${profile.revenueRange}
+${profile.competitors ? `- Key Competitors: ${profile.competitors}` : ""}
+${profile.strategicPriorities ? `- Strategic Priorities: ${profile.strategicPriorities}` : ""}
+
+Always tailor your advice to this specific company context. Reference their industry, stage, and competitive landscape where relevant.`;
+
+  return BASE_SYSTEM_PROMPT + contextBlock;
+}
+
 router.get("/openai/conversations", async (req: Request, res: Response) => {
   if (!requireAuth(req, res)) return;
+
+  const userId = req.user!.id;
 
   try {
     const convos = await db
       .select()
       .from(conversations)
+      .where(eq(conversations.userId, userId))
       .orderBy(desc(conversations.createdAt))
       .limit(50);
 
@@ -47,12 +72,13 @@ router.get("/openai/conversations", async (req: Request, res: Response) => {
 router.post("/openai/conversations", async (req: Request, res: Response) => {
   if (!requireAuth(req, res)) return;
 
-  const title = req.body.title || "New Conversation";
+  const userId = req.user!.id;
+  const title = req.body.title || "New Engagement";
 
   try {
     const [convo] = await db
       .insert(conversations)
-      .values({ title })
+      .values({ userId, title })
       .returning();
 
     res.json(convo);
@@ -65,6 +91,7 @@ router.post("/openai/conversations", async (req: Request, res: Response) => {
 router.get("/openai/conversations/:id", async (req: Request, res: Response) => {
   if (!requireAuth(req, res)) return;
 
+  const userId = req.user!.id;
   const id = parseInt(req.params.id);
   if (isNaN(id)) {
     res.status(400).json({ error: "Invalid conversation id" });
@@ -75,7 +102,7 @@ router.get("/openai/conversations/:id", async (req: Request, res: Response) => {
     const [convo] = await db
       .select()
       .from(conversations)
-      .where(eq(conversations.id, id));
+      .where(and(eq(conversations.id, id), eq(conversations.userId, userId)));
 
     if (!convo) {
       res.status(404).json({ error: "Conversation not found" });
@@ -95,11 +122,40 @@ router.get("/openai/conversations/:id", async (req: Request, res: Response) => {
   }
 });
 
+router.delete("/openai/conversations/:id", async (req: Request, res: Response) => {
+  if (!requireAuth(req, res)) return;
+
+  const userId = req.user!.id;
+  const id = parseInt(req.params.id);
+  if (isNaN(id)) {
+    res.status(400).json({ error: "Invalid conversation id" });
+    return;
+  }
+
+  try {
+    const [deleted] = await db
+      .delete(conversations)
+      .where(and(eq(conversations.id, id), eq(conversations.userId, userId)))
+      .returning();
+
+    if (!deleted) {
+      res.status(404).json({ error: "Conversation not found" });
+      return;
+    }
+
+    res.status(204).send();
+  } catch (err) {
+    req.log.error({ err }, "Failed to delete conversation");
+    res.status(500).json({ error: "Failed to delete conversation" });
+  }
+});
+
 router.post(
   "/openai/conversations/:id/messages",
   async (req: Request, res: Response) => {
     if (!requireAuth(req, res)) return;
 
+    const userId = req.user!.id;
     const id = parseInt(req.params.id);
     if (isNaN(id)) {
       res.status(400).json({ error: "Invalid conversation id" });
@@ -116,7 +172,7 @@ router.post(
       const [convo] = await db
         .select()
         .from(conversations)
-        .where(eq(conversations.id, id));
+        .where(and(eq(conversations.id, id), eq(conversations.userId, userId)));
 
       if (!convo) {
         res.status(404).json({ error: "Conversation not found" });
@@ -129,12 +185,12 @@ router.post(
         content,
       });
 
-      if (convo.title === "New Conversation") {
+      if (convo.title === "New Engagement" || convo.title === "New Conversation") {
         const shortTitle = content.substring(0, 60).trim();
         await db
           .update(conversations)
           .set({ title: shortTitle })
-          .where(eq(conversations.id, id));
+          .where(and(eq(conversations.id, id), eq(conversations.userId, userId)));
       }
 
       const allMessages = await db
@@ -157,12 +213,13 @@ router.post(
         content: m.content,
       }));
 
+      const systemPrompt = await buildSystemPrompt(userId);
       let fullResponse = "";
 
       const stream = await openai.chat.completions.create({
         model: "gpt-4o",
         messages: [
-          { role: "system", content: SYSTEM_PROMPT },
+          { role: "system", content: systemPrompt },
           ...chatMessages,
         ],
         stream: true,

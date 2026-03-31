@@ -1,5 +1,5 @@
 import { Router, type IRouter, type Request, type Response } from "express";
-import { db, reportsTable } from "@workspace/db";
+import { db, reportsTable, companyProfiles } from "@workspace/db";
 import { eq, desc, and } from "drizzle-orm";
 import { openai } from "@workspace/integrations-openai-ai-server";
 
@@ -24,8 +24,7 @@ function requireAuth(req: Request, res: Response): boolean {
   return true;
 }
 
-function buildSystemPrompt(): string {
-  return `You are a world-class strategic consultant with 20 years of experience at McKinsey, Bain, and BCG. 
+const BASE_SYSTEM_PROMPT = `You are a world-class strategic consultant with 20 years of experience at McKinsey, Bain, and BCG.
 You produce executive-grade reports for CMOs, CEOs, and CFOs of Fortune 500 companies and high-growth startups.
 
 Your reports are:
@@ -63,8 +62,30 @@ Format your reports using Markdown with the following structure:
 ## Conclusion
 [Executive summary of path forward]
 
-Include specific data points, market statistics, competitor benchmarks, and industry best practices throughout. 
+Include specific data points, market statistics, competitor benchmarks, and industry best practices throughout.
 Reference real companies, case studies, and published research when relevant.`;
+
+async function buildSystemPrompt(userId: string): Promise<string> {
+  const [profile] = await db
+    .select()
+    .from(companyProfiles)
+    .where(eq(companyProfiles.userId, userId));
+
+  if (!profile) return BASE_SYSTEM_PROMPT;
+
+  const profileBlock = `
+
+CLIENT CONTEXT (always reference this throughout the report):
+- Company: ${profile.companyName}
+- Industry: ${profile.industry}
+- Stage: ${profile.stage}
+- Revenue Range: ${profile.revenueRange}
+${profile.competitors ? `- Key Competitors: ${profile.competitors}` : ""}
+${profile.strategicPriorities ? `- Strategic Priorities: ${profile.strategicPriorities}` : ""}
+
+Always tailor every section of the report to this specific company context. Reference their industry, stage, and competitive landscape throughout.`;
+
+  return BASE_SYSTEM_PROMPT + profileBlock;
 }
 
 function buildUserPrompt(reportType: string, company: string, context?: string): string {
@@ -118,7 +139,7 @@ router.get("/reports", async (req: Request, res: Response) => {
 router.post("/reports", async (req: Request, res: Response) => {
   if (!requireAuth(req, res)) return;
 
-  const { reportType, company, context } = req.body;
+  const { reportType, company, additionalContext: context } = req.body;
 
   if (!reportType || !company) {
     res.status(400).json({ error: "reportType and company are required" });
@@ -167,11 +188,14 @@ router.post("/reports", async (req: Request, res: Response) => {
   let fullContent = "";
 
   try {
+    const systemPrompt = await buildSystemPrompt(userId);
+    const userPrompt = buildUserPrompt(reportType, company, context);
+
     const stream = await openai.chat.completions.create({
       model: "gpt-4o",
       messages: [
-        { role: "system", content: buildSystemPrompt() },
-        { role: "user", content: buildUserPrompt(reportType, company, context) },
+        { role: "system", content: systemPrompt },
+        { role: "user", content: userPrompt },
       ],
       stream: true,
       max_tokens: 8192,

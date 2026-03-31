@@ -261,6 +261,72 @@ export const DownloadReportResponse = zod.object({
 });
 
 /**
+ * @summary Get the current user's company profile
+ */
+export const GetCompanyProfileResponse = zod.object({
+  id: zod.number(),
+  userId: zod.string(),
+  companyName: zod.string(),
+  industry: zod.string(),
+  stage: zod.string(),
+  revenueRange: zod.string(),
+  competitors: zod.string(),
+  strategicPriorities: zod.string(),
+  createdAt: zod.coerce.date(),
+  updatedAt: zod.coerce.date(),
+});
+
+/**
+ * @summary Create or update the company profile
+ */
+export const SaveCompanyProfileBody = zod.object({
+  companyName: zod.string(),
+  industry: zod.string(),
+  stage: zod.string(),
+  revenueRange: zod.string(),
+  competitors: zod.string().optional(),
+  strategicPriorities: zod.string().optional(),
+});
+
+export const SaveCompanyProfileResponse = zod.object({
+  id: zod.number(),
+  userId: zod.string(),
+  companyName: zod.string(),
+  industry: zod.string(),
+  stage: zod.string(),
+  revenueRange: zod.string(),
+  competitors: zod.string(),
+  strategicPriorities: zod.string(),
+  createdAt: zod.coerce.date(),
+  updatedAt: zod.coerce.date(),
+});
+
+/**
+ * @summary Partially update the company profile
+ */
+export const UpdateCompanyProfileBody = zod.object({
+  companyName: zod.string().optional(),
+  industry: zod.string().optional(),
+  stage: zod.string().optional(),
+  revenueRange: zod.string().optional(),
+  competitors: zod.string().optional(),
+  strategicPriorities: zod.string().optional(),
+});
+
+export const UpdateCompanyProfileResponse = zod.object({
+  id: zod.number(),
+  userId: zod.string(),
+  companyName: zod.string(),
+  industry: zod.string(),
+  stage: zod.string(),
+  revenueRange: zod.string(),
+  competitors: zod.string(),
+  strategicPriorities: zod.string(),
+  createdAt: zod.coerce.date(),
+  updatedAt: zod.coerce.date(),
+});
+
+/**
  * @summary Get dashboard summary data
  */
 export const GetDashboardSummaryResponse = zod.object({

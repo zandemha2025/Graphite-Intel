@@ -94,3 +94,37 @@ Generated React Query hooks and fetch client from the OpenAPI spec (e.g. `useHea
 ### `scripts` (`@workspace/scripts`)
 
 Utility scripts package. Each script is a `.ts` file in `src/` with a corresponding npm script in `package.json`. Run scripts via `pnpm --filter @workspace/scripts run <script>`. Scripts can import any workspace package (e.g., `@workspace/db`) by adding it as a dependency in `scripts/package.json`.
+
+## Stratix Intelligence Platform
+
+A full-stack strategic intelligence platform for executives. Frontend at `artifacts/stratix`, API at `artifacts/api-server`.
+
+### Visual Theme (Harvey/Cadastral aesthetic)
+- Near-black background: `#0D0C0B` everywhere (sidebar and main same color)
+- Off-white foreground: `#E8E4DC`
+- No orange accents — primary action buttons are off-white with black text
+- Zero border radius on all components (`border-radius: 0 !important`)
+- Fonts: Cormorant Garamond (serif headings), Inter (sans body)
+
+### Key Features
+- **Company Intelligence Profile** (`company_profiles` DB table): Users complete intake on first login (company name, industry, stage, revenue range, competitors, priorities). Context injected into all AI chats and reports.
+- **Onboarding flow** (`/onboarding`): Multi-step intake form if user has no company profile
+- **Company profile page** (`/profile`): Edit company context from sidebar user menu
+- **Contextual dashboard**: Shows company profile strip, workflow quick-launch buttons, recent intelligence
+- **Chat "Engagements"**: Renamed from "Strategic Advisor", persistent context bar, suggested starters
+- **Reports**: Editorial list view, commission form with framework selection grid, publication-quality report viewer
+- **Landing page**: Cinematic full-bleed hero with Unsplash boardroom image, flat editorial header
+
+### DB Schema
+- `company_profiles` — one per user, stores company context
+- `conversations` — chat conversations (renamed "Engagements" in UI)
+- `messages` — chat messages
+- `reports` — generated intelligence reports
+
+### API Routes
+- `GET/POST/PUT /api/company-profile` — CRUD for company profile
+- `GET /api/openai/conversations` — list engagements
+- `POST /api/openai/conversations` — create engagement
+- `POST /api/openai/conversations/:id/messages` — send message (SSE stream)
+- `POST /api/reports` — generate report (SSE stream, injects company context)
+- `GET /api/dashboard/summary` — dashboard stats

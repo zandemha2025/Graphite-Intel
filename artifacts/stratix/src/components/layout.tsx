@@ -5,6 +5,7 @@ import {
   MessageSquareText,
   Library,
   LogOut,
+  Settings,
   ChevronDown
 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -12,78 +13,97 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 
 const NAV_ITEMS = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/chat", label: "Strategic Advisor", icon: MessageSquareText },
+  { href: "/chat", label: "Engagements", icon: MessageSquareText },
   { href: "/reports", label: "Report Library", icon: Library },
 ];
+
+const PAGE_TITLES: Record<string, string> = {
+  "/dashboard": "Dashboard",
+  "/chat": "Engagements",
+  "/reports": "Report Library",
+  "/reports/new": "Commission Report",
+  "/profile": "Company Profile",
+};
 
 export function Layout({ children }: { children: React.ReactNode }) {
   const [location] = useLocation();
   const { data: auth } = useGetCurrentAuthUser();
   const user = auth?.user;
 
+  const pageTitle = PAGE_TITLES[location] || (location.startsWith("/reports/") ? "Intelligence Brief" : "Stratix");
+
   return (
-    <div className="flex h-screen bg-background">
-      {/* Sidebar */}
-      <div className="w-64 bg-sidebar text-sidebar-foreground flex flex-col border-r border-sidebar-border shadow-xl z-10">
-        <div className="p-6">
-          <Link href="/dashboard" className="flex items-center gap-2" data-testid="link-home">
-            <div className="h-8 w-8 bg-brand rounded flex items-center justify-center">
-              <span className="font-serif font-bold text-brand-foreground text-lg leading-none">S</span>
+    <div className="flex h-screen bg-[#0D0C0B]">
+      {/* Sidebar — same color as background, minimal chrome */}
+      <div className="w-56 bg-[#0D0C0B] text-[#E8E4DC] flex flex-col border-r border-white/8 z-10">
+        <div className="px-5 py-5 border-b border-white/8">
+          <Link href="/dashboard" className="flex items-center gap-2.5" data-testid="link-home">
+            <div className="h-6 w-6 border border-[#E8E4DC]/30 flex items-center justify-center">
+              <span className="font-serif font-semibold text-[#E8E4DC] text-xs leading-none">S</span>
             </div>
-            <span className="font-serif font-semibold text-xl tracking-tight">Stratix</span>
+            <span className="font-serif font-medium text-base tracking-tight text-[#E8E4DC] uppercase">Stratix</span>
           </Link>
         </div>
 
-        <nav className="flex-1 px-4 py-4 space-y-1">
+        <nav className="flex-1 px-3 py-4 space-y-0.5">
           {NAV_ITEMS.map((item) => {
             const isActive = location === item.href || location.startsWith(`${item.href}/`);
             return (
-              <Link 
-                key={item.href} 
+              <Link
+                key={item.href}
                 href={item.href}
-                className={`flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium transition-colors ${
-                  isActive 
-                    ? "bg-brand text-brand-foreground" 
-                    : "text-sidebar-foreground/80 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+                className={`flex items-center gap-3 px-3 py-2 text-xs font-medium transition-colors relative ${
+                  isActive
+                    ? "text-[#E8E4DC] border-l-2 border-[#E8E4DC] pl-[10px] bg-white/4"
+                    : "text-[#E8E4DC]/50 hover:text-[#E8E4DC]/80 border-l-2 border-transparent pl-[10px] hover:bg-white/3"
                 }`}
                 data-testid={`nav-link-${item.label.toLowerCase().replace(/\s+/g, '-')}`}
               >
-                <item.icon className={`h-4 w-4 ${isActive ? "text-brand-foreground" : "text-sidebar-foreground/60"}`} />
-                {item.label}
+                <item.icon className={`h-3.5 w-3.5 shrink-0 ${isActive ? "text-[#E8E4DC]" : "text-[#E8E4DC]/40"}`} />
+                <span className="uppercase tracking-wider">{item.label}</span>
               </Link>
             );
           })}
         </nav>
 
         {user && (
-          <div className="p-4 border-t border-sidebar-border">
+          <div className="p-3 border-t border-white/8">
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <button 
-                  className="flex items-center w-full gap-3 px-2 py-2 rounded-md hover:bg-sidebar-accent transition-colors outline-none"
+                <button
+                  className="flex items-center w-full gap-2.5 px-2 py-2 hover:bg-white/4 transition-colors outline-none"
                   data-testid="button-user-menu"
                 >
-                  <Avatar className="h-8 w-8 border border-sidebar-border">
+                  <Avatar className="h-7 w-7 border border-white/15">
                     <AvatarImage src={user.profileImageUrl || undefined} />
-                    <AvatarFallback className="bg-sidebar-accent text-sidebar-foreground">
+                    <AvatarFallback className="bg-white/8 text-[#E8E4DC] text-xs">
                       {user.firstName?.[0] || user.email?.[0]?.toUpperCase() || "U"}
                     </AvatarFallback>
                   </Avatar>
-                  <div className="flex-1 text-left">
-                    <div className="text-sm font-medium leading-none mb-1">
+                  <div className="flex-1 text-left min-w-0">
+                    <div className="text-xs font-medium leading-none mb-0.5 text-[#E8E4DC] truncate">
                       {user.firstName ? `${user.firstName} ${user.lastName || ''}` : "Executive"}
                     </div>
-                    <div className="text-xs text-sidebar-foreground/60 truncate w-32">
+                    <div className="text-[10px] text-[#E8E4DC]/40 truncate">
                       {user.email}
                     </div>
                   </div>
-                  <ChevronDown className="h-4 w-4 text-sidebar-foreground/50" />
+                  <ChevronDown className="h-3 w-3 text-[#E8E4DC]/30 shrink-0" />
                 </button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-56" data-testid="menu-user">
+              <DropdownMenuContent align="end" className="w-48 bg-[#141311] border-white/10" data-testid="menu-user">
                 <DropdownMenuItem asChild>
-                  <a href="/api/logout" className="flex items-center text-destructive focus:text-destructive cursor-pointer w-full">
-                    <LogOut className="mr-2 h-4 w-4" />
+                  <Link
+                    href="/profile"
+                    className="flex items-center cursor-pointer text-[#E8E4DC]/70 hover:text-[#E8E4DC] text-xs w-full px-2 py-1.5"
+                  >
+                    <Settings className="mr-2 h-3.5 w-3.5" />
+                    <span>Company Profile</span>
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <a href="/api/logout" className="flex items-center text-[#E8E4DC]/70 hover:text-[#E8E4DC] cursor-pointer w-full text-xs px-2 py-1.5">
+                    <LogOut className="mr-2 h-3.5 w-3.5" />
                     <span>Sign Out</span>
                   </a>
                 </DropdownMenuItem>
@@ -94,12 +114,16 @@ export function Layout({ children }: { children: React.ReactNode }) {
       </div>
 
       {/* Main Content Area */}
-      <main className="flex-1 flex flex-col overflow-hidden relative">
-        {/* Subtle top noise texture for executive feel */}
-        <div className="absolute inset-0 pointer-events-none opacity-[0.015] bg-[url('https://grainy-gradients.vercel.app/noise.svg')]" />
-        
-        <div className="flex-1 overflow-auto z-0">
-          <div className="mx-auto max-w-6xl p-8">
+      <main className="flex-1 flex flex-col overflow-hidden">
+        {/* Minimal top bar */}
+        <div className="flex items-center justify-between px-8 py-4 border-b border-white/8 bg-[#0D0C0B]">
+          <h2 className="font-serif text-sm font-light tracking-[0.15em] uppercase text-[#E8E4DC]/60">
+            {pageTitle}
+          </h2>
+        </div>
+
+        <div className="flex-1 overflow-auto bg-[#0D0C0B]">
+          <div className="mx-auto max-w-5xl p-8">
             {children}
           </div>
         </div>

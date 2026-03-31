@@ -19,6 +19,7 @@ import type {
 import type {
   AuthUserEnvelope,
   BeginBrowserLoginParams,
+  CompanyProfile,
   CreateOpenaiConversationBody,
   CreateReportBody,
   DashboardSummary,
@@ -37,7 +38,9 @@ import type {
   ReportDownload,
   ReportError,
   ReportTypeStat,
+  SaveCompanyProfileBody,
   SendOpenaiMessageBody,
+  UpdateCompanyProfileBody,
 } from "./api.schemas";
 
 import { customFetch } from "../custom-fetch";
@@ -1596,6 +1599,254 @@ export function useDownloadReport<
 
   return { ...query, queryKey: queryOptions.queryKey };
 }
+
+/**
+ * @summary Get the current user's company profile
+ */
+export const getGetCompanyProfileUrl = () => {
+  return `/api/company-profile`;
+};
+
+export const getCompanyProfile = async (
+  options?: RequestInit,
+): Promise<CompanyProfile> => {
+  return customFetch<CompanyProfile>(getGetCompanyProfileUrl(), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getGetCompanyProfileQueryKey = () => {
+  return [`/api/company-profile`] as const;
+};
+
+export const getGetCompanyProfileQueryOptions = <
+  TData = Awaited<ReturnType<typeof getCompanyProfile>>,
+  TError = ErrorType<ErrorEnvelope>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof getCompanyProfile>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getGetCompanyProfileQueryKey();
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof getCompanyProfile>>
+  > = ({ signal }) => getCompanyProfile({ signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof getCompanyProfile>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type GetCompanyProfileQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getCompanyProfile>>
+>;
+export type GetCompanyProfileQueryError = ErrorType<ErrorEnvelope>;
+
+/**
+ * @summary Get the current user's company profile
+ */
+
+export function useGetCompanyProfile<
+  TData = Awaited<ReturnType<typeof getCompanyProfile>>,
+  TError = ErrorType<ErrorEnvelope>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof getCompanyProfile>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getGetCompanyProfileQueryOptions(options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * @summary Create or update the company profile
+ */
+export const getSaveCompanyProfileUrl = () => {
+  return `/api/company-profile`;
+};
+
+export const saveCompanyProfile = async (
+  saveCompanyProfileBody: SaveCompanyProfileBody,
+  options?: RequestInit,
+): Promise<CompanyProfile> => {
+  return customFetch<CompanyProfile>(getSaveCompanyProfileUrl(), {
+    ...options,
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(saveCompanyProfileBody),
+  });
+};
+
+export const getSaveCompanyProfileMutationOptions = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof saveCompanyProfile>>,
+    TError,
+    { data: BodyType<SaveCompanyProfileBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof saveCompanyProfile>>,
+  TError,
+  { data: BodyType<SaveCompanyProfileBody> },
+  TContext
+> => {
+  const mutationKey = ["saveCompanyProfile"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof saveCompanyProfile>>,
+    { data: BodyType<SaveCompanyProfileBody> }
+  > = (props) => {
+    const { data } = props ?? {};
+
+    return saveCompanyProfile(data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type SaveCompanyProfileMutationResult = NonNullable<
+  Awaited<ReturnType<typeof saveCompanyProfile>>
+>;
+export type SaveCompanyProfileMutationBody = BodyType<SaveCompanyProfileBody>;
+export type SaveCompanyProfileMutationError = ErrorType<unknown>;
+
+/**
+ * @summary Create or update the company profile
+ */
+export const useSaveCompanyProfile = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof saveCompanyProfile>>,
+    TError,
+    { data: BodyType<SaveCompanyProfileBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof saveCompanyProfile>>,
+  TError,
+  { data: BodyType<SaveCompanyProfileBody> },
+  TContext
+> => {
+  return useMutation(getSaveCompanyProfileMutationOptions(options));
+};
+
+/**
+ * @summary Partially update the company profile
+ */
+export const getUpdateCompanyProfileUrl = () => {
+  return `/api/company-profile`;
+};
+
+export const updateCompanyProfile = async (
+  updateCompanyProfileBody: UpdateCompanyProfileBody,
+  options?: RequestInit,
+): Promise<CompanyProfile> => {
+  return customFetch<CompanyProfile>(getUpdateCompanyProfileUrl(), {
+    ...options,
+    method: "PUT",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(updateCompanyProfileBody),
+  });
+};
+
+export const getUpdateCompanyProfileMutationOptions = <
+  TError = ErrorType<ErrorEnvelope>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof updateCompanyProfile>>,
+    TError,
+    { data: BodyType<UpdateCompanyProfileBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof updateCompanyProfile>>,
+  TError,
+  { data: BodyType<UpdateCompanyProfileBody> },
+  TContext
+> => {
+  const mutationKey = ["updateCompanyProfile"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof updateCompanyProfile>>,
+    { data: BodyType<UpdateCompanyProfileBody> }
+  > = (props) => {
+    const { data } = props ?? {};
+
+    return updateCompanyProfile(data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type UpdateCompanyProfileMutationResult = NonNullable<
+  Awaited<ReturnType<typeof updateCompanyProfile>>
+>;
+export type UpdateCompanyProfileMutationBody =
+  BodyType<UpdateCompanyProfileBody>;
+export type UpdateCompanyProfileMutationError = ErrorType<ErrorEnvelope>;
+
+/**
+ * @summary Partially update the company profile
+ */
+export const useUpdateCompanyProfile = <
+  TError = ErrorType<ErrorEnvelope>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof updateCompanyProfile>>,
+    TError,
+    { data: BodyType<UpdateCompanyProfileBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof updateCompanyProfile>>,
+  TError,
+  { data: BodyType<UpdateCompanyProfileBody> },
+  TContext
+> => {
+  return useMutation(getUpdateCompanyProfileMutationOptions(options));
+};
 
 /**
  * @summary Get dashboard summary data

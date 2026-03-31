@@ -1,13 +1,12 @@
 import { useRoute } from "wouter";
 import { format } from "date-fns";
 import ReactMarkdown from "react-markdown";
-import { 
-  useGetReport, 
+import {
+  useGetReport,
   getGetReportQueryKey,
   useDownloadReport
 } from "@workspace/api-client-react";
-import { Download, ChevronLeft, Calendar, Building2, Target } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Download, ChevronLeft } from "lucide-react";
 import { Link } from "wouter";
 
 export function ReportView() {
@@ -15,9 +14,9 @@ export function ReportView() {
   const reportId = parseInt(params?.id || "0", 10);
 
   const { data: report, isLoading } = useGetReport(reportId, {
-    query: { 
-      enabled: !!reportId, 
-      queryKey: getGetReportQueryKey(reportId) 
+    query: {
+      enabled: !!reportId,
+      queryKey: getGetReportQueryKey(reportId)
     }
   });
 
@@ -28,7 +27,6 @@ export function ReportView() {
       { id: reportId },
       {
         onSuccess: (data) => {
-          // Create a blob and download it
           const blob = new Blob([data.content], { type: 'text/markdown' });
           const url = URL.createObjectURL(blob);
           const a = document.createElement('a');
@@ -45,96 +43,96 @@ export function ReportView() {
 
   if (isLoading) {
     return (
-      <div className="max-w-4xl mx-auto space-y-8 animate-pulse">
-        <div className="h-8 w-24 bg-muted rounded" />
-        <div className="h-16 w-3/4 bg-muted rounded" />
-        <div className="h-64 bg-muted rounded-xl" />
+      <div className="max-w-3xl mx-auto space-y-6 animate-pulse">
+        <div className="h-4 w-20 bg-white/6" />
+        <div className="h-12 w-2/3 bg-white/4" />
+        <div className="h-64 bg-white/3" />
       </div>
     );
   }
 
   if (!report) {
-    return <div className="text-center py-20 text-muted-foreground">Report not found.</div>;
+    return <div className="text-center py-20 text-[#E8E4DC]/35 text-sm">Report not found.</div>;
   }
 
   return (
-    <div className="max-w-4xl mx-auto pb-20 animate-in fade-in duration-500">
-      <Link 
-        href="/reports" 
-        className="inline-flex items-center text-sm font-medium text-muted-foreground hover:text-foreground mb-8 transition-colors"
+    <div className="max-w-3xl mx-auto pb-20 animate-in fade-in duration-500">
+      <Link
+        href="/reports"
+        className="inline-flex items-center text-xs text-[#E8E4DC]/35 hover:text-[#E8E4DC]/60 mb-8 transition-colors uppercase tracking-widest"
       >
-        <ChevronLeft className="w-4 h-4 mr-1" /> Back to Library
+        <ChevronLeft className="w-3 h-3 mr-1" /> Report Library
       </Link>
 
-      <div className="bg-card border border-border/60 rounded-xl overflow-hidden shadow-sm mb-10">
-        <div className="p-8 border-b border-border/50 bg-primary text-primary-foreground relative overflow-hidden">
-          {/* Subtle noise texture */}
-          <div className="absolute inset-0 pointer-events-none opacity-5 bg-[url('https://grainy-gradients.vercel.app/noise.svg')]" />
-          
-          <div className="relative z-10 flex flex-col md:flex-row md:items-end justify-between gap-6">
-            <div className="space-y-4">
-              <div className="inline-flex items-center px-2.5 py-1 rounded bg-white/10 text-white border border-white/20 text-xs font-bold uppercase tracking-widest">
+      {/* Report header */}
+      <div className="border border-white/10 mb-1">
+        <div className="px-8 py-8 border-b border-white/8">
+          <div className="flex items-start justify-between gap-6">
+            <div className="space-y-3">
+              <div className="text-[10px] uppercase tracking-[0.25em] text-[#E8E4DC]/35 border border-white/12 px-2 py-0.5 inline-block">
                 {report.reportType.replace(/_/g, ' ')}
               </div>
-              <h1 className="font-serif text-4xl md:text-5xl font-bold leading-tight">
+              <h1 className="font-serif text-4xl font-light text-[#E8E4DC] leading-tight">
                 {report.title}
               </h1>
             </div>
-            <Button 
+            <button
               onClick={handleDownload}
-              variant="outline"
-              className="shrink-0 bg-transparent border-white/30 text-white hover:bg-white text-primary hover:text-primary transition-colors h-12 px-6"
+              className="shrink-0 flex items-center gap-2 border border-white/15 px-4 py-2 text-xs uppercase tracking-widest text-[#E8E4DC]/50 hover:text-[#E8E4DC]/80 hover:border-white/30 transition-colors mt-1"
               data-testid="btn-download-report"
               disabled={downloadReport.isPending}
             >
-              <Download className="w-4 h-4 mr-2" />
-              Download Brief
-            </Button>
+              <Download className="w-3.5 h-3.5" />
+              Download
+            </button>
           </div>
         </div>
 
-        <div className="grid grid-cols-3 divide-x divide-border/50 border-b border-border/50 bg-muted/10">
-          <div className="p-4 flex items-center gap-3">
-            <Building2 className="w-5 h-5 text-muted-foreground" />
-            <div>
-              <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Target</p>
-              <p className="font-medium">{report.company}</p>
-            </div>
+        <div className="grid grid-cols-3 divide-x divide-white/8 border-b border-white/8">
+          <div className="px-5 py-3.5">
+            <p className="text-[9px] uppercase tracking-[0.2em] text-[#E8E4DC]/30 mb-1">Target</p>
+            <p className="text-sm text-[#E8E4DC]/75 font-medium">{report.company}</p>
           </div>
-          <div className="p-4 flex items-center gap-3">
-            <Calendar className="w-5 h-5 text-muted-foreground" />
-            <div>
-              <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Generated</p>
-              <p className="font-medium">{format(new Date(report.createdAt), "MMM d, yyyy")}</p>
-            </div>
+          <div className="px-5 py-3.5">
+            <p className="text-[9px] uppercase tracking-[0.2em] text-[#E8E4DC]/30 mb-1">Generated</p>
+            <p className="text-sm text-[#E8E4DC]/75">{format(new Date(report.createdAt), "MMM d, yyyy")}</p>
           </div>
-          <div className="p-4 flex items-center gap-3">
-            <Target className="w-5 h-5 text-muted-foreground" />
-            <div>
-              <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Status</p>
-              <p className="font-medium capitalize">{report.status}</p>
-            </div>
+          <div className="px-5 py-3.5">
+            <p className="text-[9px] uppercase tracking-[0.2em] text-[#E8E4DC]/30 mb-1">Status</p>
+            <p className="text-sm text-[#E8E4DC]/75 capitalize">{report.status}</p>
           </div>
         </div>
 
-        <div className="p-8 md:p-12">
-          {report.summary && (
-            <div className="mb-12 p-6 bg-brand/5 border-l-4 border-brand rounded-r-lg">
-              <h3 className="font-bold text-brand uppercase tracking-wider text-sm mb-2">Executive Summary</h3>
-              <p className="text-foreground/80 leading-relaxed font-medium">
-                {report.summary}
-              </p>
-            </div>
-          )}
-
-          <div className="prose prose-slate max-w-none dark:prose-invert prose-headings:font-serif prose-headings:font-bold prose-h2:text-3xl prose-h2:border-b prose-h2:pb-2 prose-h3:text-xl prose-p:leading-relaxed prose-p:text-foreground/80">
-            {report.content ? (
-              <ReactMarkdown>{report.content}</ReactMarkdown>
-            ) : (
-              <p className="text-muted-foreground italic">Content generation failed or is incomplete.</p>
-            )}
+        {report.summary && (
+          <div className="px-8 py-5 border-b border-white/8 border-l-2 border-l-[#E8E4DC]/25">
+            <p className="text-[10px] uppercase tracking-[0.2em] text-[#E8E4DC]/35 mb-2">Executive Summary</p>
+            <p className="text-sm text-[#E8E4DC]/65 leading-relaxed font-light">
+              {report.summary}
+            </p>
           </div>
-        </div>
+        )}
+      </div>
+
+      {/* Report content — full width editorial */}
+      <div className="px-8 pt-10">
+        {report.content ? (
+          <div className="prose prose-invert max-w-none
+            prose-headings:font-serif prose-headings:font-light prose-headings:text-[#E8E4DC]/90 prose-headings:tracking-tight
+            prose-h1:text-4xl prose-h1:mb-6 prose-h1:mt-10 prose-h1:border-b prose-h1:border-white/8 prose-h1:pb-4
+            prose-h2:text-2xl prose-h2:mb-4 prose-h2:mt-8
+            prose-h3:text-lg prose-h3:mb-3 prose-h3:mt-6 prose-h3:text-[#E8E4DC]/75
+            prose-p:text-[#E8E4DC]/60 prose-p:leading-relaxed prose-p:text-sm
+            prose-strong:text-[#E8E4DC]/80 prose-strong:font-medium
+            prose-li:text-[#E8E4DC]/60 prose-li:text-sm prose-li:leading-relaxed
+            prose-ul:space-y-1 prose-ol:space-y-1
+            prose-blockquote:border-l-[#E8E4DC]/20 prose-blockquote:text-[#E8E4DC]/45
+            prose-code:text-[#E8E4DC]/70 prose-code:bg-white/5 prose-code:px-1
+          ">
+            <ReactMarkdown>{report.content}</ReactMarkdown>
+          </div>
+        ) : (
+          <p className="text-sm text-[#E8E4DC]/30 italic">Content generation failed or is incomplete.</p>
+        )}
       </div>
     </div>
   );

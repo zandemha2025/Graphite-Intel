@@ -5,233 +5,238 @@ import {
   getGetDashboardSummaryQueryKey,
   useGetRecentReports,
   getGetRecentReportsQueryKey,
-  useGetReportTypeStats,
-  getGetReportTypeStatsQueryKey,
+  useGetCompanyProfile,
+  getGetCompanyProfileQueryKey,
 } from "@workspace/api-client-react";
-import { 
-  FileText, 
-  MessageSquareText, 
-  BarChart3, 
-  TrendingUp,
+import {
+  FileText,
+  MessageSquareText,
   Plus,
-  ArrowRight
+  ArrowRight,
+  Target,
+  Globe,
+  TrendingUp,
+  BarChart2
 } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+
+const QUICK_LAUNCHES = [
+  {
+    label: "Competitive Scan",
+    desc: "Map your competitive landscape",
+    reportType: "competitive_analysis",
+    icon: Target,
+  },
+  {
+    label: "Board Prep",
+    desc: "Structure your board meeting narrative",
+    reportType: "growth_strategy",
+    icon: BarChart2,
+  },
+  {
+    label: "Market Entry Analysis",
+    desc: "Evaluate new market opportunities",
+    reportType: "market_intelligence",
+    icon: Globe,
+  },
+  {
+    label: "Acquisition Target Evaluation",
+    desc: "Assess M&A targets with rigor",
+    reportType: "full_business_audit",
+    icon: TrendingUp,
+  },
+];
 
 export function Dashboard() {
   const { data: summary, isLoading: loadingSummary } = useGetDashboardSummary({
     query: { queryKey: getGetDashboardSummaryQueryKey() }
   });
-  
+
   const { data: recentReports, isLoading: loadingReports } = useGetRecentReports({
     query: { queryKey: getGetRecentReportsQueryKey() }
   });
 
-  const { data: typeStats, isLoading: loadingStats } = useGetReportTypeStats({
-    query: { queryKey: getGetReportTypeStatsQueryKey() }
+  const { data: profile } = useGetCompanyProfile({
+    query: { queryKey: getGetCompanyProfileQueryKey() }
   });
 
   return (
     <div className="space-y-8 animate-in fade-in duration-500">
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+      {/* Company context strip */}
+      {profile && (
+        <div className="border border-white/10 px-5 py-3.5 flex items-center justify-between bg-white/3">
+          <div className="flex items-center gap-4 text-xs text-[#E8E4DC]/55">
+            <span className="text-[10px] uppercase tracking-[0.2em] text-[#E8E4DC]/30">Context</span>
+            <span className="font-medium text-[#E8E4DC]/80">{profile.companyName}</span>
+            <span className="text-[#E8E4DC]/25">·</span>
+            <span>{profile.industry}</span>
+            <span className="text-[#E8E4DC]/25">·</span>
+            <span>{profile.stage}</span>
+            <span className="text-[#E8E4DC]/25">·</span>
+            <span>{profile.revenueRange}</span>
+          </div>
+          <Link
+            href="/profile"
+            className="text-[10px] uppercase tracking-[0.2em] text-[#E8E4DC]/30 hover:text-[#E8E4DC]/60 transition-colors"
+          >
+            Edit
+          </Link>
+        </div>
+      )}
+
+      {/* Header */}
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4 pb-6 border-b border-white/8">
         <div>
-          <h1 className="font-serif text-3xl font-bold tracking-tight text-foreground">Command Center</h1>
-          <p className="text-muted-foreground mt-1">Your high-level strategic overview.</p>
+          <h1 className="font-serif text-5xl font-light tracking-tight text-[#E8E4DC] leading-none mb-2">
+            {profile ? `Good morning, ${profile.companyName}.` : "Intelligence Briefing"}
+          </h1>
+          <p className="text-sm text-[#E8E4DC]/40">
+            {profile
+              ? `${profile.strategicPriorities ? profile.strategicPriorities.split(',')[0].trim() : "Your strategic priorities are active."}`
+              : "Your high-level strategic overview."}
+          </p>
         </div>
-        <div className="flex items-center gap-3">
-          <Button asChild variant="outline" className="border-brand text-brand hover:bg-brand hover:text-brand-foreground">
-            <Link href="/chat" data-testid="btn-new-chat">
-              <MessageSquareText className="mr-2 h-4 w-4" />
-              Consult Advisor
-            </Link>
-          </Button>
-          <Button asChild className="bg-brand text-brand-foreground hover:bg-brand/90">
-            <Link href="/reports/new" data-testid="btn-new-report">
-              <Plus className="mr-2 h-4 w-4" />
-              New Report
-            </Link>
-          </Button>
+        <div className="flex items-center gap-3 shrink-0">
+          <Link
+            href="/chat"
+            className="flex items-center gap-2 border border-white/15 px-4 py-2 text-xs uppercase tracking-widest text-[#E8E4DC]/70 hover:text-[#E8E4DC] hover:border-white/30 transition-colors"
+            data-testid="btn-new-chat"
+          >
+            <MessageSquareText className="h-3.5 w-3.5" />
+            New Engagement
+          </Link>
+          <Link
+            href="/reports/new"
+            className="flex items-center gap-2 bg-[#E8E4DC] text-[#0D0C0B] px-4 py-2 text-xs uppercase tracking-widest font-medium hover:bg-[#D4CEC5] transition-colors"
+            data-testid="btn-new-report"
+          >
+            <Plus className="h-3.5 w-3.5" />
+            New Report
+          </Link>
         </div>
       </div>
 
-      {/* KPI Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <Card className="shadow-sm border-border/50">
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-muted-foreground mb-1">Total Reports</p>
-                <p className="text-3xl font-bold font-serif" data-testid="stat-total-reports">
-                  {loadingSummary ? "-" : summary?.totalReports || 0}
-                </p>
-              </div>
-              <div className="h-10 w-10 bg-primary/5 rounded-full flex items-center justify-center text-primary">
-                <FileText className="h-5 w-5" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="shadow-sm border-border/50">
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-muted-foreground mb-1">Advisory Sessions</p>
-                <p className="text-3xl font-bold font-serif" data-testid="stat-total-conversations">
-                  {loadingSummary ? "-" : summary?.totalConversations || 0}
-                </p>
-              </div>
-              <div className="h-10 w-10 bg-primary/5 rounded-full flex items-center justify-center text-primary">
-                <MessageSquareText className="h-5 w-5" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="shadow-sm border-border/50">
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-muted-foreground mb-1">Generated This Month</p>
-                <p className="text-3xl font-bold font-serif text-brand" data-testid="stat-monthly-reports">
-                  {loadingSummary ? "-" : summary?.reportsThisMonth || 0}
-                </p>
-              </div>
-              <div className="h-10 w-10 bg-brand/10 rounded-full flex items-center justify-center text-brand">
-                <TrendingUp className="h-5 w-5" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="shadow-sm border-border/50">
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-muted-foreground mb-1">Primary Focus</p>
-                <p className="text-lg font-bold font-serif uppercase tracking-tight truncate" data-testid="stat-focus">
-                  {loadingSummary 
-                    ? "-" 
-                    : summary?.mostUsedReportType 
-                      ? summary.mostUsedReportType.replace(/_/g, ' ') 
-                      : "N/A"}
-                </p>
-              </div>
-              <div className="h-10 w-10 bg-primary/5 rounded-full flex items-center justify-center text-primary">
-                <BarChart3 className="h-5 w-5" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+      {/* Quick launch workflows */}
+      <div>
+        <p className="text-[10px] uppercase tracking-[0.2em] text-[#E8E4DC]/30 mb-4">Quick Launch</p>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+          {QUICK_LAUNCHES.map((item) => (
+            <Link
+              key={item.reportType}
+              href={`/reports/new?type=${item.reportType}`}
+              className="group border border-white/10 px-4 py-4 hover:border-white/25 hover:bg-white/3 transition-colors"
+              data-testid={`quick-launch-${item.reportType}`}
+            >
+              <item.icon className="h-4 w-4 text-[#E8E4DC]/35 mb-3 group-hover:text-[#E8E4DC]/60 transition-colors" />
+              <p className="text-xs font-medium text-[#E8E4DC]/80 mb-1">{item.label}</p>
+              <p className="text-[10px] text-[#E8E4DC]/35 leading-relaxed">{item.desc}</p>
+            </Link>
+          ))}
+        </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* Recent Reports */}
-        <Card className="lg:col-span-2 shadow-sm border-border/50">
-          <CardHeader className="flex flex-row items-center justify-between">
-            <div>
-              <CardTitle className="font-serif">Recent Intelligence</CardTitle>
-              <CardDescription>Latest reports generated across your organization.</CardDescription>
-            </div>
-            <Button variant="ghost" size="sm" asChild className="text-brand">
-              <Link href="/reports">View All <ArrowRight className="ml-2 h-4 w-4" /></Link>
-            </Button>
-          </CardHeader>
-          <CardContent>
-            {loadingReports ? (
-              <div className="space-y-4">
-                {[1, 2, 3].map((i) => (
-                  <div key={i} className="h-16 bg-muted/50 rounded animate-pulse" />
-                ))}
-              </div>
-            ) : recentReports?.length === 0 ? (
-              <div className="text-center py-8 text-muted-foreground">
-                <FileText className="h-8 w-8 mx-auto mb-3 opacity-20" />
-                <p>No reports generated yet.</p>
-              </div>
-            ) : (
-              <div className="space-y-3">
-                {recentReports?.map((report) => (
-                  <Link 
-                    key={report.id} 
-                    href={`/reports/${report.id}`}
-                    className="flex items-center justify-between p-3 rounded-md hover:bg-muted/50 border border-transparent hover:border-border transition-colors group"
-                    data-testid={`link-recent-report-${report.id}`}
-                  >
-                    <div className="flex items-center gap-3">
-                      <div className="h-10 w-10 bg-primary/5 text-primary flex items-center justify-center rounded">
-                        <FileText className="h-5 w-5" />
-                      </div>
-                      <div>
-                        <p className="font-medium text-sm text-foreground group-hover:text-brand transition-colors">
-                          {report.company} — {report.reportType.replace(/_/g, ' ')}
-                        </p>
-                        <p className="text-xs text-muted-foreground mt-0.5">
-                          {format(new Date(report.createdAt), "MMM d, yyyy")}
-                        </p>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <span className={`text-xs px-2 py-1 rounded-full font-medium ${
-                        report.status === 'complete' ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' :
-                        report.status === 'generating' ? 'bg-brand/10 text-brand' :
-                        'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'
-                      }`}>
-                        {report.status}
-                      </span>
-                    </div>
-                  </Link>
-                ))}
-              </div>
-            )}
-          </CardContent>
-        </Card>
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Recent Engagements / Reports */}
+        <div className="lg:col-span-2 space-y-4">
+          <div className="flex items-center justify-between">
+            <p className="text-[10px] uppercase tracking-[0.2em] text-[#E8E4DC]/30">Recent Intelligence</p>
+            <Link
+              href="/reports"
+              className="text-[10px] uppercase tracking-[0.2em] text-[#E8E4DC]/30 hover:text-[#E8E4DC]/60 transition-colors flex items-center gap-1"
+            >
+              View All <ArrowRight className="h-3 w-3" />
+            </Link>
+          </div>
 
-        {/* Report Distribution */}
-        <Card className="shadow-sm border-border/50">
-          <CardHeader>
-            <CardTitle className="font-serif">Intelligence Distribution</CardTitle>
-            <CardDescription>Breakdown by report type.</CardDescription>
-          </CardHeader>
-          <CardContent>
-            {loadingStats ? (
-              <div className="space-y-4">
-                {[1, 2, 3, 4].map((i) => (
-                  <div key={i} className="h-8 bg-muted/50 rounded animate-pulse" />
-                ))}
-              </div>
-            ) : typeStats?.length === 0 ? (
-              <div className="text-center py-8 text-muted-foreground">
-                <p>No data available.</p>
-              </div>
-            ) : (
-              <div className="space-y-4">
-                {typeStats?.map((stat) => {
-                  const maxCount = Math.max(...typeStats.map(s => s.count));
-                  const percentage = (stat.count / maxCount) * 100;
-                  
-                  return (
-                    <div key={stat.reportType} className="space-y-1.5" data-testid={`stat-row-${stat.reportType}`}>
-                      <div className="flex justify-between text-sm">
-                        <span className="font-medium text-foreground capitalize text-xs">
-                          {stat.reportType.replace(/_/g, ' ')}
-                        </span>
-                        <span className="text-muted-foreground text-xs">{stat.count}</span>
-                      </div>
-                      <div className="h-2 w-full bg-muted rounded-full overflow-hidden">
-                        <div 
-                          className="h-full bg-brand" 
-                          style={{ width: `${percentage}%` }}
-                        />
-                      </div>
+          {loadingReports ? (
+            <div className="space-y-2">
+              {[1, 2, 3].map((i) => (
+                <div key={i} className="h-14 bg-white/3 animate-pulse border border-white/6" />
+              ))}
+            </div>
+          ) : recentReports?.length === 0 ? (
+            <div className="border border-white/8 border-dashed p-8 text-center">
+              <FileText className="h-6 w-6 mx-auto mb-3 text-[#E8E4DC]/20" />
+              <p className="text-sm text-[#E8E4DC]/35">No reports generated yet.</p>
+              <Link
+                href="/reports/new"
+                className="inline-block mt-4 text-xs uppercase tracking-widest text-[#E8E4DC]/50 hover:text-[#E8E4DC]/80 border-b border-white/15 pb-0.5 transition-colors"
+              >
+                Commission First Report
+              </Link>
+            </div>
+          ) : (
+            <div className="divide-y divide-white/6 border border-white/10">
+              {recentReports?.map((report) => (
+                <Link
+                  key={report.id}
+                  href={`/reports/${report.id}`}
+                  className="flex items-center justify-between px-4 py-3.5 hover:bg-white/3 transition-colors group"
+                  data-testid={`link-recent-report-${report.id}`}
+                >
+                  <div className="flex items-center gap-3 min-w-0">
+                    <FileText className="h-3.5 w-3.5 text-[#E8E4DC]/25 shrink-0" />
+                    <div className="min-w-0">
+                      <p className="text-sm text-[#E8E4DC]/80 group-hover:text-[#E8E4DC] transition-colors truncate font-medium">
+                        {report.company}
+                      </p>
+                      <p className="text-[10px] text-[#E8E4DC]/35 uppercase tracking-wide">
+                        {report.reportType.replace(/_/g, ' ')}
+                      </p>
                     </div>
-                  );
-                })}
-              </div>
+                  </div>
+                  <div className="flex items-center gap-3 shrink-0">
+                    <span className="text-[10px] text-[#E8E4DC]/30">
+                      {format(new Date(report.createdAt), "MMM d")}
+                    </span>
+                    <span className={`text-[10px] uppercase tracking-wide px-2 py-0.5 border ${
+                      report.status === 'complete'
+                        ? 'border-white/15 text-[#E8E4DC]/45'
+                        : report.status === 'generating'
+                        ? 'border-white/20 text-[#E8E4DC]/60 animate-pulse'
+                        : 'border-red-800/40 text-red-400/60'
+                    }`}>
+                      {report.status}
+                    </span>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Summary stats */}
+        <div className="space-y-4">
+          <p className="text-[10px] uppercase tracking-[0.2em] text-[#E8E4DC]/30">Activity</p>
+          <div className="space-y-2">
+            <div className="border border-white/10 px-4 py-4">
+              <p className="text-[10px] uppercase tracking-[0.15em] text-[#E8E4DC]/35 mb-1">Total Reports</p>
+              <p className="font-serif text-4xl font-light text-[#E8E4DC]" data-testid="stat-total-reports">
+                {loadingSummary ? "—" : summary?.totalReports ?? 0}
+              </p>
+            </div>
+            <div className="border border-white/10 px-4 py-4">
+              <p className="text-[10px] uppercase tracking-[0.15em] text-[#E8E4DC]/35 mb-1">Engagements</p>
+              <p className="font-serif text-4xl font-light text-[#E8E4DC]" data-testid="stat-total-conversations">
+                {loadingSummary ? "—" : summary?.totalConversations ?? 0}
+              </p>
+            </div>
+            <div className="border border-white/10 px-4 py-4">
+              <p className="text-[10px] uppercase tracking-[0.15em] text-[#E8E4DC]/35 mb-1">This Month</p>
+              <p className="font-serif text-4xl font-light text-[#E8E4DC]" data-testid="stat-monthly-reports">
+                {loadingSummary ? "—" : summary?.reportsThisMonth ?? 0}
+              </p>
+            </div>
+            {!profile && (
+              <Link
+                href="/profile"
+                className="block border border-dashed border-white/12 px-4 py-4 hover:border-white/25 transition-colors"
+              >
+                <p className="text-xs text-[#E8E4DC]/40 mb-1">Set up your company profile</p>
+                <p className="text-[10px] text-[#E8E4DC]/25">Help the AI understand your business context for better insights.</p>
+              </Link>
             )}
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       </div>
     </div>
   );

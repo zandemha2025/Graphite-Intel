@@ -18,6 +18,8 @@ tags:
     description: Intelligence reports management
   - name: dashboard
     description: Dashboard and summary data
+  - name: company-profile
+    description: Company profile management
 paths:
   /healthz:
     get:
@@ -376,6 +378,71 @@ paths:
               schema:
                 $ref: "#/components/schemas/ReportError"
 
+  /company-profile:
+    get:
+      operationId: getCompanyProfile
+      tags: [company-profile]
+      summary: Get the current user's company profile
+      responses:
+        "200":
+          description: Company profile
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CompanyProfile"
+        "404":
+          description: No profile found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+    post:
+      operationId: saveCompanyProfile
+      tags: [company-profile]
+      summary: Create or update the company profile
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SaveCompanyProfileBody"
+      responses:
+        "200":
+          description: Updated profile
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CompanyProfile"
+        "201":
+          description: Created profile
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CompanyProfile"
+    put:
+      operationId: updateCompanyProfile
+      tags: [company-profile]
+      summary: Partially update the company profile
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateCompanyProfileBody"
+      responses:
+        "200":
+          description: Updated profile
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CompanyProfile"
+        "404":
+          description: Profile not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+
   /dashboard/summary:
     get:
       operationId: getDashboardSummary
@@ -693,3 +760,77 @@ components:
       required:
         - reportType
         - count
+
+    CompanyProfile:
+      type: object
+      properties:
+        id:
+          type: integer
+        userId:
+          type: string
+        companyName:
+          type: string
+        industry:
+          type: string
+        stage:
+          type: string
+        revenueRange:
+          type: string
+        competitors:
+          type: string
+        strategicPriorities:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - userId
+        - companyName
+        - industry
+        - stage
+        - revenueRange
+        - competitors
+        - strategicPriorities
+        - createdAt
+        - updatedAt
+
+    SaveCompanyProfileBody:
+      type: object
+      properties:
+        companyName:
+          type: string
+        industry:
+          type: string
+        stage:
+          type: string
+        revenueRange:
+          type: string
+        competitors:
+          type: string
+        strategicPriorities:
+          type: string
+      required:
+        - companyName
+        - industry
+        - stage
+        - revenueRange
+
+    UpdateCompanyProfileBody:
+      type: object
+      properties:
+        companyName:
+          type: string
+        industry:
+          type: string
+        stage:
+          type: string
+        revenueRange:
+          type: string
+        competitors:
+          type: string
+        strategicPriorities:
+          type: string

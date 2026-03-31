@@ -146,6 +146,37 @@ export interface ReportTypeStat {
   count: number;
 }
 
+export interface CompanyProfile {
+  id: number;
+  userId: string;
+  companyName: string;
+  industry: string;
+  stage: string;
+  revenueRange: string;
+  competitors: string;
+  strategicPriorities: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface SaveCompanyProfileBody {
+  companyName: string;
+  industry: string;
+  stage: string;
+  revenueRange: string;
+  competitors?: string;
+  strategicPriorities?: string;
+}
+
+export interface UpdateCompanyProfileBody {
+  companyName?: string;
+  industry?: string;
+  stage?: string;
+  revenueRange?: string;
+  competitors?: string;
+  strategicPriorities?: string;
+}
+
 /**
  * Opaque session token — `Bearer <sid>`.
  */
