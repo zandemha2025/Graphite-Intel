@@ -3,7 +3,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useGetCurrentAuthUser } from "@workspace/api-client-react";
 import { useToast } from "@/hooks/use-toast";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Copy, Link, Trash2, UserPlus } from "lucide-react";
+import { Copy, Trash2, UserPlus } from "lucide-react";
 
 type OrgMember = {
   id: number;
@@ -163,7 +163,7 @@ export function Team() {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="w-5 h-5 border border-[#E8E4DC]/20 border-t-[#E8E4DC]/60 animate-spin" style={{ borderRadius: 0 }} />
+        <div className="w-5 h-5 border-t animate-spin" style={{ border: "1px solid var(--workspace-border)", borderTopColor: "var(--workspace-fg)", borderRadius: 0 }} />
       </div>
     );
   }
@@ -171,7 +171,7 @@ export function Team() {
   if (error || !org) {
     return (
       <div className="text-center py-16">
-        <p className="text-[#E8E4DC]/40 text-sm">{error || "No organization found"}</p>
+        <p className="text-sm" style={{ color: "var(--workspace-muted)" }}>{error || "No organization found"}</p>
       </div>
     );
   }
@@ -181,14 +181,15 @@ export function Team() {
       <div>
         <div className="flex items-start justify-between mb-6">
           <div>
-            <h1 className="font-serif text-2xl font-light text-[#E8E4DC] mb-1">{org.name}</h1>
-            <p className="text-xs text-[#E8E4DC]/40 uppercase tracking-wider">{org.slug}</p>
+            <h1 className="font-serif text-2xl font-light mb-1" style={{ color: "var(--workspace-fg)" }}>{org.name}</h1>
+            <p className="text-xs uppercase tracking-wider" style={{ color: "var(--workspace-muted)" }}>{org.slug}</p>
           </div>
           {isAdmin && (
             <button
               onClick={createInvite}
               disabled={inviteLoading}
-              className="flex items-center gap-2 bg-[#E8E4DC] text-[#0D0C0B] px-4 py-2 text-xs uppercase tracking-widest font-medium hover:bg-[#D4CEC5] transition-colors disabled:opacity-40"
+              className="flex items-center gap-2 px-4 py-2 text-xs uppercase tracking-widest font-medium transition-colors disabled:opacity-40"
+              style={{ background: "var(--workspace-fg)", color: "#FFFFFF" }}
               data-testid="btn-invite-team"
             >
               <UserPlus className="h-3.5 w-3.5" />
@@ -197,47 +198,47 @@ export function Team() {
           )}
         </div>
 
-        <div className="border border-white/8 divide-y divide-white/8">
-          <div className="px-5 py-3 bg-white/3">
-            <span className="text-[10px] uppercase tracking-[0.2em] text-[#E8E4DC]/40">Team Members</span>
+        <div style={{ border: "1px solid var(--workspace-border)" }}>
+          <div className="px-5 py-3" style={{ background: "var(--workspace-muted-bg)", borderBottom: "1px solid var(--workspace-border)" }}>
+            <span className="text-[10px] uppercase tracking-[0.2em]" style={{ color: "var(--workspace-muted)" }}>Team Members</span>
           </div>
           {members.length === 0 ? (
-            <div className="px-5 py-8 text-center">
-              <p className="text-sm text-[#E8E4DC]/30">No members yet</p>
+            <div className="px-5 py-8 text-center" style={{ background: "#FFFFFF" }}>
+              <p className="text-sm" style={{ color: "var(--workspace-muted)" }}>No members yet</p>
             </div>
           ) : (
-            members.map((member) => (
-              <div key={member.id} className="px-5 py-4 flex items-center gap-4">
-                <Avatar className="h-8 w-8 border border-white/10">
+            members.map((member, i) => (
+              <div key={member.id} className="px-5 py-4 flex items-center gap-4" style={{ background: "#FFFFFF", borderTop: i > 0 ? `1px solid var(--workspace-border)` : undefined }}>
+                <Avatar className="h-8 w-8 border" style={{ borderColor: "var(--workspace-border)" }}>
                   <AvatarImage src={member.profileImageUrl || undefined} />
-                  <AvatarFallback className="bg-white/8 text-[#E8E4DC] text-xs">
+                  <AvatarFallback className="text-xs" style={{ background: "var(--workspace-muted-bg)", color: "var(--workspace-fg)" }}>
                     {member.firstName?.[0] || member.email?.[0]?.toUpperCase() || "U"}
                   </AvatarFallback>
                 </Avatar>
                 <div className="flex-1 min-w-0">
-                  <div className="text-sm text-[#E8E4DC] truncate">
+                  <div className="text-sm truncate" style={{ color: "var(--workspace-fg)" }}>
                     {member.firstName
                       ? `${member.firstName} ${member.lastName || ""}`.trim()
                       : member.email || "Unknown"}
                   </div>
-                  <div className="text-xs text-[#E8E4DC]/40 truncate">{member.email}</div>
+                  <div className="text-xs truncate" style={{ color: "var(--workspace-muted)" }}>{member.email}</div>
                 </div>
                 <div className="flex items-center gap-3">
-                  <span className={`text-[10px] uppercase tracking-wider px-2 py-0.5 border ${
-                    member.role === "admin"
-                      ? "border-[#E8E4DC]/30 text-[#E8E4DC]/70"
-                      : "border-white/10 text-[#E8E4DC]/40"
-                  }`}>
+                  <span className="text-[10px] uppercase tracking-wider px-2 py-0.5" style={{
+                    border: "1px solid var(--workspace-border)",
+                    color: "var(--workspace-muted)",
+                  }}>
                     {member.role}
                   </span>
-                  <span className="text-[10px] text-[#E8E4DC]/25">
+                  <span className="text-[10px]" style={{ color: "var(--workspace-muted)", opacity: 0.6 }}>
                     {new Date(member.joinedAt).toLocaleDateString()}
                   </span>
                   {isAdmin && member.userId !== currentUserId && (
                     <button
                       onClick={() => removeMember(member.userId)}
                       disabled={removingId === member.userId}
-                      className="p-1 text-[#E8E4DC]/20 hover:text-red-400 transition-colors"
+                      className="p-1 transition-colors"
+                      style={{ color: "var(--workspace-muted)" }}
                       title="Remove member"
                       data-testid={`btn-remove-member-${member.userId}`}
                     >
@@ -253,24 +254,25 @@ export function Team() {
 
       {isAdmin && invites.length > 0 && (
         <div>
-          <div className="border border-white/8 divide-y divide-white/8">
-            <div className="px-5 py-3 bg-white/3">
-              <span className="text-[10px] uppercase tracking-[0.2em] text-[#E8E4DC]/40">Pending Invites</span>
+          <div style={{ border: "1px solid var(--workspace-border)" }}>
+            <div className="px-5 py-3" style={{ background: "var(--workspace-muted-bg)", borderBottom: "1px solid var(--workspace-border)" }}>
+              <span className="text-[10px] uppercase tracking-[0.2em]" style={{ color: "var(--workspace-muted)" }}>Pending Invites</span>
             </div>
-            {invites.map((invite) => (
-              <div key={invite.id} className="px-5 py-4 flex items-center gap-4">
+            {invites.map((invite, i) => (
+              <div key={invite.id} className="px-5 py-4 flex items-center gap-4" style={{ background: "#FFFFFF", borderTop: i > 0 ? `1px solid var(--workspace-border)` : undefined }}>
                 <div className="flex-1 min-w-0">
-                  <div className="text-xs text-[#E8E4DC]/60 font-mono truncate">
+                  <div className="text-xs font-mono truncate" style={{ color: "var(--workspace-fg)" }}>
                     {window.location.origin}/api/join?token={invite.token.substring(0, 12)}...
                   </div>
-                  <div className="text-[10px] text-[#E8E4DC]/30 mt-0.5">
+                  <div className="text-[10px] mt-0.5" style={{ color: "var(--workspace-muted)" }}>
                     Expires {new Date(invite.expiresAt).toLocaleDateString()}
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
                   <button
                     onClick={() => copyInviteLink(invite.token)}
-                    className="p-1.5 text-[#E8E4DC]/40 hover:text-[#E8E4DC] transition-colors"
+                    className="p-1.5 transition-colors"
+                    style={{ color: "var(--workspace-muted)" }}
                     title="Copy link"
                   >
                     <Copy className="h-3.5 w-3.5" />
@@ -278,7 +280,8 @@ export function Team() {
                   <button
                     onClick={() => revokeInvite(invite.id)}
                     disabled={revokingId === invite.id}
-                    className="p-1.5 text-[#E8E4DC]/40 hover:text-red-400 transition-colors"
+                    className="p-1.5 transition-colors"
+                    style={{ color: "var(--workspace-muted)" }}
                     title="Revoke invite"
                   >
                     <Trash2 className="h-3.5 w-3.5" />

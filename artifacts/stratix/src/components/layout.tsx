@@ -16,22 +16,22 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 
 const NAV_ITEMS = [
+  { href: "/chat", label: "Assistant", icon: MessageSquareText },
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/chat", label: "Engagements", icon: MessageSquareText },
   { href: "/workflows", label: "Workflows", icon: Zap },
   { href: "/reports", label: "Report Library", icon: Library },
   { href: "/knowledge", label: "Knowledge", icon: BookOpen },
 ];
 
-const PAGE_TITLES: Record<string, string> = {
-  "/dashboard": "Dashboard",
-  "/chat": "Engagements",
-  "/reports": "Report Library",
-  "/reports/new": "Commission Report",
-  "/workflows": "Workflow Agents",
-  "/profile": "Company Profile",
-  "/knowledge": "Knowledge Vault",
-  "/settings/team": "Team",
+const PAGE_BREADCRUMBS: Record<string, { section?: string; title: string }> = {
+  "/chat": { title: "Assistant" },
+  "/dashboard": { title: "Dashboard" },
+  "/reports": { section: "Reports", title: "Report Library" },
+  "/reports/new": { section: "Reports", title: "New Report" },
+  "/workflows": { title: "Workflows" },
+  "/profile": { section: "Settings", title: "Company Profile" },
+  "/knowledge": { title: "Knowledge" },
+  "/settings/team": { section: "Settings", title: "Team" },
 };
 
 function useOrgName() {
@@ -55,28 +55,30 @@ export function Layout({ children }: { children: React.ReactNode }) {
   const user = auth?.user as any;
   const orgName = useOrgName();
 
-  const pageTitle =
-    PAGE_TITLES[location] ||
-    (location.startsWith("/reports/") ? "Intelligence Brief" :
-    location.startsWith("/workflows/new/") ? "Launch Workflow" :
-    location.startsWith("/workflows/") ? "Workflow Run" :
-    "Stratix");
+  const breadcrumb =
+    PAGE_BREADCRUMBS[location] ||
+    (location.startsWith("/reports/") ? { section: "Reports", title: "Intelligence Brief" } :
+    location.startsWith("/workflows/new/") ? { section: "Workflows", title: "Launch Workflow" } :
+    location.startsWith("/workflows/") ? { section: "Workflows", title: "Workflow Run" } :
+    { title: "Stratix" });
 
   const isAdmin = user?.orgRole === "admin";
 
+  const isFullBleed = location === "/chat" || location.startsWith("/chat/");
+
   return (
-    <div className="flex h-screen bg-[#0D0C0B]">
-      {/* Sidebar */}
-      <div className="w-56 bg-[#0D0C0B] text-[#E8E4DC] flex flex-col border-r border-white/8 z-10">
-        <div className="px-5 py-5 border-b border-white/8">
-          <Link href="/dashboard" className="flex items-center gap-2.5" data-testid="link-home">
-            <div className="h-6 w-6 border border-[#E8E4DC]/30 flex items-center justify-center">
-              <span className="font-serif font-semibold text-[#E8E4DC] text-xs leading-none">S</span>
+    <div className="flex h-screen" style={{ background: "#0D0C0B" }}>
+      {/* Sidebar — dark chrome frame */}
+      <div className="w-56 flex flex-col border-r z-10 shrink-0" style={{ background: "#0D0C0B", color: "#E8E4DC", borderColor: "rgba(255,255,255,0.08)" }}>
+        <div className="px-5 py-5 border-b" style={{ borderColor: "rgba(255,255,255,0.08)" }}>
+          <Link href="/chat" className="flex items-center gap-2.5" data-testid="link-home">
+            <div className="h-6 w-6 border flex items-center justify-center" style={{ borderColor: "rgba(232,228,220,0.30)" }}>
+              <span className="font-serif font-semibold text-xs leading-none" style={{ color: "#E8E4DC" }}>S</span>
             </div>
             <div className="flex flex-col min-w-0">
-              <span className="font-serif font-medium text-base tracking-tight text-[#E8E4DC] uppercase leading-none">Stratix</span>
+              <span className="font-serif font-medium text-base tracking-tight uppercase leading-none" style={{ color: "#E8E4DC" }}>Stratix</span>
               {orgName && (
-                <span className="text-[9px] text-[#E8E4DC]/35 uppercase tracking-wider truncate mt-0.5">{orgName}</span>
+                <span className="text-[9px] uppercase tracking-wider truncate mt-0.5" style={{ color: "rgba(232,228,220,0.35)" }}>{orgName}</span>
               )}
             </div>
           </Link>
@@ -89,14 +91,16 @@ export function Layout({ children }: { children: React.ReactNode }) {
               <Link
                 key={item.href}
                 href={item.href}
-                className={`flex items-center gap-3 px-3 py-2 text-xs font-medium transition-colors relative ${
-                  isActive
-                    ? "text-[#E8E4DC] border-l-2 border-[#E8E4DC] pl-[10px] bg-white/4"
-                    : "text-[#E8E4DC]/50 hover:text-[#E8E4DC]/80 border-l-2 border-transparent pl-[10px] hover:bg-white/3"
-                }`}
+                className={`flex items-center gap-3 px-3 py-2 text-xs font-medium transition-colors relative`}
+                style={{
+                  color: isActive ? "#E8E4DC" : "rgba(232,228,220,0.50)",
+                  borderLeft: isActive ? "2px solid #E8E4DC" : "2px solid transparent",
+                  paddingLeft: "10px",
+                  background: isActive ? "rgba(255,255,255,0.04)" : undefined,
+                }}
                 data-testid={`nav-link-${item.label.toLowerCase().replace(/\s+/g, '-')}`}
               >
-                <item.icon className={`h-3.5 w-3.5 shrink-0 ${isActive ? "text-[#E8E4DC]" : "text-[#E8E4DC]/40"}`} />
+                <item.icon className="h-3.5 w-3.5 shrink-0" style={{ color: isActive ? "#E8E4DC" : "rgba(232,228,220,0.40)" }} />
                 <span className="uppercase tracking-wider">{item.label}</span>
               </Link>
             );
@@ -104,35 +108,36 @@ export function Layout({ children }: { children: React.ReactNode }) {
         </nav>
 
         {user && (
-          <div className="p-3 border-t border-white/8">
+          <div className="p-3 border-t" style={{ borderColor: "rgba(255,255,255,0.08)" }}>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <button
-                  className="flex items-center w-full gap-2.5 px-2 py-2 hover:bg-white/4 transition-colors outline-none"
+                  className="flex items-center w-full gap-2.5 px-2 py-2 transition-colors outline-none hover:bg-white/4"
                   data-testid="button-user-menu"
                 >
                   <Avatar className="h-7 w-7 border border-white/15">
                     <AvatarImage src={user.profileImageUrl || undefined} />
-                    <AvatarFallback className="bg-white/8 text-[#E8E4DC] text-xs">
+                    <AvatarFallback className="bg-white/8 text-xs" style={{ color: "#E8E4DC" }}>
                       {user.firstName?.[0] || user.email?.[0]?.toUpperCase() || "U"}
                     </AvatarFallback>
                   </Avatar>
                   <div className="flex-1 text-left min-w-0">
-                    <div className="text-xs font-medium leading-none mb-0.5 text-[#E8E4DC] truncate">
+                    <div className="text-xs font-medium leading-none mb-0.5 truncate" style={{ color: "#E8E4DC" }}>
                       {user.firstName ? `${user.firstName} ${user.lastName || ''}` : "Executive"}
                     </div>
-                    <div className="text-[10px] text-[#E8E4DC]/40 truncate">
+                    <div className="text-[10px] truncate" style={{ color: "rgba(232,228,220,0.40)" }}>
                       {user.orgRole === "admin" ? "Admin" : "Member"} · {user.email}
                     </div>
                   </div>
-                  <ChevronDown className="h-3 w-3 text-[#E8E4DC]/30 shrink-0" />
+                  <ChevronDown className="h-3 w-3 shrink-0" style={{ color: "rgba(232,228,220,0.30)" }} />
                 </button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-48 bg-[#141311] border-white/10" data-testid="menu-user">
                 <DropdownMenuItem asChild>
                   <Link
                     href="/profile"
-                    className="flex items-center cursor-pointer text-[#E8E4DC]/70 hover:text-[#E8E4DC] text-xs w-full px-2 py-1.5"
+                    className="flex items-center cursor-pointer text-xs w-full px-2 py-1.5"
+                    style={{ color: "rgba(232,228,220,0.70)" }}
                   >
                     <Settings className="mr-2 h-3.5 w-3.5" />
                     <span>Company Profile</span>
@@ -141,7 +146,8 @@ export function Layout({ children }: { children: React.ReactNode }) {
                 <DropdownMenuItem asChild>
                   <Link
                     href="/settings/team"
-                    className="flex items-center cursor-pointer text-[#E8E4DC]/70 hover:text-[#E8E4DC] text-xs w-full px-2 py-1.5"
+                    className="flex items-center cursor-pointer text-xs w-full px-2 py-1.5"
+                    style={{ color: "rgba(232,228,220,0.70)" }}
                     data-testid="nav-link-team"
                   >
                     <Users className="mr-2 h-3.5 w-3.5" />
@@ -150,7 +156,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
                 </DropdownMenuItem>
                 <DropdownMenuSeparator className="bg-white/8" />
                 <DropdownMenuItem asChild>
-                  <a href="/api/logout" className="flex items-center text-[#E8E4DC]/70 hover:text-[#E8E4DC] cursor-pointer w-full text-xs px-2 py-1.5">
+                  <a href="/api/logout" className="flex items-center cursor-pointer w-full text-xs px-2 py-1.5" style={{ color: "rgba(232,228,220,0.70)" }}>
                     <LogOut className="mr-2 h-3.5 w-3.5" />
                     <span>Sign Out</span>
                   </a>
@@ -161,19 +167,31 @@ export function Layout({ children }: { children: React.ReactNode }) {
         )}
       </div>
 
-      {/* Main Content Area */}
-      <main className="flex-1 flex flex-col overflow-hidden">
-        {/* Minimal top bar */}
-        <div className="flex items-center justify-between px-8 py-4 border-b border-white/8 bg-[#0D0C0B]">
-          <h2 className="font-serif text-sm font-light tracking-[0.15em] uppercase text-[#E8E4DC]/60">
-            {pageTitle}
-          </h2>
+      {/* Main Content Area — light workspace */}
+      <main className="flex-1 flex flex-col overflow-hidden" style={{ background: "var(--workspace-bg)" }}>
+        {/* Top bar */}
+        <div className="flex items-center justify-between px-8 py-3.5 border-b shrink-0" style={{ background: "var(--workspace-topbar)", borderColor: "var(--workspace-border)" }}>
+          <div className="flex items-center gap-2 text-xs" style={{ color: "var(--workspace-muted)" }}>
+            {breadcrumb.section && (
+              <>
+                <span className="uppercase tracking-wider">{breadcrumb.section}</span>
+                <span style={{ color: "var(--workspace-border)" }}>/</span>
+              </>
+            )}
+            <span className="uppercase tracking-wider font-medium" style={{ color: "var(--workspace-fg)" }}>
+              {breadcrumb.title}
+            </span>
+          </div>
         </div>
 
-        <div className="flex-1 overflow-auto bg-[#0D0C0B]">
-          <div className="mx-auto max-w-5xl p-8">
-            {children}
-          </div>
+        <div className="flex-1 overflow-auto" style={{ background: "var(--workspace-bg)" }}>
+          {isFullBleed ? (
+            children
+          ) : (
+            <div className="p-8">
+              {children}
+            </div>
+          )}
         </div>
       </main>
     </div>

@@ -71,16 +71,26 @@
 }
 
 :root {
+  /* Sidebar stays dark — #0D0C0B */
   --background: 30 5% 6%;
   --foreground: 40 15% 90%;
+
+  /* Workspace (main content) colors */
+  --workspace-bg: #F9F8F6;
+  --workspace-topbar: #F2F0ED;
+  --workspace-fg: #1A1917;
+  --workspace-card: #FFFFFF;
+  --workspace-border: #E5E3DF;
+  --workspace-muted: #6B6763;
+  --workspace-muted-bg: #F2F0ED;
 
   --card: 30 5% 8%;
   --card-foreground: 40 15% 90%;
   --card-border: 30 5% 14%;
 
-  --popover: 30 5% 8%;
-  --popover-foreground: 40 15% 90%;
-  --popover-border: 30 5% 14%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 20 5% 10%;
+  --popover-border: 30 5% 88%;
 
   --primary: 40 15% 90%;
   --primary-foreground: 30 5% 6%;

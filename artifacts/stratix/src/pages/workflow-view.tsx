@@ -48,15 +48,15 @@ export function WorkflowView() {
   if (loading) {
     return (
       <div className="max-w-3xl mx-auto space-y-6 animate-pulse">
-        <div className="h-4 w-20 bg-white/6" />
-        <div className="h-12 w-2/3 bg-white/4" />
-        <div className="h-64 bg-white/3" />
+        <div className="h-4 w-20" style={{ background: "var(--workspace-muted-bg)" }} />
+        <div className="h-12 w-2/3" style={{ background: "var(--workspace-muted-bg)" }} />
+        <div className="h-64" style={{ background: "var(--workspace-muted-bg)" }} />
       </div>
     );
   }
 
   if (!run || (run as { error?: string }).error) {
-    return <div className="text-center py-20 text-[#E8E4DC]/35 text-sm">Workflow run not found.</div>;
+    return <div className="text-center py-20 text-sm" style={{ color: "var(--workspace-muted)" }}>Workflow run not found.</div>;
   }
 
   const template = templates.find((t) => t.key === run.templateKey);
@@ -65,52 +65,53 @@ export function WorkflowView() {
     <div className="max-w-3xl mx-auto pb-20 animate-in fade-in duration-500">
       <Link
         href="/workflows"
-        className="inline-flex items-center text-xs text-[#E8E4DC]/35 hover:text-[#E8E4DC]/60 mb-8 transition-colors uppercase tracking-widest"
+        className="inline-flex items-center text-xs mb-8 uppercase tracking-widest transition-colors"
+        style={{ color: "var(--workspace-muted)" }}
       >
         <ChevronLeft className="w-3 h-3 mr-1" /> Workflow Agents
       </Link>
 
-      <div className="border border-white/10 mb-1">
-        <div className="px-8 py-8 border-b border-white/8">
+      <div className="mb-1" style={{ border: "1px solid var(--workspace-border)", background: "#FFFFFF" }}>
+        <div className="px-8 py-8 border-b" style={{ borderColor: "var(--workspace-border)" }}>
           <div className="flex items-start gap-3">
-            <Zap className="h-5 w-5 text-[#E8E4DC]/30 mt-1 shrink-0" />
+            <Zap className="h-5 w-5 mt-1 shrink-0" style={{ color: "var(--workspace-muted)" }} />
             <div>
-              <div className="text-[10px] uppercase tracking-[0.25em] text-[#E8E4DC]/35 border border-white/12 px-2 py-0.5 inline-block mb-3">
+              <div className="text-[10px] uppercase tracking-[0.25em] inline-block px-2 py-0.5 mb-3" style={{ color: "var(--workspace-muted)", border: "1px solid var(--workspace-border)" }}>
                 {run.templateKey.replace(/_/g, " ")}
               </div>
-              <h1 className="font-serif text-4xl font-light text-[#E8E4DC] leading-tight">
+              <h1 className="font-serif text-4xl font-light leading-tight" style={{ color: "var(--workspace-fg)" }}>
                 {template?.name || run.title}
               </h1>
             </div>
           </div>
         </div>
 
-        <div className="grid grid-cols-3 divide-x divide-white/8 border-b border-white/8">
-          <div className="px-5 py-3.5">
-            <p className="text-[9px] uppercase tracking-[0.2em] text-[#E8E4DC]/30 mb-1">Executed</p>
-            <p className="text-sm text-[#E8E4DC]/75">{format(new Date(run.createdAt), "MMM d, yyyy")}</p>
+        <div className="grid grid-cols-3 border-b" style={{ borderColor: "var(--workspace-border)" }}>
+          <div className="px-5 py-3.5 border-r" style={{ borderColor: "var(--workspace-border)" }}>
+            <p className="text-[9px] uppercase tracking-[0.2em] mb-1" style={{ color: "var(--workspace-muted)" }}>Executed</p>
+            <p className="text-sm" style={{ color: "var(--workspace-fg)" }}>{format(new Date(run.createdAt), "MMM d, yyyy")}</p>
+          </div>
+          <div className="px-5 py-3.5 border-r" style={{ borderColor: "var(--workspace-border)" }}>
+            <p className="text-[9px] uppercase tracking-[0.2em] mb-1" style={{ color: "var(--workspace-muted)" }}>Status</p>
+            <p className="text-sm capitalize" style={{ color: "var(--workspace-fg)" }}>{run.status}</p>
           </div>
           <div className="px-5 py-3.5">
-            <p className="text-[9px] uppercase tracking-[0.2em] text-[#E8E4DC]/30 mb-1">Status</p>
-            <p className="text-sm text-[#E8E4DC]/75 capitalize">{run.status}</p>
-          </div>
-          <div className="px-5 py-3.5">
-            <p className="text-[9px] uppercase tracking-[0.2em] text-[#E8E4DC]/30 mb-1">Template</p>
-            <p className="text-sm text-[#E8E4DC]/75">{template?.name || run.templateKey}</p>
+            <p className="text-[9px] uppercase tracking-[0.2em] mb-1" style={{ color: "var(--workspace-muted)" }}>Template</p>
+            <p className="text-sm" style={{ color: "var(--workspace-fg)" }}>{template?.name || run.templateKey}</p>
           </div>
         </div>
 
         {Object.keys(run.inputs).length > 0 && (
-          <div className="px-8 py-5 border-b border-white/8">
-            <p className="text-[10px] uppercase tracking-[0.2em] text-[#E8E4DC]/35 mb-3">Inputs Provided</p>
+          <div className="px-8 py-5 border-b" style={{ borderColor: "var(--workspace-border)" }}>
+            <p className="text-[10px] uppercase tracking-[0.2em] mb-3" style={{ color: "var(--workspace-muted)" }}>Inputs Provided</p>
             <div className="space-y-3">
               {template?.questions.map((q) => {
                 const val = run.inputs[q.key];
                 if (!val) return null;
                 return (
                   <div key={q.key}>
-                    <p className="text-[9px] uppercase tracking-[0.15em] text-[#E8E4DC]/30 mb-1">{q.label}</p>
-                    <p className="text-xs text-[#E8E4DC]/60 leading-relaxed line-clamp-3">{val}</p>
+                    <p className="text-[9px] uppercase tracking-[0.15em] mb-1" style={{ color: "var(--workspace-muted)" }}>{q.label}</p>
+                    <p className="text-xs leading-relaxed line-clamp-3" style={{ color: "var(--workspace-fg)" }}>{val}</p>
                   </div>
                 );
               })}
@@ -119,24 +120,32 @@ export function WorkflowView() {
         )}
       </div>
 
-      <div className="px-8 pt-10">
+      <div className="px-8 pt-10 pb-10" style={{ border: "1px solid var(--workspace-border)", borderTop: "none", background: "#FFFFFF" }}>
         {run.output ? (
-          <div className="prose prose-invert max-w-none
-            prose-headings:font-serif prose-headings:font-light prose-headings:text-[#E8E4DC]/90 prose-headings:tracking-tight
-            prose-h1:text-4xl prose-h1:mb-6 prose-h1:mt-10 prose-h1:border-b prose-h1:border-white/8 prose-h1:pb-4
-            prose-h2:text-2xl prose-h2:mb-4 prose-h2:mt-8
-            prose-h3:text-lg prose-h3:mb-3 prose-h3:mt-6 prose-h3:text-[#E8E4DC]/75
-            prose-p:text-[#E8E4DC]/60 prose-p:leading-relaxed prose-p:text-sm
-            prose-strong:text-[#E8E4DC]/80 prose-strong:font-medium
-            prose-li:text-[#E8E4DC]/60 prose-li:text-sm prose-li:leading-relaxed
-            prose-ul:space-y-1 prose-ol:space-y-1
-            prose-blockquote:border-l-[#E8E4DC]/20 prose-blockquote:text-[#E8E4DC]/45
-            prose-code:text-[#E8E4DC]/70 prose-code:bg-white/5 prose-code:px-1
-          ">
+          <div className="prose prose-sm max-w-[70ch]"
+            style={{
+              "--tw-prose-body": "var(--workspace-fg)",
+              "--tw-prose-headings": "var(--workspace-fg)",
+              "--tw-prose-lead": "var(--workspace-muted)",
+              "--tw-prose-links": "var(--workspace-fg)",
+              "--tw-prose-bold": "var(--workspace-fg)",
+              "--tw-prose-counters": "var(--workspace-muted)",
+              "--tw-prose-bullets": "var(--workspace-muted)",
+              "--tw-prose-hr": "var(--workspace-border)",
+              "--tw-prose-quotes": "var(--workspace-fg)",
+              "--tw-prose-quote-borders": "var(--workspace-border)",
+              "--tw-prose-captions": "var(--workspace-muted)",
+              "--tw-prose-code": "var(--workspace-fg)",
+              "--tw-prose-pre-code": "var(--workspace-fg)",
+              "--tw-prose-pre-bg": "var(--workspace-muted-bg)",
+              "--tw-prose-th-borders": "var(--workspace-border)",
+              "--tw-prose-td-borders": "var(--workspace-border)",
+            } as React.CSSProperties}
+          >
             <ReactMarkdown>{run.output}</ReactMarkdown>
           </div>
         ) : (
-          <p className="text-sm text-[#E8E4DC]/30 italic">
+          <p className="text-sm italic" style={{ color: "var(--workspace-muted)" }}>
             {run.status === "generating"
               ? "Workflow is still generating..."
               : "Output not available."}

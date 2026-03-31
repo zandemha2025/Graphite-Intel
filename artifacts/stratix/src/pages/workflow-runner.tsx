@@ -118,7 +118,7 @@ export function WorkflowRunner() {
   if (loadingTemplate) {
     return (
       <div className="flex items-center justify-center py-20">
-        <Loader2 className="h-6 w-6 text-[#E8E4DC]/30 animate-spin" />
+        <Loader2 className="h-6 w-6 animate-spin" style={{ color: "var(--workspace-muted)" }} />
       </div>
     );
   }
@@ -126,8 +126,8 @@ export function WorkflowRunner() {
   if (!template) {
     return (
       <div className="text-center py-20">
-        <p className="text-sm text-[#E8E4DC]/40">Template not found.</p>
-        <Link href="/workflows" className="text-xs text-[#E8E4DC]/50 hover:text-[#E8E4DC]/80 mt-4 inline-block uppercase tracking-widest">
+        <p className="text-sm" style={{ color: "var(--workspace-muted)" }}>Template not found.</p>
+        <Link href="/workflows" className="text-xs mt-4 inline-block uppercase tracking-widest" style={{ color: "var(--workspace-fg)" }}>
           Back to Workflows
         </Link>
       </div>
@@ -137,29 +137,30 @@ export function WorkflowRunner() {
   if (phase === "running") {
     return (
       <div className="max-w-3xl mx-auto animate-in fade-in duration-500">
-        <div className="border border-white/10">
-          <div className="border-b border-white/8 px-6 py-4 flex items-center justify-between">
+        <div style={{ border: "1px solid var(--workspace-border)", background: "#FFFFFF" }}>
+          <div className="border-b px-6 py-4 flex items-center justify-between" style={{ borderColor: "var(--workspace-border)" }}>
             <div>
               <div className="flex items-center gap-3">
-                <Loader2 className="w-4 h-4 text-[#E8E4DC]/60 animate-spin" />
-                <h2 className="font-serif text-xl font-light text-[#E8E4DC]">{template.name}</h2>
+                <Loader2 className="w-4 h-4 animate-spin" style={{ color: "var(--workspace-muted)" }} />
+                <h2 className="font-serif text-xl font-light" style={{ color: "var(--workspace-fg)" }}>{template.name}</h2>
               </div>
-              <p className="text-xs text-[#E8E4DC]/35 mt-1 ml-7">Agent is executing the workflow...</p>
+              <p className="text-xs mt-1 ml-7" style={{ color: "var(--workspace-muted)" }}>Agent is executing the workflow...</p>
             </div>
-            <span className="text-[10px] uppercase tracking-[0.2em] text-[#E8E4DC]/40 border border-white/12 px-2 py-1 animate-pulse">
+            <span className="text-[10px] uppercase tracking-[0.2em] px-2 py-1 animate-pulse" style={{ color: "var(--workspace-muted)", border: "1px solid var(--workspace-border)" }}>
               Processing
             </span>
           </div>
 
           <div
             ref={streamingRef}
-            className="p-8 min-h-[500px] max-h-[600px] overflow-y-auto font-mono text-sm leading-relaxed text-[#E8E4DC]/50 bg-[#0A0908]"
+            className="p-8 min-h-[500px] max-h-[600px] overflow-y-auto font-mono text-sm leading-relaxed"
+            style={{ background: "var(--workspace-muted-bg)" }}
           >
-            <div className="mb-4 text-[10px] uppercase tracking-[0.2em] text-[#E8E4DC]/25">
+            <div className="mb-4 text-[10px] uppercase tracking-[0.2em]" style={{ color: "var(--workspace-muted)" }}>
               Executing {template.name} workflow...
             </div>
-            <div className="whitespace-pre-wrap text-[#E8E4DC]/65">{streamingContent}</div>
-            <span className="inline-block w-1.5 h-4 bg-[#E8E4DC]/40 ml-0.5 animate-pulse" />
+            <div className="whitespace-pre-wrap" style={{ color: "var(--workspace-fg)" }}>{streamingContent}</div>
+            <span className="inline-block w-1.5 h-4 ml-0.5 animate-pulse" style={{ background: "var(--workspace-muted)" }} />
           </div>
         </div>
       </div>
@@ -169,14 +170,14 @@ export function WorkflowRunner() {
   if (phase === "complete") {
     return (
       <div className="max-w-3xl mx-auto animate-in fade-in duration-500 pb-20">
-        <div className="border border-white/10 mb-1">
-          <div className="px-8 py-6 border-b border-white/8">
+        <div className="mb-1" style={{ border: "1px solid var(--workspace-border)", background: "#FFFFFF" }}>
+          <div className="px-8 py-6 border-b" style={{ borderColor: "var(--workspace-border)" }}>
             <div className="flex items-start justify-between gap-6">
               <div>
-                <div className="text-[10px] uppercase tracking-[0.25em] text-[#E8E4DC]/35 border border-white/12 px-2 py-0.5 inline-block mb-3">
+                <div className="text-[10px] uppercase tracking-[0.25em] inline-block px-2 py-0.5 mb-3" style={{ color: "var(--workspace-muted)", border: "1px solid var(--workspace-border)" }}>
                   Workflow Complete
                 </div>
-                <h1 className="font-serif text-3xl font-light text-[#E8E4DC] leading-tight">
+                <h1 className="font-serif text-3xl font-light leading-tight" style={{ color: "var(--workspace-fg)" }}>
                   {template.name}
                 </h1>
               </div>
@@ -184,7 +185,8 @@ export function WorkflowRunner() {
                 {completedRunId && (
                   <Link
                     href={`/workflows/${completedRunId}`}
-                    className="flex items-center gap-2 border border-white/15 px-4 py-2 text-xs uppercase tracking-widest text-[#E8E4DC]/50 hover:text-[#E8E4DC]/80 hover:border-white/30 transition-colors"
+                    className="flex items-center gap-2 px-4 py-2 text-xs uppercase tracking-widest transition-colors"
+                    style={{ border: "1px solid var(--workspace-border)", color: "var(--workspace-muted)", background: "#FFFFFF" }}
                   >
                     View Full Run
                     <ArrowRight className="w-3.5 h-3.5" />
@@ -192,7 +194,8 @@ export function WorkflowRunner() {
                 )}
                 <Link
                   href="/workflows"
-                  className="flex items-center gap-2 border border-white/10 px-4 py-2 text-xs uppercase tracking-widest text-[#E8E4DC]/35 hover:text-[#E8E4DC]/60 transition-colors"
+                  className="flex items-center gap-2 px-4 py-2 text-xs uppercase tracking-widest transition-colors"
+                  style={{ border: "1px solid var(--workspace-border)", color: "var(--workspace-muted)", background: "#FFFFFF" }}
                 >
                   Back to Workflows
                 </Link>
@@ -201,19 +204,27 @@ export function WorkflowRunner() {
           </div>
         </div>
 
-        <div className="px-8 pt-10">
-          <div className="prose prose-invert max-w-none
-            prose-headings:font-serif prose-headings:font-light prose-headings:text-[#E8E4DC]/90 prose-headings:tracking-tight
-            prose-h1:text-4xl prose-h1:mb-6 prose-h1:mt-10 prose-h1:border-b prose-h1:border-white/8 prose-h1:pb-4
-            prose-h2:text-2xl prose-h2:mb-4 prose-h2:mt-8
-            prose-h3:text-lg prose-h3:mb-3 prose-h3:mt-6 prose-h3:text-[#E8E4DC]/75
-            prose-p:text-[#E8E4DC]/60 prose-p:leading-relaxed prose-p:text-sm
-            prose-strong:text-[#E8E4DC]/80 prose-strong:font-medium
-            prose-li:text-[#E8E4DC]/60 prose-li:text-sm prose-li:leading-relaxed
-            prose-ul:space-y-1 prose-ol:space-y-1
-            prose-blockquote:border-l-[#E8E4DC]/20 prose-blockquote:text-[#E8E4DC]/45
-            prose-code:text-[#E8E4DC]/70 prose-code:bg-white/5 prose-code:px-1
-          ">
+        <div className="px-8 pt-10 pb-10" style={{ border: "1px solid var(--workspace-border)", borderTop: "none", background: "#FFFFFF" }}>
+          <div className="prose prose-sm max-w-[70ch]"
+            style={{
+              "--tw-prose-body": "var(--workspace-fg)",
+              "--tw-prose-headings": "var(--workspace-fg)",
+              "--tw-prose-lead": "var(--workspace-muted)",
+              "--tw-prose-links": "var(--workspace-fg)",
+              "--tw-prose-bold": "var(--workspace-fg)",
+              "--tw-prose-counters": "var(--workspace-muted)",
+              "--tw-prose-bullets": "var(--workspace-muted)",
+              "--tw-prose-hr": "var(--workspace-border)",
+              "--tw-prose-quotes": "var(--workspace-fg)",
+              "--tw-prose-quote-borders": "var(--workspace-border)",
+              "--tw-prose-captions": "var(--workspace-muted)",
+              "--tw-prose-code": "var(--workspace-fg)",
+              "--tw-prose-pre-code": "var(--workspace-fg)",
+              "--tw-prose-pre-bg": "var(--workspace-muted-bg)",
+              "--tw-prose-th-borders": "var(--workspace-border)",
+              "--tw-prose-td-borders": "var(--workspace-border)",
+            } as React.CSSProperties}
+          >
             <ReactMarkdown>{streamingContent}</ReactMarkdown>
           </div>
         </div>
@@ -226,24 +237,25 @@ export function WorkflowRunner() {
       <div className="mb-8">
         <Link
           href="/workflows"
-          className="inline-flex items-center text-xs text-[#E8E4DC]/35 hover:text-[#E8E4DC]/60 mb-6 transition-colors uppercase tracking-widest"
+          className="inline-flex items-center text-xs mb-6 uppercase tracking-widest transition-colors"
+          style={{ color: "var(--workspace-muted)" }}
         >
           <ChevronLeft className="w-3 h-3 mr-1" /> Workflow Agents
         </Link>
         <div className="flex items-center gap-3 mb-2">
-          <Zap className="h-4 w-4 text-[#E8E4DC]/40" />
-          <h1 className="font-serif text-3xl font-light text-[#E8E4DC]">{template.name}</h1>
+          <Zap className="h-4 w-4" style={{ color: "var(--workspace-muted)" }} />
+          <h1 className="font-serif text-3xl font-light" style={{ color: "var(--workspace-fg)" }}>{template.name}</h1>
         </div>
-        <p className="text-sm text-[#E8E4DC]/40">{template.description}</p>
+        <p className="text-sm" style={{ color: "var(--workspace-muted)" }}>{template.description}</p>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-7">
         {template.questions.map((question) => (
           <div key={question.key} className="space-y-2">
-            <label className="text-[10px] uppercase tracking-[0.2em] text-[#E8E4DC]/40">
+            <label className="text-[10px] uppercase tracking-[0.2em]" style={{ color: "var(--workspace-muted)" }}>
               {question.label}{" "}
               {!question.required && (
-                <span className="normal-case tracking-normal text-[#E8E4DC]/25">(optional)</span>
+                <span className="normal-case tracking-normal opacity-60">(optional)</span>
               )}
             </label>
             {question.placeholder.length > 80 ? (
@@ -253,7 +265,8 @@ export function WorkflowRunner() {
                 placeholder={question.placeholder}
                 rows={question.key === "deck_content" ? 8 : 4}
                 required={question.required}
-                className="w-full bg-transparent border border-white/12 p-3 text-[#E8E4DC] text-sm placeholder:text-[#E8E4DC]/20 focus:outline-none focus:border-white/25 transition-colors resize-none"
+                className="w-full p-3 text-sm focus:outline-none transition-colors resize-none"
+                style={{ background: "#FFFFFF", border: "1px solid var(--workspace-border)", color: "var(--workspace-fg)" }}
                 data-testid={`input-${question.key}`}
               />
             ) : (
@@ -263,7 +276,8 @@ export function WorkflowRunner() {
                 onChange={(e) => setInputs((prev) => ({ ...prev, [question.key]: e.target.value }))}
                 placeholder={question.placeholder}
                 required={question.required}
-                className="w-full bg-transparent border-b border-white/20 py-3 text-[#E8E4DC] text-base font-serif placeholder:text-[#E8E4DC]/20 focus:outline-none focus:border-[#E8E4DC]/50 transition-colors"
+                className="w-full py-3 text-base font-serif focus:outline-none transition-colors"
+                style={{ background: "transparent", borderBottom: "1px solid var(--workspace-border)", color: "var(--workspace-fg)" }}
                 data-testid={`input-${question.key}`}
               />
             )}
@@ -273,7 +287,8 @@ export function WorkflowRunner() {
         <div className="pt-2">
           <button
             type="submit"
-            className="w-full bg-[#E8E4DC] text-[#0D0C0B] py-3 text-xs uppercase tracking-widest font-medium hover:bg-[#D4CEC5] transition-colors flex items-center justify-center gap-2"
+            className="w-full py-3 text-xs uppercase tracking-widest font-medium transition-colors flex items-center justify-center gap-2"
+            style={{ background: "var(--workspace-fg)", color: "#FFFFFF" }}
             data-testid="btn-launch-workflow"
           >
             <Zap className="w-3.5 h-3.5" />

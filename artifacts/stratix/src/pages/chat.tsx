@@ -18,7 +18,7 @@ import {
   useUnlinkDocumentFromConversation,
 } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
-import { Send, Plus, Trash2, Loader2, Bot, User, Paperclip, X, FileText, ChevronDown } from "lucide-react";
+import { Send, Plus, Trash2, Loader2, Paperclip, X, FileText } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useToast } from "@/hooks/use-toast";
 
@@ -98,20 +98,20 @@ function DocumentPicker({
   };
 
   return (
-    <div className="absolute bottom-full left-0 mb-2 w-72 bg-[#141311] border border-white/15 shadow-lg z-10">
-      <div className="flex items-center justify-between px-4 py-3 border-b border-white/10">
-        <span className="text-[10px] uppercase tracking-widest text-[#E8E4DC]/50">Attach Documents</span>
-        <button onClick={onClose} className="text-[#E8E4DC]/30 hover:text-[#E8E4DC]/70">
+    <div className="absolute bottom-full left-0 mb-2 w-72 shadow-lg z-10" style={{ background: "#FFFFFF", border: "1px solid var(--workspace-border)" }}>
+      <div className="flex items-center justify-between px-4 py-3 border-b" style={{ borderColor: "var(--workspace-border)" }}>
+        <span className="text-[10px] uppercase tracking-widest" style={{ color: "var(--workspace-muted)" }}>Attach Documents</span>
+        <button onClick={onClose} style={{ color: "var(--workspace-muted)" }} className="hover:opacity-70 transition-opacity">
           <X className="w-3.5 h-3.5" />
         </button>
       </div>
       {readyDocs.length === 0 ? (
         <div className="px-4 py-5 text-center">
-          <p className="text-xs text-[#E8E4DC]/35">No ready documents.</p>
-          <p className="text-[10px] text-[#E8E4DC]/25 mt-1">Upload from the Knowledge page.</p>
+          <p className="text-xs" style={{ color: "var(--workspace-muted)" }}>No ready documents.</p>
+          <p className="text-[10px] mt-1" style={{ color: "var(--workspace-muted)", opacity: 0.6 }}>Upload from the Knowledge page.</p>
         </div>
       ) : (
-        <div className="max-h-56 overflow-y-auto divide-y divide-white/6">
+        <div className="max-h-56 overflow-y-auto divide-y" style={{ borderColor: "var(--workspace-border)" }}>
           {readyDocs.map((doc) => {
             const linked = linkedIds.has(doc.id);
             const atLimit = !linked && linkedIds.size >= 5;
@@ -120,16 +120,15 @@ function DocumentPicker({
                 key={doc.id}
                 onClick={() => handleToggle(doc.id)}
                 disabled={atLimit}
-                className={`w-full flex items-center gap-3 px-4 py-3 text-left transition-colors ${
-                  linked ? "bg-white/5 text-[#E8E4DC]/90" : "text-[#E8E4DC]/55 hover:bg-white/3 hover:text-[#E8E4DC]/80"
-                } ${atLimit ? "opacity-40 cursor-not-allowed" : ""}`}
+                className={`w-full flex items-center gap-3 px-4 py-3 text-left transition-colors ${atLimit ? "opacity-40 cursor-not-allowed" : ""}`}
+                style={{ background: linked ? "var(--workspace-muted-bg)" : "transparent", color: "var(--workspace-fg)" }}
               >
-                <div className={`w-3.5 h-3.5 border flex items-center justify-center shrink-0 ${linked ? "border-[#E8E4DC]/60 bg-[#E8E4DC]/10" : "border-white/25"}`}>
-                  {linked && <span className="w-1.5 h-1.5 bg-[#E8E4DC]/70" />}
+                <div className="w-3.5 h-3.5 border flex items-center justify-center shrink-0" style={{ borderColor: linked ? "var(--workspace-fg)" : "var(--workspace-border)" }}>
+                  {linked && <span className="w-1.5 h-1.5" style={{ background: "var(--workspace-fg)" }} />}
                 </div>
-                <FileText className="w-3 h-3 shrink-0 text-[#E8E4DC]/30" />
+                <FileText className="w-3 h-3 shrink-0" style={{ color: "var(--workspace-muted)" }} />
                 <span className="text-xs truncate">{doc.title}</span>
-                <span className="text-[10px] text-[#E8E4DC]/25 uppercase ml-auto shrink-0">{doc.fileType}</span>
+                <span className="text-[10px] uppercase ml-auto shrink-0" style={{ color: "var(--workspace-muted)" }}>{doc.fileType}</span>
               </button>
             );
           })}
@@ -188,7 +187,7 @@ export function Chat() {
 
   const handleCreateNew = () => {
     createConversation.mutate(
-      { data: { title: "New Engagement" } },
+      { data: { title: "New Conversation" } },
       {
         onSuccess: (newConv) => {
           queryClient.invalidateQueries({ queryKey: getListOpenaiConversationsQueryKey() });
@@ -210,7 +209,7 @@ export function Chat() {
             setActiveConversationId(null);
             setShowDocPicker(false);
           }
-          toast({ title: "Engagement deleted" });
+          toast({ title: "Conversation deleted" });
         }
       }
     );
@@ -283,46 +282,50 @@ export function Chat() {
   };
 
   return (
-    <div className="h-[calc(100vh-8.5rem)] flex border border-white/10 overflow-hidden">
-      {/* Sidebar */}
-      <div className="w-64 border-r border-white/8 flex flex-col bg-[#0D0C0B]">
-        <div className="p-3 border-b border-white/8">
+    <div className="h-full flex overflow-hidden" style={{ borderTop: "1px solid var(--workspace-border)" }}>
+      {/* Conversations sidebar — dark */}
+      <div className="w-60 flex flex-col shrink-0" style={{ background: "#0D0C0B", borderRight: "1px solid rgba(255,255,255,0.08)" }}>
+        <div className="p-3 border-b" style={{ borderColor: "rgba(255,255,255,0.08)" }}>
           <button
             onClick={handleCreateNew}
-            className="w-full flex items-center justify-center gap-2 border border-white/15 py-2 text-xs uppercase tracking-widest text-[#E8E4DC]/70 hover:text-[#E8E4DC] hover:border-white/30 transition-colors"
+            className="w-full flex items-center justify-center gap-2 py-2 text-xs uppercase tracking-widest transition-colors"
+            style={{ border: "1px solid rgba(255,255,255,0.20)", color: "rgba(232,228,220,0.75)" }}
             data-testid="btn-create-conversation"
             disabled={createConversation.isPending}
           >
             {createConversation.isPending ? <Loader2 className="w-3 h-3 animate-spin" /> : <Plus className="w-3 h-3" />}
-            New Engagement
+            New Conversation
           </button>
         </div>
         <ScrollArea className="flex-1">
           <div className="p-2 space-y-0.5">
             {loadingConversations ? (
-              <div className="p-3 text-xs text-[#E8E4DC]/30 text-center">Loading...</div>
+              <div className="p-3 text-xs text-center" style={{ color: "rgba(232,228,220,0.30)" }}>Loading...</div>
             ) : conversations?.length === 0 ? (
-              <div className="p-3 text-xs text-[#E8E4DC]/30 text-center">No engagements yet.</div>
+              <div className="p-3 text-xs text-center" style={{ color: "rgba(232,228,220,0.30)" }}>No conversations yet.</div>
             ) : (
               conversations?.map((conv) => (
                 <div
                   key={conv.id}
                   onClick={() => { setActiveConversationId(conv.id); setShowDocPicker(false); }}
-                  className={`flex items-center justify-between p-2.5 cursor-pointer transition-colors group ${
-                    activeConversationId === conv.id
-                      ? 'bg-white/6 text-[#E8E4DC] border-l-2 border-[#E8E4DC]/50 pl-[9px]'
-                      : 'text-[#E8E4DC]/55 hover:bg-white/3 border-l-2 border-transparent pl-[9px] hover:text-[#E8E4DC]/80'
-                  }`}
+                  className="flex items-center justify-between p-2.5 cursor-pointer transition-colors group"
+                  style={{
+                    background: activeConversationId === conv.id ? "rgba(255,255,255,0.06)" : "transparent",
+                    borderLeft: activeConversationId === conv.id ? "2px solid rgba(232,228,220,0.50)" : "2px solid transparent",
+                    paddingLeft: "9px",
+                    color: activeConversationId === conv.id ? "#E8E4DC" : "rgba(232,228,220,0.55)",
+                  }}
                   data-testid={`conversation-${conv.id}`}
                 >
                   <div className="truncate pr-2 flex-1 min-w-0">
                     <p className="text-xs font-medium truncate">{conv.title}</p>
-                    <p className="text-[10px] text-[#E8E4DC]/30 mt-0.5">
+                    <p className="text-[10px] mt-0.5" style={{ color: "rgba(232,228,220,0.30)" }}>
                       {format(new Date(conv.createdAt), "MMM d")}
                     </p>
                   </div>
                   <button
-                    className="h-6 w-6 flex items-center justify-center opacity-0 group-hover:opacity-100 text-[#E8E4DC]/30 hover:text-[#E8E4DC]/70 transition-opacity shrink-0"
+                    className="h-6 w-6 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity shrink-0"
+                    style={{ color: "rgba(232,228,220,0.35)" }}
                     onClick={(e) => handleDelete(conv.id, e)}
                   >
                     <Trash2 className="w-3 h-3" />
@@ -334,29 +337,30 @@ export function Chat() {
         </ScrollArea>
       </div>
 
-      {/* Chat Area */}
-      <div className="flex-1 flex flex-col bg-[#0D0C0B]">
+      {/* Chat Area — light workspace */}
+      <div className="flex-1 flex flex-col" style={{ background: "var(--workspace-bg)" }}>
         {activeConversationId ? (
           <>
             {/* Context bar */}
             {(profile || linkedDocs.length > 0) && (
-              <div className="border-b border-white/8 px-5 py-2 flex items-center gap-3 bg-white/2 flex-wrap">
+              <div className="border-b px-5 py-2 flex items-center gap-3 flex-wrap shrink-0" style={{ borderColor: "var(--workspace-border)", background: "var(--workspace-topbar)" }}>
                 {profile && (
                   <>
-                    <span className="text-[9px] uppercase tracking-[0.2em] text-[#E8E4DC]/25">Context</span>
-                    <span className="text-[10px] text-[#E8E4DC]/45">
+                    <span className="text-[9px] uppercase tracking-[0.2em]" style={{ color: "var(--workspace-muted)" }}>Context</span>
+                    <span className="text-[10px]" style={{ color: "var(--workspace-fg)", opacity: 0.6 }}>
                       {profile.companyName} · {profile.industry} · {profile.stage}
                     </span>
                   </>
                 )}
                 {linkedDocs.length > 0 && (
                   <>
-                    <span className="text-[9px] uppercase tracking-[0.2em] text-[#E8E4DC]/25 ml-2">Docs</span>
+                    <span className="text-[9px] uppercase tracking-[0.2em] ml-2" style={{ color: "var(--workspace-muted)" }}>Docs</span>
                     <div className="flex items-center gap-1.5 flex-wrap">
                       {linkedDocs.map((d) => (
                         <span
                           key={d.id}
-                          className="flex items-center gap-1 text-[10px] bg-white/6 border border-white/10 px-2 py-0.5 text-[#E8E4DC]/60"
+                          className="flex items-center gap-1 text-[10px] px-2 py-0.5"
+                          style={{ background: "#FFFFFF", border: "1px solid var(--workspace-border)", color: "var(--workspace-muted)" }}
                         >
                           <FileText className="w-2.5 h-2.5" />
                           {d.title}
@@ -369,61 +373,84 @@ export function Chat() {
             )}
 
             {/* Title bar */}
-            <div className="px-6 py-4 border-b border-white/8">
-              <h2 className="font-serif text-xl font-light text-[#E8E4DC]">
-                {activeConversation?.title || "New Engagement"}
+            <div className="px-6 py-4 border-b shrink-0" style={{ borderColor: "var(--workspace-border)" }}>
+              <h2 className="font-serif text-xl font-light" style={{ color: "var(--workspace-fg)" }}>
+                {activeConversation?.title || "New Conversation"}
               </h2>
-              <p className="text-[10px] uppercase tracking-[0.15em] text-[#E8E4DC]/30 mt-0.5">Strategic Engagement</p>
             </div>
 
             <div className="flex-1 overflow-y-auto p-6 space-y-6" ref={scrollRef}>
               {activeConversation?.messages.map((msg: Message) => (
-                <div key={msg.id} className={`flex gap-4 max-w-3xl mx-auto ${msg.role === "user" ? "justify-end" : "justify-start"}`}>
-                  {msg.role === "assistant" && (
-                    <div className="w-7 h-7 border border-white/15 flex items-center justify-center shrink-0 mt-0.5">
-                      <Bot className="w-3.5 h-3.5 text-[#E8E4DC]/60" />
+                <div key={msg.id} className={`flex max-w-3xl mx-auto ${msg.role === "user" ? "justify-end" : "justify-start"}`}>
+                  {msg.role === "user" ? (
+                    <div
+                      className="text-sm leading-relaxed max-w-[80%]"
+                      style={{
+                        background: "var(--workspace-muted-bg)",
+                        border: "1px solid var(--workspace-border)",
+                        padding: "12px 16px",
+                        color: "var(--workspace-fg)",
+                      }}
+                    >
+                      {msg.content}
                     </div>
-                  )}
-
-                  <div className={`text-sm leading-relaxed max-w-[85%] ${
-                    msg.role === "user"
-                      ? "bg-white/6 border border-white/12 px-4 py-3 text-[#E8E4DC]/85"
-                      : "px-0 py-0 text-[#E8E4DC]/80 prose prose-sm max-w-none"
-                  }`}
-                  style={{ borderRadius: 0 }}
-                  >
-                    {msg.role === "user" ? (
-                      msg.content
-                    ) : (
-                      <div className="prose prose-sm prose-invert prose-headings:font-serif prose-headings:font-light prose-headings:text-[#E8E4DC]/90 prose-p:text-[#E8E4DC]/70 prose-strong:text-[#E8E4DC]/85 prose-li:text-[#E8E4DC]/70 max-w-none">
+                  ) : (
+                    <div
+                      className="text-sm leading-relaxed max-w-[85%]"
+                      style={{
+                        background: "var(--workspace-card)",
+                        border: "1px solid var(--workspace-border)",
+                        padding: "16px 20px",
+                        color: "var(--workspace-fg)",
+                      }}
+                    >
+                      <div className="prose prose-sm max-w-none"
+                        style={{
+                          "--tw-prose-body": "var(--workspace-fg)",
+                          "--tw-prose-headings": "var(--workspace-fg)",
+                          "--tw-prose-lead": "var(--workspace-muted)",
+                          "--tw-prose-links": "var(--workspace-fg)",
+                          "--tw-prose-bold": "var(--workspace-fg)",
+                          "--tw-prose-counters": "var(--workspace-muted)",
+                          "--tw-prose-bullets": "var(--workspace-muted)",
+                          "--tw-prose-hr": "var(--workspace-border)",
+                          "--tw-prose-quotes": "var(--workspace-fg)",
+                          "--tw-prose-quote-borders": "var(--workspace-border)",
+                          "--tw-prose-captions": "var(--workspace-muted)",
+                          "--tw-prose-code": "var(--workspace-fg)",
+                          "--tw-prose-pre-code": "var(--workspace-fg)",
+                          "--tw-prose-pre-bg": "var(--workspace-muted-bg)",
+                          "--tw-prose-th-borders": "var(--workspace-border)",
+                          "--tw-prose-td-borders": "var(--workspace-border)",
+                        } as React.CSSProperties}
+                      >
                         <ReactMarkdown>{msg.content}</ReactMarkdown>
                       </div>
-                    )}
-                  </div>
-
-                  {msg.role === "user" && (
-                    <div className="w-7 h-7 border border-white/12 flex items-center justify-center shrink-0 mt-0.5 bg-white/4">
-                      <User className="w-3 h-3 text-[#E8E4DC]/50" />
                     </div>
                   )}
                 </div>
               ))}
 
               {isStreaming && (
-                <div className="flex gap-4 max-w-3xl mx-auto justify-start">
-                  <div className="w-7 h-7 border border-white/15 flex items-center justify-center shrink-0 mt-0.5">
-                    <Bot className="w-3.5 h-3.5 text-[#E8E4DC]/60" />
-                  </div>
-                  <div className="text-sm leading-relaxed text-[#E8E4DC]/75 max-w-[85%]">
+                <div className="flex max-w-3xl mx-auto justify-start">
+                  <div
+                    className="text-sm leading-relaxed max-w-[85%]"
+                    style={{
+                      background: "var(--workspace-card)",
+                      border: "1px solid var(--workspace-border)",
+                      padding: "16px 20px",
+                      color: "var(--workspace-fg)",
+                    }}
+                  >
                     {streamingContent ? (
-                      <div className="prose prose-sm prose-invert prose-headings:font-serif prose-headings:font-light prose-headings:text-[#E8E4DC]/90 prose-p:text-[#E8E4DC]/70 max-w-none">
+                      <div className="prose prose-sm max-w-none">
                         <ReactMarkdown>{streamingContent}</ReactMarkdown>
                       </div>
                     ) : (
                       <span className="flex gap-1 items-center h-5">
-                        <span className="w-1.5 h-1.5 bg-[#E8E4DC]/30 animate-bounce" />
-                        <span className="w-1.5 h-1.5 bg-[#E8E4DC]/30 animate-bounce delay-100" />
-                        <span className="w-1.5 h-1.5 bg-[#E8E4DC]/30 animate-bounce delay-200" />
+                        <span className="w-1.5 h-1.5 animate-bounce" style={{ background: "var(--workspace-muted)" }} />
+                        <span className="w-1.5 h-1.5 animate-bounce delay-100" style={{ background: "var(--workspace-muted)" }} />
+                        <span className="w-1.5 h-1.5 animate-bounce delay-200" style={{ background: "var(--workspace-muted)" }} />
                       </span>
                     )}
                   </div>
@@ -431,37 +458,41 @@ export function Chat() {
               )}
             </div>
 
-            <div className="p-4 bg-[#0D0C0B] border-t border-white/8">
+            {/* Input bar */}
+            <div className="p-4 border-t shrink-0" style={{ borderColor: "var(--workspace-border)", background: "var(--workspace-bg)" }}>
               <div className="max-w-3xl mx-auto">
                 {linkedDocs.length > 0 && (
                   <div className="flex items-center gap-2 mb-2 flex-wrap">
                     {linkedDocs.map((d) => (
                       <span
                         key={d.id}
-                        className="flex items-center gap-1.5 text-[10px] bg-white/5 border border-white/10 px-2 py-1 text-[#E8E4DC]/55"
+                        className="flex items-center gap-1.5 text-[10px] px-2 py-1"
+                        style={{ background: "var(--workspace-muted-bg)", border: "1px solid var(--workspace-border)", color: "var(--workspace-muted)" }}
                       >
-                        <FileText className="w-2.5 h-2.5 text-[#E8E4DC]/35" />
+                        <FileText className="w-2.5 h-2.5" />
                         {d.title}
                       </span>
                     ))}
                   </div>
                 )}
-                <form onSubmit={handleFormSubmit} className="relative flex items-center">
-                  <div className="relative mr-2">
+                <form onSubmit={handleFormSubmit} className="relative flex items-center gap-2">
+                  <div className="relative">
                     <button
                       type="button"
                       onClick={() => setShowDocPicker((v) => !v)}
-                      className={`h-10 w-10 flex items-center justify-center border transition-colors ${
-                        showDocPicker || linkedDocs.length > 0
-                          ? "border-white/30 text-[#E8E4DC]/70 bg-white/5"
-                          : "border-white/12 text-[#E8E4DC]/30 hover:text-[#E8E4DC]/60 hover:border-white/25"
-                      }`}
+                      className="h-10 w-10 flex items-center justify-center transition-colors"
+                      style={{
+                        border: `1px solid ${showDocPicker || linkedDocs.length > 0 ? "var(--workspace-fg)" : "var(--workspace-border)"}`,
+                        color: showDocPicker || linkedDocs.length > 0 ? "var(--workspace-fg)" : "var(--workspace-muted)",
+                        background: "#FFFFFF",
+                        position: "relative",
+                      }}
                       title="Attach documents"
                       data-testid="btn-attach-documents"
                     >
                       <Paperclip className="w-3.5 h-3.5" />
                       {linkedDocs.length > 0 && (
-                        <span className="absolute -top-1 -right-1 w-3.5 h-3.5 bg-[#E8E4DC] text-[#0D0C0B] text-[8px] flex items-center justify-center font-bold">
+                        <span className="absolute -top-1 -right-1 w-3.5 h-3.5 text-[8px] flex items-center justify-center font-bold" style={{ background: "var(--workspace-fg)", color: "#FFFFFF" }}>
                           {linkedDocs.length}
                         </span>
                       )}
@@ -473,67 +504,84 @@ export function Chat() {
                       />
                     )}
                   </div>
-                  <input
-                    value={inputValue}
-                    onChange={(e) => setInputValue(e.target.value)}
-                    placeholder="Ask a strategic question..."
-                    className="flex-1 bg-white/4 border border-white/12 px-4 py-3 text-sm text-[#E8E4DC] placeholder:text-[#E8E4DC]/25 focus:outline-none focus:border-white/25 transition-colors pr-12"
-                    disabled={isStreaming}
-                    data-testid="input-chat"
-                  />
-                  <button
-                    type="submit"
-                    className="absolute right-2 h-8 w-8 flex items-center justify-center bg-[#E8E4DC] text-[#0D0C0B] hover:bg-[#D4CEC5] transition-colors disabled:opacity-40"
-                    disabled={!inputValue.trim() || isStreaming}
-                    data-testid="btn-send-message"
-                  >
-                    <Send className="w-3.5 h-3.5" />
-                  </button>
+                  <div className="flex-1 relative">
+                    <input
+                      value={inputValue}
+                      onChange={(e) => setInputValue(e.target.value)}
+                      placeholder="Ask a strategic question..."
+                      className="w-full px-4 py-3 text-sm pr-12 focus:outline-none transition-colors"
+                      style={{
+                        background: "#FFFFFF",
+                        border: "1px solid var(--workspace-border)",
+                        color: "var(--workspace-fg)",
+                      }}
+                      disabled={isStreaming}
+                      data-testid="input-chat"
+                    />
+                    <button
+                      type="submit"
+                      className="absolute right-2 top-1/2 -translate-y-1/2 h-8 w-8 flex items-center justify-center transition-colors disabled:opacity-40"
+                      style={{ background: "var(--workspace-fg)", color: "#FFFFFF" }}
+                      disabled={!inputValue.trim() || isStreaming}
+                      data-testid="btn-send-message"
+                    >
+                      <Send className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
                 </form>
               </div>
             </div>
           </>
         ) : (
-          <div className="flex-1 flex flex-col items-start justify-center p-10">
-            <div className="max-w-lg">
-              <div className="w-8 h-8 border border-white/15 flex items-center justify-center mb-8">
-                <Bot className="w-4 h-4 text-[#E8E4DC]/50" />
-              </div>
-              <h3 className="font-serif text-4xl font-light text-[#E8E4DC] mb-3">Strategic Advisor</h3>
+          /* Empty state */
+          <div className="flex-1 flex flex-col items-center justify-center p-10">
+            <div className="max-w-lg w-full">
+              <h3 className="font-serif text-4xl font-light mb-3" style={{ color: "var(--workspace-fg)" }}>Strategic Advisor</h3>
               {profile ? (
-                <p className="text-sm text-[#E8E4DC]/45 mb-8 leading-relaxed">
+                <p className="text-sm mb-8 leading-relaxed" style={{ color: "var(--workspace-muted)" }}>
                   Contextualized for {profile.companyName} — {profile.industry} · {profile.stage}. The advisor knows your business.
                 </p>
               ) : (
-                <p className="text-sm text-[#E8E4DC]/45 mb-8 leading-relaxed">
-                  Start a new engagement to consult with the AI advisor, trained on global market data and executive decision-making frameworks.
+                <p className="text-sm mb-8 leading-relaxed" style={{ color: "var(--workspace-muted)" }}>
+                  Start a conversation to consult with the AI advisor, trained on global market data and executive decision-making frameworks.
                 </p>
               )}
 
-              <div className="space-y-2 mb-8">
-                <p className="text-[10px] uppercase tracking-[0.2em] text-[#E8E4DC]/25 mb-3">Suggested Questions</p>
-                {getSuggestedStarters(profile).map((q) => (
-                  <button
-                    key={q}
-                    onClick={() => {
-                      handleCreateNew();
-                      setTimeout(() => setInputValue(q), 500);
-                    }}
-                    className="block w-full text-left text-xs text-[#E8E4DC]/45 hover:text-[#E8E4DC]/75 py-2 border-b border-white/6 hover:border-white/15 transition-colors"
-                  >
-                    {q}
-                  </button>
-                ))}
+              <div className="mb-8">
+                <p className="text-[10px] uppercase tracking-[0.2em] mb-4" style={{ color: "var(--workspace-muted)" }}>Suggested Questions</p>
+                <div className="space-y-1">
+                  {getSuggestedStarters(profile).map((q) => (
+                    <button
+                      key={q}
+                      onClick={() => {
+                        handleCreateNew();
+                        setTimeout(() => setInputValue(q), 500);
+                      }}
+                      className="block w-full text-left text-sm py-3 px-4 transition-colors"
+                      style={{
+                        color: "var(--workspace-fg)",
+                        background: "#FFFFFF",
+                        border: "1px solid var(--workspace-border)",
+                        marginBottom: "6px",
+                      }}
+                      onMouseEnter={e => (e.currentTarget.style.borderColor = "var(--workspace-fg)")}
+                      onMouseLeave={e => (e.currentTarget.style.borderColor = "var(--workspace-border)")}
+                    >
+                      {q}
+                    </button>
+                  ))}
+                </div>
               </div>
 
               <button
                 onClick={handleCreateNew}
-                className="flex items-center gap-2 bg-[#E8E4DC] text-[#0D0C0B] px-6 py-2.5 text-xs uppercase tracking-widest font-medium hover:bg-[#D4CEC5] transition-colors"
+                className="flex items-center gap-2 px-6 py-2.5 text-xs uppercase tracking-widest font-medium transition-colors"
+                style={{ background: "var(--workspace-fg)", color: "#FFFFFF" }}
                 disabled={createConversation.isPending}
                 data-testid="btn-create-conversation-empty"
               >
                 {createConversation.isPending ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Plus className="w-3.5 h-3.5" />}
-                Begin Engagement
+                Begin Conversation
               </button>
             </div>
           </div>

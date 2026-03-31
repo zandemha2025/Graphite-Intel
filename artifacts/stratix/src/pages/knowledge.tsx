@@ -16,7 +16,7 @@ type DocStatus = "processing" | "ready" | "failed";
 function StatusBadge({ status }: { status: string }) {
   if (status === "ready") {
     return (
-      <span className="flex items-center gap-1 text-[10px] uppercase tracking-widest text-emerald-400/80">
+      <span className="flex items-center gap-1 text-[10px] uppercase tracking-widest" style={{ color: "#16a34a" }}>
         <FileCheck className="w-3 h-3" />
         Ready
       </span>
@@ -24,14 +24,14 @@ function StatusBadge({ status }: { status: string }) {
   }
   if (status === "failed") {
     return (
-      <span className="flex items-center gap-1 text-[10px] uppercase tracking-widest text-red-400/80">
+      <span className="flex items-center gap-1 text-[10px] uppercase tracking-widest" style={{ color: "#dc2626" }}>
         <AlertCircle className="w-3 h-3" />
         Failed
       </span>
     );
   }
   return (
-    <span className="flex items-center gap-1 text-[10px] uppercase tracking-widest text-[#E8E4DC]/40">
+    <span className="flex items-center gap-1 text-[10px] uppercase tracking-widest" style={{ color: "var(--workspace-muted)" }}>
       <Loader2 className="w-3 h-3 animate-spin" />
       Processing
     </span>
@@ -135,10 +135,10 @@ export function Knowledge() {
       <div className="flex items-start justify-between mb-8">
         <div>
           <div className="flex items-center gap-3 mb-2">
-            <BookOpen className="w-4 h-4 text-[#E8E4DC]/40" />
-            <h1 className="font-serif text-2xl font-light text-[#E8E4DC]">Knowledge Vault</h1>
+            <BookOpen className="w-4 h-4" style={{ color: "var(--workspace-muted)" }} />
+            <h1 className="font-serif text-2xl font-light" style={{ color: "var(--workspace-fg)" }}>Knowledge Vault</h1>
           </div>
-          <p className="text-xs text-[#E8E4DC]/40 leading-relaxed">
+          <p className="text-xs leading-relaxed" style={{ color: "var(--workspace-muted)" }}>
             Upload board decks, financial models, research reports, and contracts. Attach them to conversations so the AI can analyze your actual materials.
           </p>
         </div>
@@ -153,7 +153,8 @@ export function Knowledge() {
           <button
             onClick={() => fileInputRef.current?.click()}
             disabled={uploading}
-            className="flex items-center gap-2 border border-white/20 px-4 py-2 text-xs uppercase tracking-widest text-[#E8E4DC]/70 hover:text-[#E8E4DC] hover:border-white/35 transition-colors disabled:opacity-40"
+            className="flex items-center gap-2 px-4 py-2 text-xs uppercase tracking-widest transition-colors disabled:opacity-40"
+            style={{ border: "1px solid var(--workspace-border)", color: "var(--workspace-muted)", background: "#FFFFFF" }}
             data-testid="btn-upload-document"
           >
             {uploading ? <Loader2 className="w-3 h-3 animate-spin" /> : <Upload className="w-3 h-3" />}
@@ -164,31 +165,37 @@ export function Knowledge() {
 
       {isLoading ? (
         <div className="flex items-center justify-center py-16">
-          <Loader2 className="w-5 h-5 animate-spin text-[#E8E4DC]/30" />
+          <Loader2 className="w-5 h-5 animate-spin" style={{ color: "var(--workspace-muted)" }} />
         </div>
       ) : docs.length === 0 ? (
-        <div className="border border-white/8 p-12 flex flex-col items-center justify-center text-center">
-          <FileText className="w-8 h-8 text-[#E8E4DC]/15 mb-4" />
-          <p className="text-sm text-[#E8E4DC]/40 mb-2">No documents yet</p>
-          <p className="text-xs text-[#E8E4DC]/25">Upload a PDF or DOCX to get started</p>
+        <div className="p-12 flex flex-col items-center justify-center text-center" style={{ border: "1px solid var(--workspace-border)", background: "#FFFFFF" }}>
+          <FileText className="w-8 h-8 mb-4" style={{ color: "var(--workspace-muted)", opacity: 0.4 }} />
+          <p className="text-sm mb-2" style={{ color: "var(--workspace-muted)" }}>No documents yet</p>
+          <p className="text-xs" style={{ color: "var(--workspace-muted)", opacity: 0.6 }}>Upload a PDF or DOCX to get started</p>
         </div>
       ) : (
-        <div className="border border-white/8 divide-y divide-white/8">
-          {docs.map((doc) => (
+        <div style={{ border: "1px solid var(--workspace-border)" }}>
+          {docs.map((doc, i) => (
             <div
               key={doc.id}
-              className="flex items-center justify-between px-5 py-4 group hover:bg-white/2 transition-colors"
+              className="flex items-center justify-between px-5 py-4 group transition-colors"
+              style={{
+                borderTop: i > 0 ? `1px solid var(--workspace-border)` : undefined,
+                background: "#FFFFFF",
+              }}
               data-testid={`document-${doc.id}`}
+              onMouseEnter={e => (e.currentTarget.style.background = "var(--workspace-muted-bg)")}
+              onMouseLeave={e => (e.currentTarget.style.background = "#FFFFFF")}
             >
               <div className="flex items-start gap-4 min-w-0 flex-1">
-                <FileText className="w-4 h-4 text-[#E8E4DC]/25 shrink-0 mt-0.5" />
+                <FileText className="w-4 h-4 shrink-0 mt-0.5" style={{ color: "var(--workspace-muted)" }} />
                 <div className="min-w-0">
-                  <p className="text-sm text-[#E8E4DC]/80 truncate font-medium">{doc.title}</p>
+                  <p className="text-sm font-medium truncate" style={{ color: "var(--workspace-fg)" }}>{doc.title}</p>
                   <div className="flex items-center gap-3 mt-1">
-                    <span className="text-[10px] uppercase tracking-widest text-[#E8E4DC]/30">
+                    <span className="text-[10px] uppercase tracking-widest" style={{ color: "var(--workspace-muted)" }}>
                       {doc.fileType.toUpperCase()}
                     </span>
-                    <span className="text-[10px] text-[#E8E4DC]/25">
+                    <span className="text-[10px]" style={{ color: "var(--workspace-muted)", opacity: 0.6 }}>
                       {format(new Date(doc.createdAt), "MMM d, yyyy")}
                     </span>
                     <StatusBadge status={doc.status} />
@@ -196,7 +203,8 @@ export function Knowledge() {
                 </div>
               </div>
               <button
-                className="h-7 w-7 flex items-center justify-center opacity-0 group-hover:opacity-100 text-[#E8E4DC]/30 hover:text-red-400/70 transition-all shrink-0 ml-4"
+                className="h-7 w-7 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all shrink-0 ml-4"
+                style={{ color: "var(--workspace-muted)" }}
                 onClick={() => handleDelete(doc.id, doc.title)}
                 data-testid={`btn-delete-document-${doc.id}`}
               >
@@ -207,7 +215,7 @@ export function Knowledge() {
         </div>
       )}
 
-      <p className="text-[10px] text-[#E8E4DC]/20 mt-4 leading-relaxed">
+      <p className="text-[10px] mt-4 leading-relaxed" style={{ color: "var(--workspace-muted)", opacity: 0.6 }}>
         Supported formats: PDF, DOCX · Maximum 5 documents per conversation
       </p>
     </div>

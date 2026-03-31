@@ -112,7 +112,7 @@ function HomeRedirect() {
       if (!user?.orgId) {
         setLocation("/org-setup");
       } else {
-        setLocation("/dashboard");
+        setLocation("/chat");
       }
     }
   }, [isLoading, auth, setLocation]);

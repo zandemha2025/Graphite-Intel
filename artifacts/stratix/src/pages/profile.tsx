@@ -197,7 +197,7 @@ export function Profile() {
     return (
       <div className="space-y-4">
         {[1, 2, 3].map((i) => (
-          <div key={i} className="h-12 bg-white/4 animate-pulse" />
+          <div key={i} className="h-12 animate-pulse" style={{ background: "var(--workspace-muted-bg)" }} />
         ))}
       </div>
     );
@@ -207,11 +207,11 @@ export function Profile() {
 
   return (
     <div className="max-w-2xl space-y-8 animate-in fade-in duration-500">
-      <div className="border-b border-white/8 pb-6">
+      <div className="pb-6 border-b" style={{ borderColor: "var(--workspace-border)" }}>
         <div className="flex items-start justify-between gap-4">
           <div>
-            <h1 className="font-serif text-4xl font-light text-[#E8E4DC] mb-2">Company Profile</h1>
-            <p className="text-sm text-[#E8E4DC]/45">
+            <h1 className="font-serif text-4xl font-light mb-2" style={{ color: "var(--workspace-fg)" }}>Company Profile</h1>
+            <p className="text-sm" style={{ color: "var(--workspace-muted)" }}>
               This context is injected into every AI conversation and report. Keep it current for the best results.
             </p>
           </div>
@@ -220,7 +220,8 @@ export function Profile() {
               type="button"
               onClick={handleRefreshIntelligence}
               disabled={refreshStatus.active}
-              className="flex items-center gap-2 border border-white/15 px-4 py-2 text-xs uppercase tracking-widest text-[#E8E4DC]/60 hover:border-white/30 hover:text-[#E8E4DC]/80 transition-colors disabled:opacity-40 disabled:cursor-not-allowed flex-shrink-0"
+              className="flex items-center gap-2 px-4 py-2 text-xs uppercase tracking-widest transition-colors disabled:opacity-40 disabled:cursor-not-allowed flex-shrink-0"
+              style={{ border: "1px solid var(--workspace-border)", color: "var(--workspace-muted)", background: "#FFFFFF" }}
               data-testid="btn-refresh-intelligence"
             >
               <RefreshCw className={`h-3.5 w-3.5 ${refreshStatus.active ? "animate-spin" : ""}`} />
@@ -230,7 +231,7 @@ export function Profile() {
         </div>
 
         {lastUpdated && (
-          <div className="flex items-center gap-1.5 mt-3 text-xs text-[#E8E4DC]/30">
+          <div className="flex items-center gap-1.5 mt-3 text-xs" style={{ color: "var(--workspace-muted)" }}>
             <Clock className="h-3 w-3" />
             Last updated {lastUpdated.toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })}
           </div>
@@ -238,22 +239,22 @@ export function Profile() {
       </div>
 
       {refreshStatus.active && refreshStatus.lines.length > 0 && (
-        <div className="border border-white/8 p-4 bg-white/[0.02] space-y-3 animate-in fade-in duration-300">
+        <div className="p-4 space-y-3 animate-in fade-in duration-300" style={{ border: "1px solid var(--workspace-border)", background: "var(--workspace-muted-bg)" }}>
           {refreshStatus.lines.map((line, i) => (
             <div key={i} className="flex items-center gap-3 animate-in fade-in slide-in-from-bottom-1 duration-400">
-              <div className="h-px w-4 bg-[#E8E4DC]/30 flex-shrink-0" />
-              <span className="text-sm text-[#E8E4DC]/60 font-serif">{line}</span>
+              <div className="h-px w-4 flex-shrink-0" style={{ background: "var(--workspace-muted)" }} />
+              <span className="text-sm font-serif" style={{ color: "var(--workspace-fg)" }}>{line}</span>
             </div>
           ))}
         </div>
       )}
 
       {profile?.researchSummary && !refreshStatus.active && (
-        <div className="border border-white/10 p-5 bg-white/[0.02]">
-          <p className="text-[10px] uppercase tracking-[0.2em] text-[#E8E4DC]/35 mb-3">Intelligence Summary</p>
-          <p className="text-sm text-[#E8E4DC]/70 leading-relaxed font-serif">{profile.researchSummary}</p>
+        <div className="p-5" style={{ border: "1px solid var(--workspace-border)", background: "#FFFFFF" }}>
+          <p className="text-[10px] uppercase tracking-[0.2em] mb-3" style={{ color: "var(--workspace-muted)" }}>Intelligence Summary</p>
+          <p className="text-sm leading-relaxed font-serif" style={{ color: "var(--workspace-fg)" }}>{profile.researchSummary}</p>
           {profile.companyUrl && (
-            <p className="text-[10px] text-[#E8E4DC]/25 mt-3">Source: {profile.companyUrl}</p>
+            <p className="text-[10px] mt-3" style={{ color: "var(--workspace-muted)", opacity: 0.6 }}>Source: {profile.companyUrl}</p>
           )}
         </div>
       )}
@@ -261,30 +262,32 @@ export function Profile() {
       <form onSubmit={handleSubmit} className="space-y-8">
         <div className="space-y-5">
           <div className="space-y-2">
-            <label className="text-[10px] uppercase tracking-[0.2em] text-[#E8E4DC]/40">Company Name</label>
+            <label className="text-[10px] uppercase tracking-[0.2em]" style={{ color: "var(--workspace-muted)" }}>Company Name</label>
             <input
               type="text"
               value={companyName}
               onChange={(e) => setCompanyName(e.target.value)}
               required
-              className="w-full bg-transparent border-b border-white/20 py-2.5 text-[#E8E4DC] text-base font-serif placeholder:text-[#E8E4DC]/20 focus:outline-none focus:border-[#E8E4DC]/50 transition-colors"
+              className="w-full py-2.5 text-base font-serif focus:outline-none transition-colors"
+              style={{ background: "transparent", borderBottom: "1px solid var(--workspace-border)", color: "var(--workspace-fg)" }}
               data-testid="input-company-name"
             />
           </div>
 
           <div className="space-y-2">
-            <label className="text-[10px] uppercase tracking-[0.2em] text-[#E8E4DC]/40">Industry</label>
+            <label className="text-[10px] uppercase tracking-[0.2em]" style={{ color: "var(--workspace-muted)" }}>Industry</label>
             <div className="grid grid-cols-3 gap-1.5 mt-2">
               {INDUSTRIES.map((ind) => (
                 <button
                   key={ind}
                   type="button"
                   onClick={() => setIndustry(ind)}
-                  className={`text-left px-2.5 py-2 border text-[10px] transition-colors ${
-                    industry === ind
-                      ? "border-[#E8E4DC]/50 bg-white/5 text-[#E8E4DC]"
-                      : "border-white/10 text-[#E8E4DC]/40 hover:border-white/20 hover:text-[#E8E4DC]/60"
-                  }`}
+                  className="text-left px-2.5 py-2 text-[10px] transition-colors"
+                  style={{
+                    border: `1px solid ${industry === ind ? "var(--workspace-fg)" : "var(--workspace-border)"}`,
+                    background: industry === ind ? "var(--workspace-muted-bg)" : "#FFFFFF",
+                    color: industry === ind ? "var(--workspace-fg)" : "var(--workspace-muted)",
+                  }}
                 >
                   {ind}
                 </button>
@@ -295,18 +298,19 @@ export function Profile() {
 
         <div className="grid grid-cols-2 gap-6">
           <div className="space-y-2">
-            <label className="text-[10px] uppercase tracking-[0.2em] text-[#E8E4DC]/40">Stage</label>
+            <label className="text-[10px] uppercase tracking-[0.2em]" style={{ color: "var(--workspace-muted)" }}>Stage</label>
             <div className="space-y-1 mt-2">
               {STAGES.map((s) => (
                 <button
                   key={s}
                   type="button"
                   onClick={() => setStage(s)}
-                  className={`w-full text-left px-3 py-2 border text-xs transition-colors ${
-                    stage === s
-                      ? "border-[#E8E4DC]/50 bg-white/5 text-[#E8E4DC]"
-                      : "border-white/10 text-[#E8E4DC]/40 hover:border-white/20 hover:text-[#E8E4DC]/60"
-                  }`}
+                  className="w-full text-left px-3 py-2 text-xs transition-colors"
+                  style={{
+                    border: `1px solid ${stage === s ? "var(--workspace-fg)" : "var(--workspace-border)"}`,
+                    background: stage === s ? "var(--workspace-muted-bg)" : "#FFFFFF",
+                    color: stage === s ? "var(--workspace-fg)" : "var(--workspace-muted)",
+                  }}
                 >
                   {s}
                 </button>
@@ -314,18 +318,19 @@ export function Profile() {
             </div>
           </div>
           <div className="space-y-2">
-            <label className="text-[10px] uppercase tracking-[0.2em] text-[#E8E4DC]/40">Annual Revenue</label>
+            <label className="text-[10px] uppercase tracking-[0.2em]" style={{ color: "var(--workspace-muted)" }}>Annual Revenue</label>
             <div className="space-y-1 mt-2">
               {REVENUE_RANGES.map((r) => (
                 <button
                   key={r}
                   type="button"
                   onClick={() => setRevenueRange(r)}
-                  className={`w-full text-left px-3 py-2 border text-xs transition-colors ${
-                    revenueRange === r
-                      ? "border-[#E8E4DC]/50 bg-white/5 text-[#E8E4DC]"
-                      : "border-white/10 text-[#E8E4DC]/40 hover:border-white/20 hover:text-[#E8E4DC]/60"
-                  }`}
+                  className="w-full text-left px-3 py-2 text-xs transition-colors"
+                  style={{
+                    border: `1px solid ${revenueRange === r ? "var(--workspace-fg)" : "var(--workspace-border)"}`,
+                    background: revenueRange === r ? "var(--workspace-muted-bg)" : "#FFFFFF",
+                    color: revenueRange === r ? "var(--workspace-fg)" : "var(--workspace-muted)",
+                  }}
                 >
                   {r}
                 </button>
@@ -336,36 +341,38 @@ export function Profile() {
 
         <div className="space-y-5">
           <div className="space-y-2">
-            <label className="text-[10px] uppercase tracking-[0.2em] text-[#E8E4DC]/40">
-              Key Competitors <span className="normal-case tracking-normal text-[#E8E4DC]/25">(optional)</span>
+            <label className="text-[10px] uppercase tracking-[0.2em]" style={{ color: "var(--workspace-muted)" }}>
+              Key Competitors <span className="normal-case tracking-normal opacity-60">(optional)</span>
             </label>
             <textarea
               value={competitors}
               onChange={(e) => setCompetitors(e.target.value)}
               placeholder="List your top 3–5 competitors, separated by commas..."
               rows={2}
-              className="w-full bg-transparent border border-white/12 p-3 text-[#E8E4DC] text-sm placeholder:text-[#E8E4DC]/20 focus:outline-none focus:border-white/25 transition-colors resize-none"
+              className="w-full p-3 text-sm focus:outline-none transition-colors resize-none"
+              style={{ background: "#FFFFFF", border: "1px solid var(--workspace-border)", color: "var(--workspace-fg)" }}
               data-testid="input-competitors"
             />
           </div>
           <div className="space-y-2">
-            <label className="text-[10px] uppercase tracking-[0.2em] text-[#E8E4DC]/40">
-              Strategic Priorities <span className="normal-case tracking-normal text-[#E8E4DC]/25">(optional)</span>
+            <label className="text-[10px] uppercase tracking-[0.2em]" style={{ color: "var(--workspace-muted)" }}>
+              Strategic Priorities <span className="normal-case tracking-normal opacity-60">(optional)</span>
             </label>
             <textarea
               value={strategicPriorities}
               onChange={(e) => setStrategicPriorities(e.target.value)}
               placeholder="e.g. Expand into APAC markets, reduce CAC, improve NRR above 120%..."
               rows={3}
-              className="w-full bg-transparent border border-white/12 p-3 text-[#E8E4DC] text-sm placeholder:text-[#E8E4DC]/20 focus:outline-none focus:border-white/25 transition-colors resize-none"
+              className="w-full p-3 text-sm focus:outline-none transition-colors resize-none"
+              style={{ background: "#FFFFFF", border: "1px solid var(--workspace-border)", color: "var(--workspace-fg)" }}
               data-testid="input-priorities"
             />
           </div>
         </div>
 
-        <div className="flex items-center justify-between pt-2 border-t border-white/8">
+        <div className="flex items-center justify-between pt-2 border-t" style={{ borderColor: "var(--workspace-border)" }}>
           {saved ? (
-            <div className="flex items-center gap-2 text-xs text-[#E8E4DC]/50">
+            <div className="flex items-center gap-2 text-xs" style={{ color: "var(--workspace-muted)" }}>
               <CheckCircle2 className="h-3.5 w-3.5" />
               Saved
             </div>
@@ -375,7 +382,8 @@ export function Profile() {
           <button
             type="submit"
             disabled={saveProfile.isPending || !companyName || !industry || !stage || !revenueRange}
-            className="bg-[#E8E4DC] text-[#0D0C0B] px-8 py-2.5 text-xs uppercase tracking-widest font-medium hover:bg-[#D4CEC5] transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+            className="px-8 py-2.5 text-xs uppercase tracking-widest font-medium transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+            style={{ background: "var(--workspace-fg)", color: "#FFFFFF" }}
             data-testid="btn-save-profile"
           >
             {saveProfile.isPending ? "Saving..." : "Save Profile"}

@@ -95,28 +95,28 @@ export function ReportNew() {
   if (isGenerating) {
     return (
       <div className="max-w-3xl mx-auto animate-in fade-in duration-500">
-        <div className="border border-white/10">
-          <div className="border-b border-white/8 px-6 py-4 flex items-center justify-between">
+        <div style={{ border: "1px solid var(--workspace-border)", background: "#FFFFFF" }}>
+          <div className="border-b px-6 py-4 flex items-center justify-between" style={{ borderColor: "var(--workspace-border)" }}>
             <div>
               <div className="flex items-center gap-3">
-                <Loader2 className="w-4 h-4 text-[#E8E4DC]/60 animate-spin" />
-                <h2 className="font-serif text-xl font-light text-[#E8E4DC]">Compiling Intelligence</h2>
+                <Loader2 className="w-4 h-4 animate-spin" style={{ color: "var(--workspace-muted)" }} />
+                <h2 className="font-serif text-xl font-light" style={{ color: "var(--workspace-fg)" }}>Compiling Intelligence</h2>
               </div>
-              <p className="text-xs text-[#E8E4DC]/35 mt-1 ml-7">
+              <p className="text-xs mt-1 ml-7" style={{ color: "var(--workspace-muted)" }}>
                 {company} — {REPORT_TYPE_LABELS[reportType]}
               </p>
             </div>
-            <span className="text-[10px] uppercase tracking-[0.2em] text-[#E8E4DC]/40 border border-white/12 px-2 py-1 animate-pulse">
+            <span className="text-[10px] uppercase tracking-[0.2em] px-2 py-1 animate-pulse" style={{ color: "var(--workspace-muted)", border: "1px solid var(--workspace-border)" }}>
               Processing
             </span>
           </div>
 
-          <div className="p-8 min-h-[500px] font-mono text-sm leading-relaxed text-[#E8E4DC]/50 bg-[#0A0908]">
-            <div className="mb-4 text-[10px] uppercase tracking-[0.2em] text-[#E8E4DC]/25">
+          <div className="p-8 min-h-[500px] font-mono text-sm leading-relaxed" style={{ background: "var(--workspace-muted-bg)" }}>
+            <div className="mb-4 text-[10px] uppercase tracking-[0.2em]" style={{ color: "var(--workspace-muted)" }}>
               Initializing McKinsey-grade strategic analysis framework...
             </div>
-            <div className="whitespace-pre-wrap text-[#E8E4DC]/65">{streamingContent}</div>
-            <span className="inline-block w-1.5 h-4 bg-[#E8E4DC]/40 ml-0.5 animate-pulse" />
+            <div className="whitespace-pre-wrap" style={{ color: "var(--workspace-fg)" }}>{streamingContent}</div>
+            <span className="inline-block w-1.5 h-4 ml-0.5 animate-pulse" style={{ background: "var(--workspace-muted)" }} />
           </div>
         </div>
       </div>
@@ -125,38 +125,44 @@ export function ReportNew() {
 
   return (
     <div className="max-w-xl mx-auto animate-in fade-in duration-500">
-      <div className="mb-8 border-b border-white/8 pb-6">
-        <h1 className="font-serif text-5xl font-light text-[#E8E4DC] mb-2">Commission Report</h1>
-        <p className="text-sm text-[#E8E4DC]/40">Specify the parameters for the strategic analysis.</p>
+      <div className="mb-8 pb-6 border-b" style={{ borderColor: "var(--workspace-border)" }}>
+        <h1 className="font-serif text-5xl font-light mb-2" style={{ color: "var(--workspace-fg)" }}>Commission Report</h1>
+        <p className="text-sm" style={{ color: "var(--workspace-muted)" }}>Specify the parameters for the strategic analysis.</p>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-7">
         <div className="space-y-2">
-          <label className="text-[10px] uppercase tracking-[0.2em] text-[#E8E4DC]/40">Target Entity</label>
+          <label className="text-[10px] uppercase tracking-[0.2em]" style={{ color: "var(--workspace-muted)" }}>Target Entity</label>
           <input
             required
             type="text"
             value={company}
             onChange={(e) => setCompany(e.target.value)}
             placeholder="e.g. Acme Corp, Replit, Competitor Inc"
-            className="w-full bg-transparent border-b border-white/20 py-3 text-[#E8E4DC] text-base font-serif placeholder:text-[#E8E4DC]/20 focus:outline-none focus:border-[#E8E4DC]/50 transition-colors"
+            className="w-full py-3 text-base font-serif focus:outline-none transition-colors"
+            style={{
+              background: "transparent",
+              borderBottom: "1px solid var(--workspace-border)",
+              color: "var(--workspace-fg)",
+            }}
             data-testid="input-company"
           />
         </div>
 
         <div className="space-y-3">
-          <label className="text-[10px] uppercase tracking-[0.2em] text-[#E8E4DC]/40">Analysis Framework</label>
+          <label className="text-[10px] uppercase tracking-[0.2em]" style={{ color: "var(--workspace-muted)" }}>Analysis Framework</label>
           <div className="grid grid-cols-2 gap-1.5">
             {Object.entries(REPORT_TYPE_LABELS).map(([value, label]) => (
               <button
                 key={value}
                 type="button"
                 onClick={() => setReportType(value)}
-                className={`text-left px-3 py-2.5 border text-xs transition-colors ${
-                  reportType === value
-                    ? "border-[#E8E4DC]/50 bg-white/5 text-[#E8E4DC]"
-                    : "border-white/10 text-[#E8E4DC]/40 hover:border-white/20 hover:text-[#E8E4DC]/65"
-                }`}
+                className="text-left px-3 py-2.5 text-xs transition-colors"
+                style={{
+                  border: `1px solid ${reportType === value ? "var(--workspace-fg)" : "var(--workspace-border)"}`,
+                  background: reportType === value ? "var(--workspace-muted-bg)" : "#FFFFFF",
+                  color: reportType === value ? "var(--workspace-fg)" : "var(--workspace-muted)",
+                }}
               >
                 {label}
               </button>
@@ -165,15 +171,20 @@ export function ReportNew() {
         </div>
 
         <div className="space-y-2">
-          <label className="text-[10px] uppercase tracking-[0.2em] text-[#E8E4DC]/40">
-            Additional Context <span className="normal-case tracking-normal text-[#E8E4DC]/25">(optional)</span>
+          <label className="text-[10px] uppercase tracking-[0.2em]" style={{ color: "var(--workspace-muted)" }}>
+            Additional Context <span className="normal-case tracking-normal opacity-60">(optional)</span>
           </label>
           <textarea
             value={context}
             onChange={(e) => setContext(e.target.value)}
             placeholder="Specific areas to focus on, questions to answer, or internal context..."
             rows={3}
-            className="w-full bg-transparent border border-white/12 p-3 text-[#E8E4DC] text-sm placeholder:text-[#E8E4DC]/20 focus:outline-none focus:border-white/25 transition-colors resize-none"
+            className="w-full p-3 text-sm focus:outline-none transition-colors resize-none"
+            style={{
+              background: "#FFFFFF",
+              border: "1px solid var(--workspace-border)",
+              color: "var(--workspace-fg)",
+            }}
             data-testid="input-context"
           />
         </div>
@@ -181,7 +192,8 @@ export function ReportNew() {
         <div className="pt-2">
           <button
             type="submit"
-            className="w-full bg-[#E8E4DC] text-[#0D0C0B] py-3 text-xs uppercase tracking-widest font-medium hover:bg-[#D4CEC5] transition-colors"
+            className="w-full py-3 text-xs uppercase tracking-widest font-medium transition-colors"
+            style={{ background: "var(--workspace-fg)", color: "#FFFFFF" }}
             data-testid="btn-submit-report"
           >
             Commence Analysis
