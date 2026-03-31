@@ -38,6 +38,7 @@ import type {
   ReportDownload,
   ReportError,
   ReportTypeStat,
+  ResearchCompanyBody,
   SaveCompanyProfileBody,
   SendOpenaiMessageBody,
   UpdateCompanyProfileBody,
@@ -1599,6 +1600,92 @@ export function useDownloadReport<
 
   return { ...query, queryKey: queryOptions.queryKey };
 }
+
+/**
+ * @summary Research a company from its website URL (SSE stream)
+ */
+export const getResearchCompanyUrl = () => {
+  return `/api/research/company`;
+};
+
+export const researchCompany = async (
+  researchCompanyBody: ResearchCompanyBody,
+  options?: RequestInit,
+): Promise<string> => {
+  return customFetch<string>(getResearchCompanyUrl(), {
+    ...options,
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(researchCompanyBody),
+  });
+};
+
+export const getResearchCompanyMutationOptions = <
+  TError = ErrorType<ErrorEnvelope>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof researchCompany>>,
+    TError,
+    { data: BodyType<ResearchCompanyBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof researchCompany>>,
+  TError,
+  { data: BodyType<ResearchCompanyBody> },
+  TContext
+> => {
+  const mutationKey = ["researchCompany"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof researchCompany>>,
+    { data: BodyType<ResearchCompanyBody> }
+  > = (props) => {
+    const { data } = props ?? {};
+
+    return researchCompany(data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type ResearchCompanyMutationResult = NonNullable<
+  Awaited<ReturnType<typeof researchCompany>>
+>;
+export type ResearchCompanyMutationBody = BodyType<ResearchCompanyBody>;
+export type ResearchCompanyMutationError = ErrorType<ErrorEnvelope>;
+
+/**
+ * @summary Research a company from its website URL (SSE stream)
+ */
+export const useResearchCompany = <
+  TError = ErrorType<ErrorEnvelope>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof researchCompany>>,
+    TError,
+    { data: BodyType<ResearchCompanyBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof researchCompany>>,
+  TError,
+  { data: BodyType<ResearchCompanyBody> },
+  TContext
+> => {
+  return useMutation(getResearchCompanyMutationOptions(options));
+};
 
 /**
  * @summary Get the current user's company profile

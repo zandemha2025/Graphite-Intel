@@ -6,13 +6,13 @@
  * OpenAPI spec version: 0.1.0
  */
 
-export interface SaveCompanyProfileBody {
+export interface ResearchCompanyProfile {
   companyName: string;
   industry: string;
   stage: string;
   revenueRange: string;
-  competitors?: string;
-  strategicPriorities?: string;
-  companyUrl?: string;
-  researchSummary?: string;
+  competitors: string;
+  strategicPriorities: string;
+  researchSummary: string;
+  followUpQuestions: string[];
 }

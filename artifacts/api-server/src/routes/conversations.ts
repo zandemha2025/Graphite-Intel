@@ -43,6 +43,7 @@ CLIENT CONTEXT (always reference this when relevant):
 - Revenue Range: ${profile.revenueRange}
 ${profile.competitors ? `- Key Competitors: ${profile.competitors}` : ""}
 ${profile.strategicPriorities ? `- Strategic Priorities: ${profile.strategicPriorities}` : ""}
+${profile.researchSummary ? `\nCompany Intelligence (AI-researched):\n${profile.researchSummary}` : ""}
 
 Always tailor your advice to this specific company context. Reference their industry, stage, and competitive landscape where relevant.`;
 

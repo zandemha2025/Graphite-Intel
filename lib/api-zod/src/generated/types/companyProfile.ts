@@ -15,6 +15,10 @@ export interface CompanyProfile {
   revenueRange: string;
   competitors: string;
   strategicPriorities: string;
+  /** @nullable */
+  companyUrl?: string | null;
+  /** @nullable */
+  researchSummary?: string | null;
   createdAt: Date;
   updatedAt: Date;
 }

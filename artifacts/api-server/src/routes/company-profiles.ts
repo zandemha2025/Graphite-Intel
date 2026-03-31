@@ -39,7 +39,7 @@ router.post("/company-profile", async (req: Request, res: Response) => {
   if (!requireAuth(req, res)) return;
 
   const userId = req.user!.id;
-  const { companyName, industry, stage, revenueRange, competitors, strategicPriorities } = req.body;
+  const { companyName, industry, stage, revenueRange, competitors, strategicPriorities, companyUrl, researchSummary } = req.body;
 
   if (!companyName || !industry || !stage || !revenueRange) {
     res.status(400).json({ error: "companyName, industry, stage, and revenueRange are required" });
@@ -62,6 +62,8 @@ router.post("/company-profile", async (req: Request, res: Response) => {
           revenueRange,
           competitors: competitors || "",
           strategicPriorities: strategicPriorities || "",
+          ...(companyUrl !== undefined && { companyUrl }),
+          ...(researchSummary !== undefined && { researchSummary }),
           updatedAt: new Date(),
         })
         .where(eq(companyProfiles.userId, userId))
@@ -78,6 +80,8 @@ router.post("/company-profile", async (req: Request, res: Response) => {
           revenueRange,
           competitors: competitors || "",
           strategicPriorities: strategicPriorities || "",
+          ...(companyUrl !== undefined && { companyUrl }),
+          ...(researchSummary !== undefined && { researchSummary }),
         })
         .returning();
       res.status(201).json(created);
@@ -92,7 +96,7 @@ router.put("/company-profile", async (req: Request, res: Response) => {
   if (!requireAuth(req, res)) return;
 
   const userId = req.user!.id;
-  const { companyName, industry, stage, revenueRange, competitors, strategicPriorities } = req.body;
+  const { companyName, industry, stage, revenueRange, competitors, strategicPriorities, companyUrl, researchSummary } = req.body;
 
   try {
     const [updated] = await db
@@ -104,6 +108,8 @@ router.put("/company-profile", async (req: Request, res: Response) => {
         ...(revenueRange !== undefined && { revenueRange }),
         ...(competitors !== undefined && { competitors }),
         ...(strategicPriorities !== undefined && { strategicPriorities }),
+        ...(companyUrl !== undefined && { companyUrl }),
+        ...(researchSummary !== undefined && { researchSummary }),
         updatedAt: new Date(),
       })
       .where(eq(companyProfiles.userId, userId))

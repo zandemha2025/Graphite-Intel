@@ -261,6 +261,13 @@ export const DownloadReportResponse = zod.object({
 });
 
 /**
+ * @summary Research a company from its website URL (SSE stream)
+ */
+export const ResearchCompanyBody = zod.object({
+  url: zod.string(),
+});
+
+/**
  * @summary Get the current user's company profile
  */
 export const GetCompanyProfileResponse = zod.object({
@@ -272,6 +279,8 @@ export const GetCompanyProfileResponse = zod.object({
   revenueRange: zod.string(),
   competitors: zod.string(),
   strategicPriorities: zod.string(),
+  companyUrl: zod.string().nullish(),
+  researchSummary: zod.string().nullish(),
   createdAt: zod.coerce.date(),
   updatedAt: zod.coerce.date(),
 });
@@ -286,6 +295,8 @@ export const SaveCompanyProfileBody = zod.object({
   revenueRange: zod.string(),
   competitors: zod.string().optional(),
   strategicPriorities: zod.string().optional(),
+  companyUrl: zod.string().optional(),
+  researchSummary: zod.string().optional(),
 });
 
 export const SaveCompanyProfileResponse = zod.object({
@@ -297,6 +308,8 @@ export const SaveCompanyProfileResponse = zod.object({
   revenueRange: zod.string(),
   competitors: zod.string(),
   strategicPriorities: zod.string(),
+  companyUrl: zod.string().nullish(),
+  researchSummary: zod.string().nullish(),
   createdAt: zod.coerce.date(),
   updatedAt: zod.coerce.date(),
 });
@@ -311,6 +324,8 @@ export const UpdateCompanyProfileBody = zod.object({
   revenueRange: zod.string().optional(),
   competitors: zod.string().optional(),
   strategicPriorities: zod.string().optional(),
+  companyUrl: zod.string().optional(),
+  researchSummary: zod.string().optional(),
 });
 
 export const UpdateCompanyProfileResponse = zod.object({
@@ -322,6 +337,8 @@ export const UpdateCompanyProfileResponse = zod.object({
   revenueRange: zod.string(),
   competitors: zod.string(),
   strategicPriorities: zod.string(),
+  companyUrl: zod.string().nullish(),
+  researchSummary: zod.string().nullish(),
   createdAt: zod.coerce.date(),
   updatedAt: zod.coerce.date(),
 });

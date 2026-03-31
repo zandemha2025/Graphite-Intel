@@ -378,6 +378,31 @@ paths:
               schema:
                 $ref: "#/components/schemas/ReportError"
 
+  /research/company:
+    post:
+      operationId: researchCompany
+      tags: [company-profile]
+      summary: Research a company from its website URL (SSE stream)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ResearchCompanyBody"
+      responses:
+        "200":
+          description: SSE stream of research progress and results
+          content:
+            text/event-stream:
+              schema:
+                type: string
+        "400":
+          description: Missing or invalid URL
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+
   /company-profile:
     get:
       operationId: getCompanyProfile
@@ -780,6 +805,10 @@ components:
           type: string
         strategicPriorities:
           type: string
+        companyUrl:
+          type: [string, 'null']
+        researchSummary:
+          type: [string, 'null']
         createdAt:
           type: string
           format: date-time
@@ -813,6 +842,10 @@ components:
           type: string
         strategicPriorities:
           type: string
+        companyUrl:
+          type: string
+        researchSummary:
+          type: string
       required:
         - companyName
         - industry
@@ -834,3 +867,46 @@ components:
           type: string
         strategicPriorities:
           type: string
+        companyUrl:
+          type: string
+        researchSummary:
+          type: string
+
+    ResearchCompanyBody:
+      type: object
+      properties:
+        url:
+          type: string
+      required:
+        - url
+
+    ResearchCompanyProfile:
+      type: object
+      properties:
+        companyName:
+          type: string
+        industry:
+          type: string
+        stage:
+          type: string
+        revenueRange:
+          type: string
+        competitors:
+          type: string
+        strategicPriorities:
+          type: string
+        researchSummary:
+          type: string
+        followUpQuestions:
+          type: array
+          items:
+            type: string
+      required:
+        - companyName
+        - industry
+        - stage
+        - revenueRange
+        - competitors
+        - strategicPriorities
+        - researchSummary
+        - followUpQuestions

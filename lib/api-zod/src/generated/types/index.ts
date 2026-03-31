@@ -30,6 +30,8 @@ export * from "./report";
 export * from "./reportDownload";
 export * from "./reportError";
 export * from "./reportTypeStat";
+export * from "./researchCompanyBody";
+export * from "./researchCompanyProfile";
 export * from "./saveCompanyProfileBody";
 export * from "./sendOpenaiMessageBody";
 export * from "./updateCompanyProfileBody";

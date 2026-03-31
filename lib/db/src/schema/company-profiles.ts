@@ -11,6 +11,8 @@ export const companyProfiles = pgTable("company_profiles", {
   revenueRange: varchar("revenue_range").notNull(),
   competitors: text("competitors").notNull().default(""),
   strategicPriorities: text("strategic_priorities").notNull().default(""),
+  companyUrl: text("company_url"),
+  researchSummary: text("research_summary"),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow().$onUpdate(() => new Date()),
 });

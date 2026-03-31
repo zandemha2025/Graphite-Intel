@@ -82,6 +82,7 @@ CLIENT CONTEXT (always reference this throughout the report):
 - Revenue Range: ${profile.revenueRange}
 ${profile.competitors ? `- Key Competitors: ${profile.competitors}` : ""}
 ${profile.strategicPriorities ? `- Strategic Priorities: ${profile.strategicPriorities}` : ""}
+${profile.researchSummary ? `\nCompany Intelligence (AI-researched):\n${profile.researchSummary}` : ""}
 
 Always tailor every section of the report to this specific company context. Reference their industry, stage, and competitive landscape throughout.`;
 

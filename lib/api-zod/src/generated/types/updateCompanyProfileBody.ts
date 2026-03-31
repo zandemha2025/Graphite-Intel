@@ -13,4 +13,6 @@ export interface UpdateCompanyProfileBody {
   revenueRange?: string;
   competitors?: string;
   strategicPriorities?: string;
+  companyUrl?: string;
+  researchSummary?: string;
 }

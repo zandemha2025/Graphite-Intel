@@ -155,6 +155,10 @@ export interface CompanyProfile {
   revenueRange: string;
   competitors: string;
   strategicPriorities: string;
+  /** @nullable */
+  companyUrl?: string | null;
+  /** @nullable */
+  researchSummary?: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -166,6 +170,8 @@ export interface SaveCompanyProfileBody {
   revenueRange: string;
   competitors?: string;
   strategicPriorities?: string;
+  companyUrl?: string;
+  researchSummary?: string;
 }
 
 export interface UpdateCompanyProfileBody {
@@ -175,6 +181,23 @@ export interface UpdateCompanyProfileBody {
   revenueRange?: string;
   competitors?: string;
   strategicPriorities?: string;
+  companyUrl?: string;
+  researchSummary?: string;
+}
+
+export interface ResearchCompanyBody {
+  url: string;
+}
+
+export interface ResearchCompanyProfile {
+  companyName: string;
+  industry: string;
+  stage: string;
+  revenueRange: string;
+  competitors: string;
+  strategicPriorities: string;
+  researchSummary: string;
+  followUpQuestions: string[];
 }
 
 /**
