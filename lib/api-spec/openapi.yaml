@@ -110,6 +110,56 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorEnvelope"
+    patch:
+      operationId: updateDocument
+      tags: [documents]
+      summary: Update document metadata (e.g., tags)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateDocumentBody"
+      responses:
+        "200":
+          description: Updated document
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Document"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+
+  /documents/search:
+    post:
+      operationId: searchDocuments
+      tags: [documents]
+      summary: Semantic search across document chunks
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DocumentSearchBody"
+      responses:
+        "200":
+          description: Matching document chunks
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/DocumentChunk"
 
   /documents/{id}/process:
     post:
@@ -889,6 +939,10 @@ components:
           type: string
         content:
           type: string
+        sources:
+          type: ['array', 'null']
+          items:
+            $ref: "#/components/schemas/DocumentChunk"
         createdAt:
           type: string
           format: date-time
@@ -1314,6 +1368,10 @@ components:
           type: string
         status:
           type: string
+        tags:
+          type: ['string', 'null']
+        chunkCount:
+          type: ['integer', 'null']
         createdAt:
           type: string
           format: date-time
@@ -1339,6 +1397,47 @@ components:
         - title
         - fileType
         - objectKey
+
+    UpdateDocumentBody:
+      type: object
+      properties:
+        tags:
+          type: string
+
+    DocumentSearchBody:
+      type: object
+      properties:
+        query:
+          type: string
+        documentIds:
+          type: array
+          items:
+            type: integer
+      required:
+        - query
+
+    DocumentChunk:
+      type: object
+      properties:
+        id:
+          type: integer
+        documentId:
+          type: integer
+        chunkIndex:
+          type: integer
+        text:
+          type: string
+        documentTitle:
+          type: string
+        similarity:
+          type: number
+      required:
+        - id
+        - documentId
+        - chunkIndex
+        - text
+        - documentTitle
+        - similarity
 
     LinkDocumentBody:
       type: object

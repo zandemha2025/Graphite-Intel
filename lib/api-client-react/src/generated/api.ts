@@ -26,6 +26,8 @@ import type {
   CreateWorkflowRunBody,
   DashboardSummary,
   Document,
+  DocumentChunk,
+  DocumentSearchBody,
   ErrorEnvelope,
   HandleBrowserLoginCallbackParams,
   HealthStatus,
@@ -49,6 +51,7 @@ import type {
   SaveCompanyProfileBody,
   SendOpenaiMessageBody,
   UpdateCompanyProfileBody,
+  UpdateDocumentBody,
   WorkflowRun,
   WorkflowTemplate,
 } from "./api.schemas";
@@ -391,6 +394,179 @@ export const useDeleteDocument = <
   TContext
 > => {
   return useMutation(getDeleteDocumentMutationOptions(options));
+};
+
+/**
+ * @summary Update document metadata (e.g., tags)
+ */
+export const getUpdateDocumentUrl = (id: number) => {
+  return `/api/documents/${id}`;
+};
+
+export const updateDocument = async (
+  id: number,
+  updateDocumentBody: UpdateDocumentBody,
+  options?: RequestInit,
+): Promise<Document> => {
+  return customFetch<Document>(getUpdateDocumentUrl(id), {
+    ...options,
+    method: "PATCH",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(updateDocumentBody),
+  });
+};
+
+export const getUpdateDocumentMutationOptions = <
+  TError = ErrorType<ErrorEnvelope>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof updateDocument>>,
+    TError,
+    { id: number; data: BodyType<UpdateDocumentBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof updateDocument>>,
+  TError,
+  { id: number; data: BodyType<UpdateDocumentBody> },
+  TContext
+> => {
+  const mutationKey = ["updateDocument"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof updateDocument>>,
+    { id: number; data: BodyType<UpdateDocumentBody> }
+  > = (props) => {
+    const { id, data } = props ?? {};
+
+    return updateDocument(id, data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type UpdateDocumentMutationResult = NonNullable<
+  Awaited<ReturnType<typeof updateDocument>>
+>;
+export type UpdateDocumentMutationBody = BodyType<UpdateDocumentBody>;
+export type UpdateDocumentMutationError = ErrorType<ErrorEnvelope>;
+
+/**
+ * @summary Update document metadata (e.g., tags)
+ */
+export const useUpdateDocument = <
+  TError = ErrorType<ErrorEnvelope>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof updateDocument>>,
+    TError,
+    { id: number; data: BodyType<UpdateDocumentBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof updateDocument>>,
+  TError,
+  { id: number; data: BodyType<UpdateDocumentBody> },
+  TContext
+> => {
+  return useMutation(getUpdateDocumentMutationOptions(options));
+};
+
+/**
+ * @summary Semantic search across document chunks
+ */
+export const getSearchDocumentsUrl = () => {
+  return `/api/documents/search`;
+};
+
+export const searchDocuments = async (
+  documentSearchBody: DocumentSearchBody,
+  options?: RequestInit,
+): Promise<DocumentChunk[]> => {
+  return customFetch<DocumentChunk[]>(getSearchDocumentsUrl(), {
+    ...options,
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(documentSearchBody),
+  });
+};
+
+export const getSearchDocumentsMutationOptions = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof searchDocuments>>,
+    TError,
+    { data: BodyType<DocumentSearchBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof searchDocuments>>,
+  TError,
+  { data: BodyType<DocumentSearchBody> },
+  TContext
+> => {
+  const mutationKey = ["searchDocuments"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof searchDocuments>>,
+    { data: BodyType<DocumentSearchBody> }
+  > = (props) => {
+    const { data } = props ?? {};
+
+    return searchDocuments(data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type SearchDocumentsMutationResult = NonNullable<
+  Awaited<ReturnType<typeof searchDocuments>>
+>;
+export type SearchDocumentsMutationBody = BodyType<DocumentSearchBody>;
+export type SearchDocumentsMutationError = ErrorType<unknown>;
+
+/**
+ * @summary Semantic search across document chunks
+ */
+export const useSearchDocuments = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof searchDocuments>>,
+    TError,
+    { data: BodyType<DocumentSearchBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof searchDocuments>>,
+  TError,
+  { data: BodyType<DocumentSearchBody> },
+  TContext
+> => {
+  return useMutation(getSearchDocumentsMutationOptions(options));
 };
 
 /**

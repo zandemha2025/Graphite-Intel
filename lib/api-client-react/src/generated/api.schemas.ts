@@ -57,11 +57,22 @@ export interface OpenaiConversation {
   createdAt: string;
 }
 
+export interface DocumentChunk {
+  id: number;
+  documentId: number;
+  chunkIndex: number;
+  text: string;
+  documentTitle: string;
+  similarity: number;
+}
+
 export interface OpenaiMessage {
   id: number;
   conversationId: number;
   role: string;
   content: string;
+  /** @nullable */
+  sources?: DocumentChunk[] | null;
   createdAt: string;
 }
 
@@ -261,6 +272,10 @@ export interface Document {
   fileType: string;
   objectKey: string;
   status: string;
+  /** @nullable */
+  tags?: string | null;
+  /** @nullable */
+  chunkCount?: number | null;
   createdAt: string;
 }
 
@@ -268,6 +283,15 @@ export interface CreateDocumentBody {
   title: string;
   fileType: string;
   objectKey: string;
+}
+
+export interface UpdateDocumentBody {
+  tags?: string;
+}
+
+export interface DocumentSearchBody {
+  query: string;
+  documentIds?: number[];
 }
 
 export interface LinkDocumentBody {

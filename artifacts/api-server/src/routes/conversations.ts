@@ -1,6 +1,6 @@
 import { Router, type IRouter, type Request, type Response } from "express";
-import { db, conversations, messages, companyProfiles, documents, conversationDocuments } from "@workspace/db";
-import { eq, desc, and, inArray } from "drizzle-orm";
+import { db, conversations, messages, companyProfiles, documents, conversationDocuments, documentChunks } from "@workspace/db";
+import { eq, desc, and, inArray, sql } from "drizzle-orm";
 import { openai } from "@workspace/integrations-openai-ai-server";
 
 const router: IRouter = Router();
@@ -36,7 +36,50 @@ Your expertise spans: market strategy, competitive intelligence, growth framewor
 
 Always respond as a senior partner would in a client engagement — authoritative, incisive, and immediately valuable.`;
 
-async function buildSystemPrompt(req: Request, conversationId?: number): Promise<string> {
+type RetrievedChunk = {
+  id: number;
+  documentId: number;
+  chunkIndex: number;
+  text: string;
+  documentTitle: string;
+  similarity: number;
+};
+
+async function retrieveRelevantChunks(query: string, docIds: number[]): Promise<RetrievedChunk[]> {
+  if (docIds.length === 0) return [];
+
+  const embeddingResponse = await openai.embeddings.create({
+    model: "text-embedding-3-small",
+    input: query,
+  });
+  const queryEmbedding = embeddingResponse.data[0].embedding;
+  const embeddingStr = `[${queryEmbedding.join(",")}]`;
+
+  const results = await db.execute(sql`
+    SELECT
+      dc.id,
+      dc.document_id AS "documentId",
+      dc.chunk_index AS "chunkIndex",
+      dc.text,
+      d.title AS "documentTitle",
+      1 - (dc.embedding <=> ${embeddingStr}::vector) AS similarity
+    FROM document_chunks dc
+    JOIN documents d ON d.id = dc.document_id
+    WHERE dc.document_id = ANY(${docIds}::int[])
+      AND dc.embedding IS NOT NULL
+      AND 1 - (dc.embedding <=> ${embeddingStr}::vector) > 0.3
+    ORDER BY dc.embedding <=> ${embeddingStr}::vector
+    LIMIT 12
+  `);
+
+  return results.rows as RetrievedChunk[];
+}
+
+async function buildSystemPrompt(
+  req: Request,
+  conversationId?: number,
+  query?: string,
+): Promise<{ prompt: string; retrievedChunks: RetrievedChunk[] }> {
   const userId = req.user!.id;
   const orgId = req.user!.orgId;
 
@@ -67,6 +110,8 @@ Always tailor your advice to this specific company context. Reference their indu
     prompt += contextBlock;
   }
 
+  let retrievedChunks: RetrievedChunk[] = [];
+
   if (conversationId) {
     const links = await db
       .select()
@@ -75,30 +120,51 @@ Always tailor your advice to this specific company context. Reference their indu
 
     if (links.length > 0) {
       const docIds = links.map((l) => l.documentId);
-      const docs = await db
+      const linkedDocs = await db
         .select()
         .from(documents)
         .where(inArray(documents.id, docIds));
 
-      const readyDocs = docs.filter((d) => d.status === "ready" && d.extractedText);
+      const readyDocs = linkedDocs.filter((d) => d.status === "ready");
+
       if (readyDocs.length > 0) {
-        const MAX_CHARS_PER_DOC = Math.floor(80000 / readyDocs.length);
-        const docBlocks = readyDocs.map((d) => {
-          const text = (d.extractedText || "").slice(0, MAX_CHARS_PER_DOC);
-          return `--- Document: "${d.title}" ---\n${text}\n--- End of "${d.title}" ---`;
-        });
+        const readyDocIds = readyDocs.map((d) => d.id);
 
-        prompt += `
+        if (query) {
+          retrievedChunks = await retrieveRelevantChunks(query, readyDocIds);
+        }
 
-ATTACHED DOCUMENTS (the user has provided these documents as context for this conversation):
+        if (retrievedChunks.length > 0) {
+          const chunkBlocks = retrievedChunks.map((chunk, idx) =>
+            `[Source ${idx + 1}: "${chunk.documentTitle}", chunk ${chunk.chunkIndex + 1}]\n${chunk.text}`
+          ).join("\n\n---\n\n");
+
+          prompt += `
+
+RETRIEVED DOCUMENT CONTEXT (semantically relevant to the user's query):
+${chunkBlocks}
+
+When answering, cite specific documents by name using the format [Doc: Document Title]. Only cite documents when you actually draw from their content. Use inline citations like [Doc: Board Deck Q3] within your response.`;
+        } else if (readyDocs.some((d) => !d.chunkCount || d.chunkCount === 0)) {
+          const unindexedDocs = readyDocs.filter((d) => !d.chunkCount || d.chunkCount === 0);
+          const MAX_CHARS_PER_DOC = Math.floor(80000 / unindexedDocs.length);
+          const docBlocks = unindexedDocs.map((d) => {
+            const text = (d.extractedText || "").slice(0, MAX_CHARS_PER_DOC);
+            return `--- Document: "${d.title}" ---\n${text}\n--- End of "${d.title}" ---`;
+          });
+
+          prompt += `
+
+ATTACHED DOCUMENTS (not yet semantically indexed — full text provided):
 ${docBlocks.join("\n\n")}
 
-When answering questions, draw from these documents where relevant. At the end of your response, include a brief "Sources:" line listing which documents you referenced (e.g., "Sources: Q3 Board Deck, Financial Model").`;
+When answering questions, draw from these documents where relevant. Cite specific documents by name using [Doc: Document Title] format.`;
+        }
       }
     }
   }
 
-  return prompt;
+  return { prompt, retrievedChunks };
 }
 
 router.get("/openai/conversations", async (req: Request, res: Response) => {
@@ -262,7 +328,7 @@ router.post(
         content: m.content,
       }));
 
-      const systemPrompt = await buildSystemPrompt(req, id);
+      const { prompt: systemPrompt, retrievedChunks } = await buildSystemPrompt(req, id, content);
       let fullResponse = "";
 
       const stream = await openai.chat.completions.create({
@@ -283,14 +349,29 @@ router.post(
         }
       }
 
+      const sourcesData = retrievedChunks.length > 0
+        ? retrievedChunks.map((chunk) => ({
+            documentId: chunk.documentId,
+            documentTitle: chunk.documentTitle,
+            chunkIndex: chunk.chunkIndex,
+            snippet: chunk.text.slice(0, 200),
+            similarity: chunk.similarity,
+          }))
+        : null;
+
       const [assistantMsg] = await db
         .insert(messages)
         .values({
           conversationId: id,
           role: "assistant",
           content: fullResponse,
+          sources: sourcesData,
         })
         .returning();
+
+      if (sourcesData) {
+        sendEvent("sources", { sources: sourcesData });
+      }
 
       sendEvent("complete", { message: assistantMsg });
       res.end();

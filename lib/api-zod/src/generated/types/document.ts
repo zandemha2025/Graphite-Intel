@@ -13,5 +13,9 @@ export interface Document {
   fileType: string;
   objectKey: string;
   status: string;
+  /** @nullable */
+  tags?: string | null;
+  /** @nullable */
+  chunkCount?: number | null;
   createdAt: Date;
 }

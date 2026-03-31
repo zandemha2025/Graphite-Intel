@@ -5,11 +5,14 @@
  * Stratix Intelligence Platform API
  * OpenAPI spec version: 0.1.0
  */
+import type { DocumentChunk } from "./documentChunk";
 
 export interface OpenaiMessage {
   id: number;
   conversationId: number;
   role: string;
   content: string;
+  /** @nullable */
+  sources?: DocumentChunk[] | null;
   createdAt: Date;
 }

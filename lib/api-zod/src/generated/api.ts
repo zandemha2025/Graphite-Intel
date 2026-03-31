@@ -36,6 +36,8 @@ export const ListDocumentsResponseItem = zod.object({
   fileType: zod.string(),
   objectKey: zod.string(),
   status: zod.string(),
+  tags: zod.string().nullish(),
+  chunkCount: zod.number().nullish(),
   createdAt: zod.coerce.date(),
 });
 export const ListDocumentsResponse = zod.array(ListDocumentsResponseItem);
@@ -57,6 +59,47 @@ export const DeleteDocumentParams = zod.object({
 });
 
 /**
+ * @summary Update document metadata (e.g., tags)
+ */
+export const UpdateDocumentParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const UpdateDocumentBody = zod.object({
+  tags: zod.string().optional(),
+});
+
+export const UpdateDocumentResponse = zod.object({
+  id: zod.number(),
+  userId: zod.string(),
+  title: zod.string(),
+  fileType: zod.string(),
+  objectKey: zod.string(),
+  status: zod.string(),
+  tags: zod.string().nullish(),
+  chunkCount: zod.number().nullish(),
+  createdAt: zod.coerce.date(),
+});
+
+/**
+ * @summary Semantic search across document chunks
+ */
+export const SearchDocumentsBody = zod.object({
+  query: zod.string(),
+  documentIds: zod.array(zod.number()).optional(),
+});
+
+export const SearchDocumentsResponseItem = zod.object({
+  id: zod.number(),
+  documentId: zod.number(),
+  chunkIndex: zod.number(),
+  text: zod.string(),
+  documentTitle: zod.string(),
+  similarity: zod.number(),
+});
+export const SearchDocumentsResponse = zod.array(SearchDocumentsResponseItem);
+
+/**
  * @summary Extract text from a document
  */
 export const ProcessDocumentParams = zod.object({
@@ -70,6 +113,8 @@ export const ProcessDocumentResponse = zod.object({
   fileType: zod.string(),
   objectKey: zod.string(),
   status: zod.string(),
+  tags: zod.string().nullish(),
+  chunkCount: zod.number().nullish(),
   createdAt: zod.coerce.date(),
 });
 
@@ -87,6 +132,8 @@ export const ListConversationDocumentsResponseItem = zod.object({
   fileType: zod.string(),
   objectKey: zod.string(),
   status: zod.string(),
+  tags: zod.string().nullish(),
+  chunkCount: zod.number().nullish(),
   createdAt: zod.coerce.date(),
 });
 export const ListConversationDocumentsResponse = zod.array(
@@ -243,6 +290,18 @@ export const GetOpenaiConversationResponse = zod.object({
       conversationId: zod.number(),
       role: zod.string(),
       content: zod.string(),
+      sources: zod
+        .array(
+          zod.object({
+            id: zod.number(),
+            documentId: zod.number(),
+            chunkIndex: zod.number(),
+            text: zod.string(),
+            documentTitle: zod.string(),
+            similarity: zod.number(),
+          }),
+        )
+        .nullish(),
       createdAt: zod.coerce.date(),
     }),
   ),
@@ -267,6 +326,18 @@ export const ListOpenaiMessagesResponseItem = zod.object({
   conversationId: zod.number(),
   role: zod.string(),
   content: zod.string(),
+  sources: zod
+    .array(
+      zod.object({
+        id: zod.number(),
+        documentId: zod.number(),
+        chunkIndex: zod.number(),
+        text: zod.string(),
+        documentTitle: zod.string(),
+        similarity: zod.number(),
+      }),
+    )
+    .nullish(),
   createdAt: zod.coerce.date(),
 });
 export const ListOpenaiMessagesResponse = zod.array(

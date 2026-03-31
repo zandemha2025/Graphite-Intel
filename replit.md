@@ -119,7 +119,7 @@ A full-stack strategic intelligence platform for executives. Frontend at `artifa
 - **Reports**: Org-scoped, editorial list view, commission form with framework selection grid, publication-quality report viewer
 - **Landing page**: Cinematic full-bleed hero with Unsplash boardroom image, flat editorial header
 - **Workflow Agents** (`/workflows`): Library of 6 pre-built AI agent templates. Org-scoped. Each has a focused intake form (2-4 questions), executes as SSE streaming, and saves completed runs to history. Templates: Board Deck Audit, Competitor Deep-Dive, Market Entry Analysis, M&A Target Evaluation, Series B/Growth Narrative, Quarterly Strategy Brief.
-- **Knowledge Vault** (`/knowledge`): Upload PDFs and DOCX files, stored in Replit Object Storage (GCS), extracted server-side with pdf-parse/mammoth. Document library with status badges (Processing, Ready, Failed). Documents can be attached to conversations (up to 5). Extracted text injected into AI system prompt. AI responses include "Sources:" attribution.
+- **Knowledge Vault** (`/knowledge`): Upload PDFs and DOCX files, stored in Replit Object Storage (GCS), extracted server-side with pdf-parse/mammoth. True RAG system: documents chunked into ~750-token segments with 150-token overlap, each chunk embedded with OpenAI `text-embedding-3-small` (1536-dim) and stored in pgvector. Chat queries semantically retrieve top-12 relevant chunks (cosine similarity > 0.3) instead of injecting full documents. AI responses cite documents inline as `[Doc: Title]`. A collapsible "Sources" panel shows retrieved chunks with relevance scores. Knowledge page shows chunk count per document, inline tag editing, and a test-search tool to preview retrieval.
 
 ### DB Schema
 - `organizations` — orgs with name and slug
@@ -130,7 +130,8 @@ A full-stack strategic intelligence platform for executives. Frontend at `artifa
 - `messages` — chat messages
 - `reports` — generated intelligence reports, org-scoped
 - `workflow_runs` — workflow agent run history (templateKey, inputs as jsonb, output, status), org-scoped
-- `documents` — uploaded documents (id, userId, title, fileType, objectKey, extractedText, status)
+- `documents` — uploaded documents (id, userId, title, fileType, objectKey, extractedText, status, tags, chunkCount)
+- `document_chunks` — RAG vector chunks: id, documentId FK, chunkIndex, text, embedding vector(1536); requires pgvector extension
 - `conversation_documents` — join table linking conversations to documents (conversationId, documentId)
 
 ### Object Storage
@@ -160,7 +161,9 @@ A full-stack strategic intelligence platform for executives. Frontend at `artifa
 - `GET /api/documents` — list user's documents
 - `POST /api/documents` — register new document after upload
 - `DELETE /api/documents/:id` — delete document
-- `POST /api/documents/:id/process` — extract text from document (pdf-parse / mammoth)
+- `POST /api/documents/:id/process` — extract text, chunk, and embed document (background; sets status: processing → ready)
+- `PATCH /api/documents/:id` — update document metadata (tags)
+- `POST /api/documents/search` — semantic search across document chunks (body: query, documentIds[])
 - `GET /api/conversations/:id/documents` — list documents linked to a conversation
 - `POST /api/conversations/:id/documents` — link document to conversation
 - `DELETE /api/conversations/:id/documents` — unlink document from conversation

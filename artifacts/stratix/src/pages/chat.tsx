@@ -18,14 +18,23 @@ import {
   useUnlinkDocumentFromConversation,
 } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
-import { Send, Plus, Trash2, Loader2, Paperclip, X, FileText } from "lucide-react";
+import { Send, Plus, Trash2, Loader2, Paperclip, X, FileText, ChevronDown, ChevronUp, BookOpen } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useToast } from "@/hooks/use-toast";
+
+type SourceChunk = {
+  documentId: number;
+  documentTitle: string;
+  chunkIndex: number;
+  snippet: string;
+  similarity: number;
+};
 
 type Message = {
   id: number | string;
   role: string;
   content: string;
+  sources?: SourceChunk[] | null;
 };
 
 function getSuggestedStarters(profile?: { companyName: string; industry: string; stage: string; competitors?: string; strategicPriorities?: string } | null): string[] {
@@ -138,6 +147,51 @@ function DocumentPicker({
   );
 }
 
+function SourcesPanel({ sources }: { sources: SourceChunk[] }) {
+  const [expanded, setExpanded] = useState(false);
+
+  return (
+    <div className="mt-3" style={{ border: "1px solid var(--workspace-border)" }}>
+      <button
+        onClick={() => setExpanded((v) => !v)}
+        className="w-full flex items-center justify-between px-3 py-2 text-left transition-colors"
+        style={{ background: "var(--workspace-muted-bg)" }}
+      >
+        <div className="flex items-center gap-2">
+          <BookOpen className="w-3 h-3" style={{ color: "var(--workspace-muted)" }} />
+          <span className="text-[10px] uppercase tracking-widest" style={{ color: "var(--workspace-muted)" }}>
+            Sources ({sources.length})
+          </span>
+        </div>
+        {expanded ? (
+          <ChevronUp className="w-3 h-3" style={{ color: "var(--workspace-muted)" }} />
+        ) : (
+          <ChevronDown className="w-3 h-3" style={{ color: "var(--workspace-muted)" }} />
+        )}
+      </button>
+      {expanded && (
+        <div className="divide-y" style={{ borderColor: "var(--workspace-border)" }}>
+          {sources.map((source, idx) => (
+            <div key={idx} className="px-3 py-2.5" style={{ background: "#FFFFFF" }}>
+              <div className="flex items-center justify-between mb-1">
+                <span className="text-[11px] font-medium truncate pr-2" style={{ color: "var(--workspace-fg)" }}>
+                  {source.documentTitle}
+                </span>
+                <span className="text-[9px] shrink-0" style={{ color: "var(--workspace-muted)" }}>
+                  {Math.round(source.similarity * 100)}% match
+                </span>
+              </div>
+              <p className="text-[11px] leading-relaxed line-clamp-2" style={{ color: "var(--workspace-muted)" }}>
+                {source.snippet}
+              </p>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 export function Chat() {
   const queryClient = useQueryClient();
   const { toast } = useToast();
@@ -146,6 +200,7 @@ export function Chat() {
   const [streamingContent, setStreamingContent] = useState("");
   const [isStreaming, setIsStreaming] = useState(false);
   const [showDocPicker, setShowDocPicker] = useState(false);
+  const [streamingSources, setStreamingSources] = useState<SourceChunk[] | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
 
   const { data: conversations, isLoading: loadingConversations } = useListOpenaiConversations({
@@ -222,6 +277,7 @@ export function Chat() {
     setInputValue("");
     setIsStreaming(true);
     setStreamingContent("");
+    setStreamingSources(null);
 
     const tempId = Date.now().toString();
     queryClient.setQueryData(
@@ -262,6 +318,8 @@ export function Chat() {
 
           if (event === "content") {
             setStreamingContent(prev => prev + data.delta);
+          } else if (event === "sources") {
+            setStreamingSources(data.sources);
           } else if (event === "complete") {
             queryClient.invalidateQueries({ queryKey: getGetOpenaiConversationQueryKey(activeConversationId) });
             queryClient.invalidateQueries({ queryKey: getListOpenaiConversationsQueryKey() });
@@ -273,6 +331,7 @@ export function Chat() {
     } finally {
       setIsStreaming(false);
       setStreamingContent("");
+      setStreamingSources(null);
     }
   };
 
@@ -426,6 +485,9 @@ export function Chat() {
                       >
                         <ReactMarkdown>{msg.content}</ReactMarkdown>
                       </div>
+                      {msg.sources && Array.isArray(msg.sources) && msg.sources.length > 0 && (
+                        <SourcesPanel sources={msg.sources as SourceChunk[]} />
+                      )}
                     </div>
                   )}
                 </div>
@@ -443,9 +505,14 @@ export function Chat() {
                     }}
                   >
                     {streamingContent ? (
-                      <div className="prose prose-sm max-w-none">
-                        <ReactMarkdown>{streamingContent}</ReactMarkdown>
-                      </div>
+                      <>
+                        <div className="prose prose-sm max-w-none">
+                          <ReactMarkdown>{streamingContent}</ReactMarkdown>
+                        </div>
+                        {streamingSources && streamingSources.length > 0 && (
+                          <SourcesPanel sources={streamingSources} />
+                        )}
+                      </>
                     ) : (
                       <span className="flex gap-1 items-center h-5">
                         <span className="w-1.5 h-1.5 animate-bounce" style={{ background: "var(--workspace-muted)" }} />
@@ -511,9 +578,9 @@ export function Chat() {
                       placeholder="Ask a strategic question..."
                       className="w-full px-4 py-3 text-sm pr-12 focus:outline-none transition-colors"
                       style={{
-                        background: "#FFFFFF",
                         border: "1px solid var(--workspace-border)",
                         color: "var(--workspace-fg)",
+                        background: "#FFFFFF",
                       }}
                       disabled={isStreaming}
                       data-testid="input-chat"
@@ -533,9 +600,8 @@ export function Chat() {
             </div>
           </>
         ) : (
-          /* Empty state */
-          <div className="flex-1 flex flex-col items-center justify-center p-10">
-            <div className="max-w-lg w-full">
+          <div className="flex-1 flex flex-col items-start justify-center p-10">
+            <div className="max-w-lg">
               <h3 className="font-serif text-4xl font-light mb-3" style={{ color: "var(--workspace-fg)" }}>Strategic Advisor</h3>
               {profile ? (
                 <p className="text-sm mb-8 leading-relaxed" style={{ color: "var(--workspace-muted)" }}>
@@ -543,39 +609,30 @@ export function Chat() {
                 </p>
               ) : (
                 <p className="text-sm mb-8 leading-relaxed" style={{ color: "var(--workspace-muted)" }}>
-                  Start a conversation to consult with the AI advisor, trained on global market data and executive decision-making frameworks.
+                  Start a new conversation to consult with the AI advisor, trained on global market data and executive decision-making frameworks.
                 </p>
               )}
 
-              <div className="mb-8">
-                <p className="text-[10px] uppercase tracking-[0.2em] mb-4" style={{ color: "var(--workspace-muted)" }}>Suggested Questions</p>
-                <div className="space-y-1">
-                  {getSuggestedStarters(profile).map((q) => (
-                    <button
-                      key={q}
-                      onClick={() => {
-                        handleCreateNew();
-                        setTimeout(() => setInputValue(q), 500);
-                      }}
-                      className="block w-full text-left text-sm py-3 px-4 transition-colors"
-                      style={{
-                        color: "var(--workspace-fg)",
-                        background: "#FFFFFF",
-                        border: "1px solid var(--workspace-border)",
-                        marginBottom: "6px",
-                      }}
-                      onMouseEnter={e => (e.currentTarget.style.borderColor = "var(--workspace-fg)")}
-                      onMouseLeave={e => (e.currentTarget.style.borderColor = "var(--workspace-border)")}
-                    >
-                      {q}
-                    </button>
-                  ))}
-                </div>
+              <div className="space-y-2 mb-8">
+                <p className="text-[10px] uppercase tracking-[0.2em] mb-3" style={{ color: "var(--workspace-muted)", opacity: 0.6 }}>Suggested Questions</p>
+                {getSuggestedStarters(profile).map((q) => (
+                  <button
+                    key={q}
+                    onClick={() => {
+                      handleCreateNew();
+                      setTimeout(() => setInputValue(q), 500);
+                    }}
+                    className="block w-full text-left text-xs py-2 border-b transition-colors"
+                    style={{ color: "var(--workspace-muted)", borderColor: "var(--workspace-border)" }}
+                  >
+                    {q}
+                  </button>
+                ))}
               </div>
 
               <button
                 onClick={handleCreateNew}
-                className="flex items-center gap-2 px-6 py-2.5 text-xs uppercase tracking-widest font-medium transition-colors"
+                className="flex items-center gap-2 px-6 py-2.5 text-xs uppercase tracking-widest font-medium transition-colors disabled:opacity-40"
                 style={{ background: "var(--workspace-fg)", color: "#FFFFFF" }}
                 disabled={createConversation.isPending}
                 data-testid="btn-create-conversation-empty"
