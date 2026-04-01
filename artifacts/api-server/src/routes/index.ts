@@ -23,6 +23,7 @@ import sharingRouter from "./sharing";
 import commentsRouter from "./comments";
 import activityRouter from "./activity";
 import playbooksRouter from "./playbooks";
+import adsRouter from "./ads";
 
 const router: IRouter = Router();
 
@@ -50,5 +51,6 @@ router.use(sharingRouter);
 router.use(commentsRouter);
 router.use(activityRouter);
 router.use(playbooksRouter);
+router.use(adsRouter);
 
 export default router;

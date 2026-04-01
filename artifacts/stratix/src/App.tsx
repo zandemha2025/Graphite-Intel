@@ -35,6 +35,10 @@ import { SharedWithMe } from "@/pages/shared-with-me";
 import { ActivityFeed } from "@/pages/activity";
 import { Playbooks } from "@/pages/playbooks";
 import { PlaybookRun } from "@/pages/playbook-run";
+import { AdsDashboard } from "@/pages/ads-dashboard";
+import { AdsCampaignDetail } from "@/pages/ads-campaign-detail";
+import { AdsCampaignNew } from "@/pages/ads-campaign-new";
+import { AdsReports } from "@/pages/ads-reports";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -222,6 +226,10 @@ function Router() {
       <Route path="/activity" component={() => <ProtectedRoute component={ActivityFeed} />} />
       <Route path="/playbooks/runs/:id" component={() => <ProtectedRoute component={PlaybookRun} />} />
       <Route path="/playbooks" component={() => <ProtectedRoute component={Playbooks} />} />
+      <Route path="/ads/campaigns/new" component={() => <ProtectedRoute component={AdsCampaignNew} />} />
+      <Route path="/ads/campaigns/:id" component={() => <ProtectedRoute component={AdsCampaignDetail} />} />
+      <Route path="/ads/reports" component={() => <ProtectedRoute component={AdsReports} />} />
+      <Route path="/ads" component={() => <ProtectedRoute component={AdsDashboard} />} />
       <Route component={NotFound} />
     </Switch>
   );

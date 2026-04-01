@@ -17,3 +17,4 @@ export * from "./integration-webhooks";
 export * from "./vault-queries";
 export * from "./collaboration";
 export * from "./playbooks";
+export * from "./ads";
