@@ -26,6 +26,11 @@ export const integrations = pgTable(
     isActive: boolean("is_active").default(true),
     lastSyncAt: timestamp("last_sync_at", { withTimezone: true }),
     syncConfig: jsonb("sync_config"), // { folderIds: [], direction: "pull" | "bidirectional", intervalMinutes: 30 }
+    syncStatus: varchar("sync_status", { length: 20 }).default("idle"), // "idle" | "syncing" | "error"
+    lastError: text("last_error"),
+    lastErrorAt: timestamp("last_error_at", { withTimezone: true }),
+    consecutiveFailures: integer("consecutive_failures").default(0),
+    totalFilesSynced: integer("total_files_synced").default(0),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
     updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow().$onUpdate(() => new Date()),
   },

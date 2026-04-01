@@ -13,3 +13,7 @@ export * from "./vault";
 export * from "./integrations";
 export * from "./analytics";
 export * from "./human-reviews";
+export * from "./integration-webhooks";
+export * from "./vault-queries";
+export * from "./collaboration";
+export * from "./playbooks";

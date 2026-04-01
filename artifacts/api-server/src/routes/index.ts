@@ -18,6 +18,11 @@ import workflowDefinitionsRouter from "./workflow-definitions";
 import workflowExecutionsRouter from "./workflow-executions";
 import humanReviewsRouter from "./human-reviews";
 import vaultQueryRouter from "./vault-query";
+import savedQueriesRouter from "./saved-queries";
+import sharingRouter from "./sharing";
+import commentsRouter from "./comments";
+import activityRouter from "./activity";
+import playbooksRouter from "./playbooks";
 
 const router: IRouter = Router();
 
@@ -40,5 +45,10 @@ router.use(workflowDefinitionsRouter);
 router.use(workflowExecutionsRouter);
 router.use(humanReviewsRouter);
 router.use(vaultQueryRouter);
+router.use(savedQueriesRouter);
+router.use(sharingRouter);
+router.use(commentsRouter);
+router.use(activityRouter);
+router.use(playbooksRouter);
 
 export default router;

@@ -31,6 +31,10 @@ import { WorkflowBuilderEdit } from "@/pages/workflow-builder-edit";
 import { Integrations } from "@/pages/integrations";
 import { HumanReviews } from "@/pages/human-reviews";
 import { VaultSearch } from "@/pages/vault-search";
+import { SharedWithMe } from "@/pages/shared-with-me";
+import { ActivityFeed } from "@/pages/activity";
+import { Playbooks } from "@/pages/playbooks";
+import { PlaybookRun } from "@/pages/playbook-run";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -214,6 +218,10 @@ function Router() {
       <Route path="/settings/integrations" component={() => <ProtectedRoute component={Integrations} />} />
       <Route path="/human-reviews" component={() => <ProtectedRoute component={HumanReviews} />} />
       <Route path="/vault/search" component={() => <ProtectedRoute component={VaultSearch} />} />
+      <Route path="/shared" component={() => <ProtectedRoute component={SharedWithMe} />} />
+      <Route path="/activity" component={() => <ProtectedRoute component={ActivityFeed} />} />
+      <Route path="/playbooks/runs/:id" component={() => <ProtectedRoute component={PlaybookRun} />} />
+      <Route path="/playbooks" component={() => <ProtectedRoute component={Playbooks} />} />
       <Route component={NotFound} />
     </Switch>
   );

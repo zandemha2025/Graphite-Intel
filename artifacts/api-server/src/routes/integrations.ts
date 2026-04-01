@@ -1,7 +1,17 @@
 import { Router, type IRouter, type Request, type Response } from "express";
-import { db, integrations, syncedFiles, documents } from "@workspace/db";
+import { db, integrations, syncedFiles } from "@workspace/db";
 import { eq, and } from "drizzle-orm";
 import { randomBytes } from "crypto";
+import {
+  buildAuthUrl,
+  exchangeCodeForTokens,
+  getUserInfo,
+  listFolders,
+  listFilesInFolder,
+  GOOGLE_DRIVE_SCOPES,
+} from "../lib/providers/google-drive";
+import { ensureFreshToken } from "../lib/oauth-tokens";
+import { inngest } from "../inngest/client";
 
 const router: IRouter = Router();
 
@@ -13,84 +23,54 @@ function requireAuth(req: Request, res: Response): boolean {
   return true;
 }
 
-/**
- * GET /integrations
- * List all integrations for the organization.
- */
+// ---------------------------------------------------------------------------
+// List integrations
+// ---------------------------------------------------------------------------
 router.get("/integrations", async (req: Request, res: Response) => {
   if (!requireAuth(req, res)) return;
   const orgId = req.user!.orgId!;
 
   try {
-    const integrationsData = await db
+    const data = await db
       .select()
       .from(integrations)
       .where(eq(integrations.orgId, orgId))
       .orderBy(integrations.createdAt);
-    res.json(integrationsData);
+    res.json(data);
   } catch (err) {
     req.log.error({ err }, "Failed to list integrations");
     res.status(500).json({ error: "Failed to list integrations" });
   }
 });
 
-/**
- * GET /integrations/oauth/google/start
- * Begin Google Drive OAuth flow.
- * Generates a state token, builds authorization URL, and returns it for redirect.
- * TODO: Configure actual Google OAuth credentials and client ID.
- */
+// ---------------------------------------------------------------------------
+// Start Google Drive OAuth
+// ---------------------------------------------------------------------------
 router.get("/integrations/oauth/google/start", async (req: Request, res: Response) => {
   if (!requireAuth(req, res)) return;
   const orgId = req.user!.orgId!;
   const userId = req.user!.id;
 
   try {
-    // Generate a secure state token for CSRF protection
     const stateToken = randomBytes(32).toString("hex");
 
-    // Store state token in session temporarily (ideally in Redis or DB)
-    // For now, include it in session
+    // Store state in session for CSRF verification
     const session = req as any;
-    if (!session._oauthState) {
-      session._oauthState = {};
-    }
-    session._oauthState.state = stateToken;
-    session._oauthState.orgId = orgId;
-    session._oauthState.userId = userId;
+    if (!session._oauthState) session._oauthState = {};
+    session._oauthState = { state: stateToken, orgId, userId };
 
-    // TODO: Replace with actual Google OAuth client ID from environment
-    const GOOGLE_CLIENT_ID = process.env.GOOGLE_OAUTH_CLIENT_ID || "YOUR_CLIENT_ID.apps.googleusercontent.com";
-    const REDIRECT_URI = `${process.env.API_BASE_URL || "http://localhost:3000"}/integrations/oauth/google/callback`;
+    const authUrl = buildAuthUrl(stateToken);
 
-    const authUrl = new URL("https://accounts.google.com/o/oauth2/v2/auth");
-    authUrl.searchParams.append("client_id", GOOGLE_CLIENT_ID);
-    authUrl.searchParams.append("redirect_uri", REDIRECT_URI);
-    authUrl.searchParams.append("response_type", "code");
-    authUrl.searchParams.append("scope", [
-      "https://www.googleapis.com/auth/drive.readonly",
-      "https://www.googleapis.com/auth/drive.metadata.readonly",
-    ].join(" "));
-    authUrl.searchParams.append("access_type", "offline");
-    authUrl.searchParams.append("state", stateToken);
-
-    res.json({
-      authUrl: authUrl.toString(),
-      state: stateToken,
-      message: "TODO: Implement actual Google OAuth credentials. Redirect user to authUrl.",
-    });
+    res.json({ authUrl, state: stateToken });
   } catch (err) {
     req.log.error({ err }, "Failed to start OAuth flow");
     res.status(500).json({ error: "Failed to start OAuth flow" });
   }
 });
 
-/**
- * GET /integrations/oauth/google/callback
- * Handle OAuth callback after user grants permissions.
- * Exchanges authorization code for tokens and stores them.
- * TODO: Complete token exchange implementation.
- */
+// ---------------------------------------------------------------------------
+// Google Drive OAuth callback — exchange code for tokens
+// ---------------------------------------------------------------------------
 router.get("/integrations/oauth/google/callback", async (req: Request, res: Response) => {
   if (!requireAuth(req, res)) return;
 
@@ -98,7 +78,7 @@ router.get("/integrations/oauth/google/callback", async (req: Request, res: Resp
 
   try {
     if (error) {
-      req.log.error({ error }, "OAuth error from provider");
+      req.log.error({ error }, "OAuth error from Google");
       res.status(400).json({ error: "OAuth authorization failed", details: error });
       return;
     }
@@ -108,45 +88,43 @@ router.get("/integrations/oauth/google/callback", async (req: Request, res: Resp
       return;
     }
 
-    // Verify state token to prevent CSRF
+    // Verify CSRF state
     const session = req as any;
     const sessionState = session._oauthState?.state;
     if (!sessionState || sessionState !== state) {
-      res.status(400).json({ error: "Invalid state token. CSRF protection triggered." });
+      res.status(400).json({ error: "Invalid state token" });
       return;
     }
 
-    const orgId = session._oauthState?.orgId;
-    const userId = session._oauthState?.userId;
-
+    const orgId = session._oauthState.orgId;
+    const userId = session._oauthState.userId;
     if (!orgId || !userId) {
       res.status(400).json({ error: "Invalid session state" });
       return;
     }
 
-    // TODO: Exchange authorization code for access token and refresh token
-    // const tokens = await exchangeCodeForTokens(code);
-    // const { access_token, refresh_token, expires_in } = tokens;
+    // Exchange authorization code for tokens
+    const tokens = await exchangeCodeForTokens(code);
 
-    // For now, create a stub integration record
+    // Fetch user profile from Google
+    const userInfo = await getUserInfo(tokens.accessToken);
+
+    // Create integration record
     const [integration] = await db
       .insert(integrations)
       .values({
         orgId,
         connectedByUserId: userId,
         type: "google_drive",
-        name: "Google Drive",
-        accessToken: "STUB_ACCESS_TOKEN", // TODO: Replace with actual token
-        refreshToken: "STUB_REFRESH_TOKEN", // TODO: Replace with actual token
-        tokenExpiresAt: new Date(Date.now() + 3600 * 1000),
-        scopes: [
-          "https://www.googleapis.com/auth/drive.readonly",
-          "https://www.googleapis.com/auth/drive.metadata.readonly",
-        ],
+        name: `Google Drive (${userInfo.email})`,
+        accessToken: tokens.accessToken,
+        refreshToken: tokens.refreshToken,
+        tokenExpiresAt: tokens.expiresAt,
+        scopes: GOOGLE_DRIVE_SCOPES,
         metadata: {
-          // TODO: Get from Google API after token exchange
-          email: "user@gmail.com",
-          displayName: "User",
+          email: userInfo.email,
+          displayName: userInfo.name,
+          picture: userInfo.picture,
         },
         isActive: true,
         syncConfig: {
@@ -157,29 +135,23 @@ router.get("/integrations/oauth/google/callback", async (req: Request, res: Resp
       })
       .returning();
 
-    // Clear session tokens
+    // Clear session state
     delete session._oauthState;
 
-    req.log.info(
-      { integrationId: integration.id, orgId },
-      "TODO: Complete token exchange and fetch user metadata from Google API"
-    );
+    req.log.info({ integrationId: integration.id, email: userInfo.email }, "Google Drive connected");
 
-    res.json({
-      success: true,
-      integration,
-      message: "Integration created. TODO: Implement actual token exchange.",
-    });
+    // Redirect back to frontend integrations page
+    const frontendUrl = process.env.FRONTEND_URL ?? "http://localhost:5173";
+    res.redirect(`${frontendUrl}/settings/integrations?connected=google_drive&id=${integration.id}`);
   } catch (err) {
     req.log.error({ err }, "Failed to handle OAuth callback");
     res.status(500).json({ error: "Failed to complete OAuth flow" });
   }
 });
 
-/**
- * POST /integrations/:id/disconnect
- * Deactivate an integration.
- */
+// ---------------------------------------------------------------------------
+// Disconnect integration
+// ---------------------------------------------------------------------------
 router.post("/integrations/:id/disconnect", async (req: Request, res: Response) => {
   if (!requireAuth(req, res)) return;
   const orgId = req.user!.orgId!;
@@ -203,7 +175,7 @@ router.post("/integrations/:id/disconnect", async (req: Request, res: Response) 
 
     const [updated] = await db
       .update(integrations)
-      .set({ isActive: false })
+      .set({ isActive: false, accessToken: null, refreshToken: null })
       .where(eq(integrations.id, integrationId))
       .returning();
 
@@ -214,12 +186,9 @@ router.post("/integrations/:id/disconnect", async (req: Request, res: Response) 
   }
 });
 
-/**
- * POST /integrations/:id/sync
- * Trigger a manual sync for an integration.
- * Creates a sync record and queues the job.
- * TODO: Trigger Inngest event for actual sync.
- */
+// ---------------------------------------------------------------------------
+// Trigger manual sync
+// ---------------------------------------------------------------------------
 router.post("/integrations/:id/sync", async (req: Request, res: Response) => {
   if (!requireAuth(req, res)) return;
   const orgId = req.user!.orgId!;
@@ -246,22 +215,25 @@ router.post("/integrations/:id/sync", async (req: Request, res: Response) => {
       return;
     }
 
-    // Update lastSyncAt timestamp
-    const [updated] = await db
+    // Mark sync status
+    await db
       .update(integrations)
-      .set({ lastSyncAt: new Date() })
-      .where(eq(integrations.id, integrationId))
-      .returning();
+      .set({ syncStatus: "syncing", lastSyncAt: new Date() })
+      .where(eq(integrations.id, integrationId));
 
-    // TODO: Trigger Inngest event to process sync
-    req.log.info(
-      { integrationId, orgId },
-      "TODO: Send sync job to Inngest queue"
-    );
+    // Fire Inngest event to process the sync asynchronously
+    const fullSync = req.body?.fullSync === true;
+    await inngest.send({
+      name: "integration/sync.requested",
+      data: { integrationId, orgId, fullSync },
+    });
+
+    req.log.info({ integrationId, orgId, fullSync }, "Integration sync triggered");
 
     res.status(202).json({
-      integration: updated,
-      message: "Sync queued. TODO: Implement actual sync with Inngest.",
+      message: "Sync started",
+      integrationId,
+      fullSync,
     });
   } catch (err) {
     req.log.error({ err }, "Failed to trigger sync");
@@ -269,11 +241,59 @@ router.post("/integrations/:id/sync", async (req: Request, res: Response) => {
   }
 });
 
-/**
- * GET /integrations/:id/drive/folders
- * List folders from Google Drive for this integration.
- * TODO: Implement actual Google Drive API call.
- */
+// ---------------------------------------------------------------------------
+// Update sync config (folder selection, interval, etc.)
+// ---------------------------------------------------------------------------
+router.patch("/integrations/:id/config", async (req: Request, res: Response) => {
+  if (!requireAuth(req, res)) return;
+  const orgId = req.user!.orgId!;
+  const integrationId = parseInt(req.params.id as string);
+
+  if (isNaN(integrationId)) {
+    res.status(400).json({ error: "Invalid integration id" });
+    return;
+  }
+
+  try {
+    const [integration] = await db
+      .select()
+      .from(integrations)
+      .where(and(eq(integrations.id, integrationId), eq(integrations.orgId, orgId)));
+
+    if (!integration) {
+      res.status(404).json({ error: "Integration not found" });
+      return;
+    }
+
+    const { folderIds, direction, intervalMinutes, name } = req.body;
+
+    const currentConfig = (integration.syncConfig as Record<string, unknown>) ?? {};
+    const newConfig = {
+      ...currentConfig,
+      ...(folderIds !== undefined && { folderIds }),
+      ...(direction !== undefined && { direction }),
+      ...(intervalMinutes !== undefined && { intervalMinutes }),
+    };
+
+    const [updated] = await db
+      .update(integrations)
+      .set({
+        syncConfig: newConfig,
+        ...(name !== undefined && { name }),
+      })
+      .where(eq(integrations.id, integrationId))
+      .returning();
+
+    res.json(updated);
+  } catch (err) {
+    req.log.error({ err }, "Failed to update integration config");
+    res.status(500).json({ error: "Failed to update config" });
+  }
+});
+
+// ---------------------------------------------------------------------------
+// List Google Drive folders
+// ---------------------------------------------------------------------------
 router.get("/integrations/:id/drive/folders", async (req: Request, res: Response) => {
   if (!requireAuth(req, res)) return;
   const orgId = req.user!.orgId!;
@@ -296,7 +316,7 @@ router.get("/integrations/:id/drive/folders", async (req: Request, res: Response
     }
 
     if (integration.type !== "google_drive") {
-      res.status(400).json({ error: "This operation is only supported for Google Drive integrations" });
+      res.status(400).json({ error: "Only supported for Google Drive integrations" });
       return;
     }
 
@@ -305,34 +325,64 @@ router.get("/integrations/:id/drive/folders", async (req: Request, res: Response
       return;
     }
 
-    // TODO: Call Google Drive API using integration.accessToken
-    // const drive = google.drive({ version: "v3", auth: oauth2Client });
-    // const folders = await drive.files.list({
-    //   q: "mimeType='application/vnd.google-apps.folder' and trashed=false",
-    //   spaces: "drive",
-    //   fields: "files(id, name, webViewLink)",
-    //   pageSize: 100,
-    // });
+    // Ensure token is fresh
+    const accessToken = await ensureFreshToken(integration);
 
-    req.log.info(
-      { integrationId, orgId },
-      "TODO: Implement Google Drive API call to list folders"
-    );
+    const parentId = (req.query.parentId as string) || undefined;
+    const folders = await listFolders(accessToken, parentId);
 
-    res.json({
-      folders: [],
-      message: "TODO: Implement actual Google Drive API call. accessToken: " + (integration.accessToken ? "set" : "missing"),
-    });
+    res.json({ folders });
   } catch (err) {
     req.log.error({ err }, "Failed to list Drive folders");
     res.status(500).json({ error: "Failed to list folders" });
   }
 });
 
-/**
- * GET /integrations/:id/sync-status
- * Get sync progress and status for an integration.
- */
+// ---------------------------------------------------------------------------
+// List files in a Drive folder
+// ---------------------------------------------------------------------------
+router.get("/integrations/:id/drive/files", async (req: Request, res: Response) => {
+  if (!requireAuth(req, res)) return;
+  const orgId = req.user!.orgId!;
+  const integrationId = parseInt(req.params.id as string);
+
+  if (isNaN(integrationId)) {
+    res.status(400).json({ error: "Invalid integration id" });
+    return;
+  }
+
+  try {
+    const [integration] = await db
+      .select()
+      .from(integrations)
+      .where(and(eq(integrations.id, integrationId), eq(integrations.orgId, orgId)));
+
+    if (!integration) {
+      res.status(404).json({ error: "Integration not found" });
+      return;
+    }
+
+    if (integration.type !== "google_drive") {
+      res.status(400).json({ error: "Only supported for Google Drive integrations" });
+      return;
+    }
+
+    const accessToken = await ensureFreshToken(integration);
+    const folderId = (req.query.folderId as string) || "root";
+    const pageToken = (req.query.pageToken as string) || undefined;
+
+    const result = await listFilesInFolder(accessToken, folderId, pageToken);
+
+    res.json(result);
+  } catch (err) {
+    req.log.error({ err }, "Failed to list Drive files");
+    res.status(500).json({ error: "Failed to list files" });
+  }
+});
+
+// ---------------------------------------------------------------------------
+// Get sync status
+// ---------------------------------------------------------------------------
 router.get("/integrations/:id/sync-status", async (req: Request, res: Response) => {
   if (!requireAuth(req, res)) return;
   const orgId = req.user!.orgId!;
@@ -354,28 +404,34 @@ router.get("/integrations/:id/sync-status", async (req: Request, res: Response) 
       return;
     }
 
-    // Get synced files for this integration
-    const syncedFilesList = await db
+    const files = await db
       .select()
       .from(syncedFiles)
       .where(eq(syncedFiles.integrationId, integrationId));
 
-    const totalFiles = syncedFilesList.length;
-    const syncedCount = syncedFilesList.filter((f) => f.syncStatus === "synced").length;
-    const pendingCount = syncedFilesList.filter((f) => f.syncStatus === "pending").length;
-    const failedCount = syncedFilesList.filter((f) => f.syncStatus === "failed").length;
+    const totalFiles = files.length;
+    const syncedCount = files.filter((f) => f.syncStatus === "synced").length;
+    const pendingCount = files.filter((f) => f.syncStatus === "pending").length;
+    const failedCount = files.filter((f) => f.syncStatus === "failed").length;
 
     res.json({
-      integration,
-      syncStatus: {
+      integration: {
+        id: integration.id,
+        name: integration.name,
+        type: integration.type,
+        isActive: integration.isActive,
+        syncStatus: (integration as any).syncStatus ?? "idle",
+        lastSyncAt: integration.lastSyncAt,
+        lastError: (integration as any).lastError,
+        totalFilesSynced: (integration as any).totalFilesSynced ?? 0,
+      },
+      syncProgress: {
         totalFiles,
         syncedCount,
         pendingCount,
         failedCount,
-        lastSyncAt: integration.lastSyncAt,
-        isActive: integration.isActive,
       },
-      files: syncedFilesList,
+      recentFiles: files.slice(0, 20),
     });
   } catch (err) {
     req.log.error({ err }, "Failed to get sync status");

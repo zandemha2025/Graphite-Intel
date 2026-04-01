@@ -9,6 +9,7 @@ import router from "./routes";
 import { logger } from "./lib/logger";
 import { inngest } from "./inngest/client";
 import * as inngestFunctions from "./inngest";
+import { webhooksRouter } from "./routes/webhooks";
 
 const app: Express = express();
 
@@ -46,6 +47,9 @@ app.use(
     functions: Object.values(inngestFunctions),
   }),
 );
+
+// Webhook routes — NOT behind auth middleware (receives external provider notifications)
+app.use("/api", webhooksRouter);
 
 app.use("/api", router);
 
