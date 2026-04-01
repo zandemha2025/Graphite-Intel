@@ -11,7 +11,10 @@ COPY lib/db/package.json lib/db/
 COPY lib/integrations-openai-ai-server/package.json lib/integrations-openai-ai-server/
 COPY artifacts/api-server/package.json artifacts/api-server/
 
-# Install all workspace dependencies (no frozen lockfile due to platform overrides)
+# Enable hoisting so transitive deps (e.g. openai) are accessible across workspace packages
+RUN echo "shamefully-hoist=true" >> .npmrc
+
+# Install all workspace dependencies
 RUN pnpm install --no-frozen-lockfile
 
 # Copy source code
