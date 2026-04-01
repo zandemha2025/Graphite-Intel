@@ -2,8 +2,10 @@ import { Router, type IRouter, type Request, type Response } from "express";
 import { db, reportsTable, companyProfiles } from "@workspace/db";
 import { eq, desc, and } from "drizzle-orm";
 import { openai } from "@workspace/integrations-openai-ai-server";
+import { ExportService } from "../lib/exportService.js";
 
 const router: IRouter = Router();
+const exportService = new ExportService();
 
 const REPORT_TYPE_LABELS: Record<string, string> = {
   market_intelligence: "Market Intelligence",
@@ -305,6 +307,73 @@ router.delete("/reports/:id", async (req: Request, res: Response) => {
   } catch (err) {
     req.log.error({ err }, "Failed to delete report");
     res.status(500).json({ error: "Failed to delete report" });
+  }
+});
+
+router.get("/reports/:id/export", async (req: Request, res: Response) => {
+  if (!requireAuth(req, res)) return;
+
+  const id = parseInt(req.params.id);
+  if (isNaN(id)) {
+    res.status(400).json({ error: "Invalid report id" });
+    return;
+  }
+
+  const format = (req.query.format as string || "md").toLowerCase();
+  if (!["pdf", "docx", "md"].includes(format)) {
+    res.status(400).json({ error: "Invalid format. Supported: pdf, docx, md" });
+    return;
+  }
+
+  try {
+    const [report] = await db
+      .select()
+      .from(reportsTable)
+      .where(and(eq(reportsTable.id, id), reportsFilter(req)));
+
+    if (!report) {
+      res.status(404).json({ error: "Report not found" });
+      return;
+    }
+
+    if (!report.content) {
+      res.status(400).json({ error: "Report content not available yet" });
+      return;
+    }
+
+    let buffer: Buffer;
+    let contentType: string;
+    let extension: string;
+
+    switch (format) {
+      case "pdf":
+        buffer = await exportService.generatePDF(report);
+        contentType = "application/pdf";
+        extension = "pdf";
+        break;
+
+      case "docx":
+        buffer = await exportService.generateDocx(report);
+        contentType = "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
+        extension = "docx";
+        break;
+
+      case "md":
+      default:
+        buffer = Buffer.from(report.content);
+        contentType = "text/markdown";
+        extension = "md";
+        break;
+    }
+
+    const filename = `${report.title.replace(/[^a-z0-9]/gi, "_").toLowerCase()}.${extension}`;
+    res.setHeader("Content-Type", contentType);
+    res.setHeader("Content-Disposition", `attachment; filename="${filename}"`);
+    res.setHeader("Content-Length", buffer.length);
+    res.send(buffer);
+  } catch (err) {
+    req.log.error({ err }, "Failed to export report");
+    res.status(500).json({ error: "Failed to export report" });
   }
 });
 

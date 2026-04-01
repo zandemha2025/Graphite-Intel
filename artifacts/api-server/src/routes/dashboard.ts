@@ -12,10 +12,16 @@ function requireAuth(req: Request, res: Response): boolean {
   return true;
 }
 
+function dashboardFilter(req: Request) {
+  const orgId = req.user!.orgId;
+  if (orgId) {
+    return eq(reportsTable.orgId, orgId);
+  }
+  return eq(reportsTable.userId, req.user!.id);
+}
+
 router.get("/dashboard/summary", async (req: Request, res: Response) => {
   if (!requireAuth(req, res)) return;
-
-  const userId = req.user!.id;
 
   try {
     const [totals] = await db
@@ -26,7 +32,7 @@ router.get("/dashboard/summary", async (req: Request, res: Response) => {
         failed: sql<number>`count(*) filter (where ${reportsTable.status} = 'failed')`,
       })
       .from(reportsTable)
-      .where(eq(reportsTable.userId, userId));
+      .where(dashboardFilter(req));
 
     res.json({
       totalReports: Number(totals?.total ?? 0),
@@ -43,14 +49,13 @@ router.get("/dashboard/summary", async (req: Request, res: Response) => {
 router.get("/dashboard/recent-reports", async (req: Request, res: Response) => {
   if (!requireAuth(req, res)) return;
 
-  const userId = req.user!.id;
   const limit = Math.min(parseInt(req.query.limit as string) || 5, 20);
 
   try {
     const reports = await db
       .select()
       .from(reportsTable)
-      .where(eq(reportsTable.userId, userId))
+      .where(dashboardFilter(req))
       .orderBy(desc(reportsTable.createdAt))
       .limit(limit);
 
@@ -64,8 +69,6 @@ router.get("/dashboard/recent-reports", async (req: Request, res: Response) => {
 router.get("/dashboard/report-type-stats", async (req: Request, res: Response) => {
   if (!requireAuth(req, res)) return;
 
-  const userId = req.user!.id;
-
   try {
     const stats = await db
       .select({
@@ -73,7 +76,7 @@ router.get("/dashboard/report-type-stats", async (req: Request, res: Response) =
         count: count(),
       })
       .from(reportsTable)
-      .where(eq(reportsTable.userId, userId))
+      .where(dashboardFilter(req))
       .groupBy(reportsTable.reportType);
 
     res.json(stats);

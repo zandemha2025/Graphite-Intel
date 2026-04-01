@@ -92,14 +92,21 @@ async function processChunksInBackground(docId: number, extractedText: string, l
   }
 }
 
+function documentsFilter(req: Request) {
+  const orgId = req.user!.orgId;
+  if (orgId) {
+    return eq(documents.orgId, orgId);
+  }
+  return eq(documents.userId, req.user!.id);
+}
+
 router.get("/documents", async (req: Request, res: Response) => {
   if (!requireAuth(req, res)) return;
-  const userId = req.user!.id;
   try {
     const docs = await db
       .select()
       .from(documents)
-      .where(eq(documents.userId, userId))
+      .where(documentsFilter(req))
       .orderBy(documents.createdAt);
     res.json(docs.map(({ extractedText: _et, ...d }) => d));
   } catch (err) {
@@ -111,6 +118,7 @@ router.get("/documents", async (req: Request, res: Response) => {
 router.post("/documents", async (req: Request, res: Response) => {
   if (!requireAuth(req, res)) return;
   const userId = req.user!.id;
+  const orgId = req.user!.orgId;
   const { title, fileType, objectKey } = req.body;
   if (!title || !fileType || !objectKey) {
     res.status(400).json({ error: "title, fileType, and objectKey are required" });
@@ -119,7 +127,7 @@ router.post("/documents", async (req: Request, res: Response) => {
   try {
     const [doc] = await db
       .insert(documents)
-      .values({ userId, title, fileType, objectKey, status: "processing" })
+      .values({ userId, ...(orgId !== undefined && { orgId }), title, fileType, objectKey, status: "processing" })
       .returning();
     res.status(201).json({ ...doc, extractedText: undefined });
   } catch (err) {
@@ -130,7 +138,6 @@ router.post("/documents", async (req: Request, res: Response) => {
 
 router.delete("/documents/:id", async (req: Request, res: Response) => {
   if (!requireAuth(req, res)) return;
-  const userId = req.user!.id;
   const id = parseInt(req.params.id);
   if (isNaN(id)) {
     res.status(400).json({ error: "Invalid document id" });
@@ -140,7 +147,7 @@ router.delete("/documents/:id", async (req: Request, res: Response) => {
     const [doc] = await db
       .select()
       .from(documents)
-      .where(and(eq(documents.id, id), eq(documents.userId, userId)));
+      .where(and(eq(documents.id, id), documentsFilter(req)));
     if (!doc) {
       res.status(404).json({ error: "Document not found" });
       return;
@@ -157,7 +164,6 @@ router.delete("/documents/:id", async (req: Request, res: Response) => {
 
 router.post("/documents/:id/process", async (req: Request, res: Response) => {
   if (!requireAuth(req, res)) return;
-  const userId = req.user!.id;
   const id = parseInt(req.params.id);
   if (isNaN(id)) {
     res.status(400).json({ error: "Invalid document id" });
@@ -167,7 +173,7 @@ router.post("/documents/:id/process", async (req: Request, res: Response) => {
     const [doc] = await db
       .select()
       .from(documents)
-      .where(and(eq(documents.id, id), eq(documents.userId, userId)));
+      .where(and(eq(documents.id, id), documentsFilter(req)));
     if (!doc) {
       res.status(404).json({ error: "Document not found" });
       return;
@@ -219,7 +225,6 @@ router.post("/documents/:id/process", async (req: Request, res: Response) => {
 
 router.patch("/documents/:id", async (req: Request, res: Response) => {
   if (!requireAuth(req, res)) return;
-  const userId = req.user!.id;
   const id = parseInt(req.params.id);
   if (isNaN(id)) {
     res.status(400).json({ error: "Invalid document id" });
@@ -230,7 +235,7 @@ router.patch("/documents/:id", async (req: Request, res: Response) => {
     const [doc] = await db
       .select()
       .from(documents)
-      .where(and(eq(documents.id, id), eq(documents.userId, userId)));
+      .where(and(eq(documents.id, id), documentsFilter(req)));
     if (!doc) {
       res.status(404).json({ error: "Document not found" });
       return;
@@ -249,7 +254,6 @@ router.patch("/documents/:id", async (req: Request, res: Response) => {
 
 router.post("/documents/search", async (req: Request, res: Response) => {
   if (!requireAuth(req, res)) return;
-  const userId = req.user!.id;
   const { query, documentIds } = req.body;
   if (!query || typeof query !== "string") {
     res.status(400).json({ error: "query is required" });
@@ -257,11 +261,11 @@ router.post("/documents/search", async (req: Request, res: Response) => {
   }
 
   try {
-    const userDocs = await db
+    const accessibleDocs = await db
       .select({ id: documents.id })
       .from(documents)
-      .where(eq(documents.userId, userId));
-    const userDocIds = new Set(userDocs.map((d) => d.id));
+      .where(documentsFilter(req));
+    const userDocIds = new Set(accessibleDocs.map((d) => d.id));
 
     let targetDocIds: number[] = Array.from(userDocIds);
     if (documentIds && Array.isArray(documentIds)) {
@@ -364,7 +368,7 @@ router.post("/conversations/:id/documents", async (req: Request, res: Response) 
     const [doc] = await db
       .select()
       .from(documents)
-      .where(and(eq(documents.id, documentId), eq(documents.userId, userId)));
+      .where(and(eq(documents.id, documentId), documentsFilter(req)));
     if (!doc) {
       res.status(404).json({ error: "Document not found" });
       return;

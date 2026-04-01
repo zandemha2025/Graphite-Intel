@@ -6,12 +6,16 @@ import {
   getGetReportQueryKey,
   useDownloadReport
 } from "@workspace/api-client-react";
-import { Download, ChevronLeft } from "lucide-react";
+import { Download, ChevronLeft, FileDown, FileText, File } from "lucide-react";
 import { Link } from "wouter";
+import { useToast } from "@/hooks/use-toast";
+
+type ExportFormat = 'pdf' | 'docx' | 'md';
 
 export function ReportView() {
   const [, params] = useRoute("/reports/:id");
   const reportId = parseInt(params?.id || "0", 10);
+  const { toast } = useToast();
 
   const { data: report, isLoading } = useGetReport(reportId, {
     query: {
@@ -39,6 +43,36 @@ export function ReportView() {
         }
       }
     );
+  };
+
+  const handleExport = async (format: ExportFormat) => {
+    try {
+      const response = await fetch(`/api/reports/${reportId}/export?format=${format}`, {
+        credentials: 'include',
+      });
+
+      if (!response.ok) {
+        throw new Error(`Export failed with status ${response.status}`);
+      }
+
+      const blob = await response.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `report-${reportId}.${format}`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+
+      toast({ title: `Report exported as ${format.toUpperCase()}` });
+    } catch (err) {
+      toast({
+        title: 'Export failed',
+        description: err instanceof Error ? err.message : 'Failed to export report',
+        variant: 'destructive',
+      });
+    }
   };
 
   if (isLoading) {
@@ -77,16 +111,45 @@ export function ReportView() {
                 {report.title}
               </h1>
             </div>
-            <button
-              onClick={handleDownload}
-              className="shrink-0 flex items-center gap-2 px-4 py-2 text-xs uppercase tracking-widest mt-1 transition-colors"
-              style={{ border: "1px solid var(--workspace-border)", color: "var(--workspace-muted)", background: "#FFFFFF" }}
-              data-testid="btn-download-report"
-              disabled={downloadReport.isPending}
-            >
-              <Download className="w-3.5 h-3.5" />
-              Download
-            </button>
+            <div className="shrink-0 flex items-center gap-2">
+              <button
+                onClick={handleDownload}
+                className="shrink-0 flex items-center gap-2 px-4 py-2 text-xs uppercase tracking-widest mt-1 transition-colors"
+                style={{ border: "1px solid var(--workspace-border)", color: "var(--workspace-muted)", background: "#FFFFFF" }}
+                data-testid="btn-download-report"
+                disabled={downloadReport.isPending}
+              >
+                <Download className="w-3.5 h-3.5" />
+                Download
+              </button>
+              <button
+                onClick={() => handleExport('pdf')}
+                className="shrink-0 flex items-center gap-2 px-3 py-2 text-xs uppercase tracking-widest mt-1 transition-colors"
+                style={{ border: "1px solid var(--workspace-border)", color: "var(--workspace-muted)", background: "#FFFFFF" }}
+                data-testid="btn-export-pdf"
+                title="Export as PDF"
+              >
+                <FileDown className="w-3.5 h-3.5" />
+              </button>
+              <button
+                onClick={() => handleExport('docx')}
+                className="shrink-0 flex items-center gap-2 px-3 py-2 text-xs uppercase tracking-widest mt-1 transition-colors"
+                style={{ border: "1px solid var(--workspace-border)", color: "var(--workspace-muted)", background: "#FFFFFF" }}
+                data-testid="btn-export-docx"
+                title="Export as DOCX"
+              >
+                <FileText className="w-3.5 h-3.5" />
+              </button>
+              <button
+                onClick={() => handleExport('md')}
+                className="shrink-0 flex items-center gap-2 px-3 py-2 text-xs uppercase tracking-widest mt-1 transition-colors"
+                style={{ border: "1px solid var(--workspace-border)", color: "var(--workspace-muted)", background: "#FFFFFF" }}
+                data-testid="btn-export-md"
+                title="Export as Markdown"
+              >
+                <File className="w-3.5 h-3.5" />
+              </button>
+            </div>
           </div>
         </div>
 

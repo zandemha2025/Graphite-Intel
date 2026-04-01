@@ -10,6 +10,14 @@ import workflowsRouter from "./workflows";
 import storageRouter from "./storage";
 import documentsRouter from "./documents";
 import orgRouter from "./org";
+import auditRouter from "./audit";
+import analyticsRouter from "./analytics";
+import vaultRouter from "./vault";
+import integrationsRouter from "./integrations";
+import workflowDefinitionsRouter from "./workflow-definitions";
+import workflowExecutionsRouter from "./workflow-executions";
+import humanReviewsRouter from "./human-reviews";
+import vaultQueryRouter from "./vault-query";
 
 const router: IRouter = Router();
 
@@ -24,5 +32,13 @@ router.use(workflowsRouter);
 router.use(storageRouter);
 router.use(documentsRouter);
 router.use(orgRouter);
+router.use(auditRouter);
+router.use(analyticsRouter);
+router.use(vaultRouter);
+router.use(integrationsRouter);
+router.use(workflowDefinitionsRouter);
+router.use(workflowExecutionsRouter);
+router.use(humanReviewsRouter);
+router.use(vaultQueryRouter);
 
 export default router;

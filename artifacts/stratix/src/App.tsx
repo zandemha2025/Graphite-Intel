@@ -22,6 +22,15 @@ import { WorkflowRunner } from "@/pages/workflow-runner";
 import { WorkflowView } from "@/pages/workflow-view";
 import { Knowledge } from "@/pages/knowledge";
 import { Team } from "@/pages/team";
+import { AuditLogs } from "@/pages/audit-logs";
+import { Analytics } from "@/pages/analytics";
+import { Vault } from "@/pages/vault";
+import { VaultProject } from "@/pages/vault-project";
+import { WorkflowBuilder } from "@/pages/workflow-builder";
+import { WorkflowBuilderEdit } from "@/pages/workflow-builder-edit";
+import { Integrations } from "@/pages/integrations";
+import { HumanReviews } from "@/pages/human-reviews";
+import { VaultSearch } from "@/pages/vault-search";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -195,6 +204,16 @@ function Router() {
       <Route path="/settings/team" component={() => <ProtectedRoute component={Team} />} />
       <Route path="/security" component={Security} />
       <Route path="/knowledge" component={() => <ProtectedRoute component={Knowledge} />} />
+      <Route path="/vault/:id" component={() => <ProtectedRoute component={VaultProject} />} />
+      <Route path="/vault" component={() => <ProtectedRoute component={Vault} />} />
+      <Route path="/workflow-builder/new" component={() => <ProtectedRoute component={WorkflowBuilderEdit} />} />
+      <Route path="/workflow-builder/:id" component={() => <ProtectedRoute component={WorkflowBuilderEdit} />} />
+      <Route path="/workflow-builder" component={() => <ProtectedRoute component={WorkflowBuilder} />} />
+      <Route path="/audit" component={() => <ProtectedRoute component={AuditLogs} />} />
+      <Route path="/analytics" component={() => <ProtectedRoute component={Analytics} />} />
+      <Route path="/settings/integrations" component={() => <ProtectedRoute component={Integrations} />} />
+      <Route path="/human-reviews" component={() => <ProtectedRoute component={HumanReviews} />} />
+      <Route path="/vault/search" component={() => <ProtectedRoute component={VaultSearch} />} />
       <Route component={NotFound} />
     </Switch>
   );

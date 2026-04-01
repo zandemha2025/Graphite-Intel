@@ -1,4 +1,4 @@
-import { pgTable, serial, text, timestamp, varchar } from "drizzle-orm/pg-core";
+import { pgTable, serial, integer, text, timestamp, varchar } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod/v4";
 
@@ -11,7 +11,9 @@ export const organizations = pgTable("organizations", {
 
 export const orgMembers = pgTable("org_members", {
   id: serial("id").primaryKey(),
-  orgId: serial("org_id").notNull(),
+  orgId: integer("org_id")
+    .notNull()
+    .references(() => organizations.id, { onDelete: "cascade" }),
   userId: varchar("user_id").notNull(),
   role: varchar("role").notNull().default("member"),
   joinedAt: timestamp("joined_at", { withTimezone: true }).notNull().defaultNow(),
@@ -19,7 +21,9 @@ export const orgMembers = pgTable("org_members", {
 
 export const orgInvites = pgTable("org_invites", {
   id: serial("id").primaryKey(),
-  orgId: serial("org_id").notNull(),
+  orgId: integer("org_id")
+    .notNull()
+    .references(() => organizations.id, { onDelete: "cascade" }),
   token: varchar("token").notNull().unique(),
   email: varchar("email"),
   createdByUserId: varchar("created_by_user_id").notNull(),

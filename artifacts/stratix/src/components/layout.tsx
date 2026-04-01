@@ -11,6 +11,11 @@ import {
   ChevronDown,
   Zap,
   Users,
+  FolderOpen,
+  Blocks,
+  Shield,
+  BarChart3,
+  Link2,
 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
@@ -19,8 +24,15 @@ const NAV_ITEMS = [
   { href: "/chat", label: "Assistant", icon: MessageSquareText },
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { href: "/workflows", label: "Workflows", icon: Zap },
+  { href: "/workflow-builder", label: "Builder", icon: Blocks },
   { href: "/reports", label: "Report Library", icon: Library },
   { href: "/knowledge", label: "Knowledge", icon: BookOpen },
+  { href: "/vault", label: "Vault", icon: FolderOpen },
+];
+
+const ADMIN_NAV_ITEMS = [
+  { href: "/audit", label: "Audit Log", icon: Shield },
+  { href: "/analytics", label: "Analytics", icon: BarChart3 },
 ];
 
 const PAGE_BREADCRUMBS: Record<string, { section?: string; title: string }> = {
@@ -32,6 +44,11 @@ const PAGE_BREADCRUMBS: Record<string, { section?: string; title: string }> = {
   "/profile": { section: "Settings", title: "Company Profile" },
   "/knowledge": { title: "Knowledge" },
   "/settings/team": { section: "Settings", title: "Team" },
+  "/vault": { title: "Vault" },
+  "/workflow-builder": { title: "Workflow Builder" },
+  "/audit": { section: "Admin", title: "Audit Log" },
+  "/analytics": { section: "Admin", title: "Analytics" },
+  "/settings/integrations": { section: "Settings", title: "Integrations" },
 };
 
 function useOrgName() {
@@ -60,9 +77,11 @@ export function Layout({ children }: { children: React.ReactNode }) {
     (location.startsWith("/reports/") ? { section: "Reports", title: "Intelligence Brief" } :
     location.startsWith("/workflows/new/") ? { section: "Workflows", title: "Launch Workflow" } :
     location.startsWith("/workflows/") ? { section: "Workflows", title: "Workflow Run" } :
+    location.startsWith("/vault/") ? { section: "Vault", title: "Project" } :
+    location.startsWith("/workflow-builder/") ? { section: "Builder", title: "Edit Workflow" } :
     { title: "Stratix" });
 
-  const isAdmin = user?.orgRole === "admin";
+  const isAdmin = user?.orgRole === "admin" || user?.orgRole === "owner";
 
   const isFullBleed = location === "/chat" || location.startsWith("/chat/");
 
@@ -84,7 +103,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
           </Link>
         </div>
 
-        <nav className="flex-1 px-3 py-4 space-y-0.5">
+        <nav className="flex-1 px-3 py-4 space-y-0.5 overflow-y-auto">
           {NAV_ITEMS.map((item) => {
             const isActive = location === item.href || location.startsWith(`${item.href}/`);
             return (
@@ -105,6 +124,36 @@ export function Layout({ children }: { children: React.ReactNode }) {
               </Link>
             );
           })}
+
+          {isAdmin && (
+            <>
+              <div className="pt-4 pb-1 px-3">
+                <span className="text-[9px] uppercase tracking-[0.2em] font-medium" style={{ color: "rgba(232,228,220,0.25)" }}>
+                  Admin
+                </span>
+              </div>
+              {ADMIN_NAV_ITEMS.map((item) => {
+                const isActive = location === item.href || location.startsWith(`${item.href}/`);
+                return (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    className={`flex items-center gap-3 px-3 py-2 text-xs font-medium transition-colors relative`}
+                    style={{
+                      color: isActive ? "#E8E4DC" : "rgba(232,228,220,0.50)",
+                      borderLeft: isActive ? "2px solid #E8E4DC" : "2px solid transparent",
+                      paddingLeft: "10px",
+                      background: isActive ? "rgba(255,255,255,0.04)" : undefined,
+                    }}
+                    data-testid={`nav-link-${item.label.toLowerCase().replace(/\s+/g, '-')}`}
+                  >
+                    <item.icon className="h-3.5 w-3.5 shrink-0" style={{ color: isActive ? "#E8E4DC" : "rgba(232,228,220,0.40)" }} />
+                    <span className="uppercase tracking-wider">{item.label}</span>
+                  </Link>
+                );
+              })}
+            </>
+          )}
         </nav>
 
         {user && (
@@ -152,6 +201,17 @@ export function Layout({ children }: { children: React.ReactNode }) {
                   >
                     <Users className="mr-2 h-3.5 w-3.5" />
                     <span>Team</span>
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link
+                    href="/settings/integrations"
+                    className="flex items-center cursor-pointer text-xs w-full px-2 py-1.5"
+                    style={{ color: "rgba(232,228,220,0.70)" }}
+                    data-testid="nav-link-integrations"
+                  >
+                    <Link2 className="mr-2 h-3.5 w-3.5" />
+                    <span>Integrations</span>
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator className="bg-white/8" />
