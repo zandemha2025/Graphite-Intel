@@ -11,7 +11,7 @@ import { inngest } from "../client";
 import { db } from "@workspace/db";
 import { playbooks, documents } from "@workspace/db";
 import { eq, inArray } from "drizzle-orm";
-import { openai } from "@workspace/integrations-openai-ai-server";
+import { getOpenAIClient } from "@workspace/integrations-openai-ai-server";
 
 interface PlaybookStep {
   index: number;
@@ -59,7 +59,7 @@ export const playbookGenerateFunction = inngest.createFunction(
         .map((d) => `## Document: ${d.title} (${d.fileType})\n\n${d.text}`)
         .join("\n\n---\n\n");
 
-      const response = await openai.chat.completions.create({
+      const response = await getOpenAIClient().chat.completions.create({
         model: "gpt-4o",
         messages: [
           {

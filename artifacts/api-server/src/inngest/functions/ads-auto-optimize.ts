@@ -14,7 +14,7 @@ import { inngest } from "../client";
 import { db } from "@workspace/db";
 import { adCampaigns, adMetrics, adOptimizationLogs } from "@workspace/db";
 import { eq, and, gte, desc } from "drizzle-orm";
-import { openai } from "@workspace/integrations-openai-ai-server";
+import { getOpenAIClient } from "@workspace/integrations-openai-ai-server";
 import { logger } from "../../lib/logger";
 
 interface OptimizationRecommendation {
@@ -82,7 +82,7 @@ export const adsAutoOptimizeFunction = inngest.createFunction(
         roas: m.roas,
       }));
 
-      const response = await openai.chat.completions.create({
+      const response = await getOpenAIClient().chat.completions.create({
         model: "gpt-4o",
         messages: [
           {

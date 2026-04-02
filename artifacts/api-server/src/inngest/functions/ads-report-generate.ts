@@ -12,7 +12,7 @@ import { inngest } from "../client";
 import { db } from "@workspace/db";
 import { adReports, adCampaigns, adMetrics } from "@workspace/db";
 import { eq, and, inArray, between } from "drizzle-orm";
-import { openai } from "@workspace/integrations-openai-ai-server";
+import { getOpenAIClient } from "@workspace/integrations-openai-ai-server";
 
 export const adsReportGenerateFunction = inngest.createFunction(
   { id: "ads-report-generate", retries: 2 },
@@ -154,7 +154,7 @@ export const adsReportGenerateFunction = inngest.createFunction(
 
     // Step 4: Generate AI insights
     const generatedContent = await step.run("generate-insights", async () => {
-      const response = await openai.chat.completions.create({
+      const response = await getOpenAIClient().chat.completions.create({
         model: "gpt-4o",
         messages: [
           {

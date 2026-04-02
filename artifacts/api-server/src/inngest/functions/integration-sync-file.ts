@@ -10,7 +10,7 @@ import { eq, and } from "drizzle-orm";
 import { ensureFreshToken } from "../../lib/oauth-tokens";
 import { downloadFile } from "../../lib/providers/google-drive";
 import { objectStorageClient } from "../../lib/objectStorage";
-import { openai } from "@workspace/integrations-openai-ai-server";
+import { getOpenAIClient } from "@workspace/integrations-openai-ai-server";
 
 // ---------------------------------------------------------------------------
 // Text extraction helpers (mirrors documents route logic)
@@ -46,7 +46,7 @@ async function embedChunks(chunks: string[]): Promise<number[][]> {
 
   for (let i = 0; i < chunks.length; i += BATCH_SIZE) {
     const batch = chunks.slice(i, i + BATCH_SIZE);
-    const response = await openai.embeddings.create({
+    const response = await getOpenAIClient().embeddings.create({
       model: "text-embedding-3-small",
       input: batch,
     });
