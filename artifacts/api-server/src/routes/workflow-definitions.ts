@@ -4,9 +4,11 @@ import {
   workflowDefinitions,
   workflowSteps,
   workflowExecutions,
-  workflowExecutionSteps,
 } from "@workspace/db";
 import { eq, and, desc } from "drizzle-orm";
+import { parseNaturalLanguageWorkflow } from "../inngest/nl-parser";
+import { compileWorkflow } from "../inngest/workflow-compiler";
+import { inngest } from "../inngest/client";
 
 const router: IRouter = Router();
 
@@ -550,6 +552,160 @@ router.post(
         .json({ error: "Failed to duplicate workflow definition" });
     }
   }
+);
+
+/**
+ * POST /workflow-definitions/from-natural-language
+ * Parse a natural language description and create a workflow definition.
+ *
+ * Body: { description: string }
+ *
+ * Uses GPT-4o to convert the description into a structured workflow definition
+ * with trigger, steps, and config, then persists it as a draft.
+ */
+router.post(
+  "/workflow-definitions/from-natural-language",
+  async (req: Request, res: Response) => {
+    if (!requireAuth(req, res)) return;
+
+    const orgId = req.user!.orgId;
+    if (!orgId) {
+      res.status(400).json({ error: "Organization context required" });
+      return;
+    }
+
+    const userId = req.user!.id;
+    const { description } = req.body;
+
+    if (!description || typeof description !== "string" || description.trim().length === 0) {
+      res.status(400).json({ error: "description is required" });
+      return;
+    }
+
+    try {
+      // 1. Parse natural language into a structured definition
+      const parsed = await parseNaturalLanguageWorkflow(description.trim());
+
+      // 2. Persist the definition and steps in a transaction
+      let definition: any;
+      await db.transaction(async (tx) => {
+        [definition] = await tx
+          .insert(workflowDefinitions)
+          .values({
+            orgId,
+            createdByUserId: userId,
+            name: parsed.name,
+            description: parsed.description,
+            icon: parsed.icon || null,
+            config: parsed.config,
+            status: "draft",
+            isPublished: false,
+          })
+          .returning();
+
+        if (parsed.steps.length > 0) {
+          await tx.insert(workflowSteps).values(
+            parsed.steps.map((step, index) => ({
+              workflowDefinitionId: definition.id,
+              stepIndex: index,
+              type: step.type,
+              name: step.name || null,
+              description: step.description || null,
+              config: step.config,
+            })),
+          );
+        }
+      });
+
+      const stepsResult = await db
+        .select()
+        .from(workflowSteps)
+        .where(eq(workflowSteps.workflowDefinitionId, definition!.id))
+        .orderBy(workflowSteps.stepIndex);
+
+      // 3. Return the definition with a compile report so the client knows if it's ready
+      const compiled = compileWorkflow(definition!, stepsResult);
+
+      res.status(201).json({ ...definition, steps: stepsResult, compiled });
+    } catch (err) {
+      req.log.error({ err }, "Failed to create workflow from natural language");
+      res.status(500).json({ error: "Failed to create workflow from natural language" });
+    }
+  },
+);
+
+/**
+ * POST /workflow-definitions/:id/trigger
+ * Manually trigger execution of a published workflow definition.
+ *
+ * Body: { inputs?: object, title?: string }
+ *
+ * Convenience endpoint for ManualTrigger workflows — creates an execution
+ * and fires the Inngest event in one call.
+ */
+router.post(
+  "/workflow-definitions/:id/trigger",
+  async (req: Request, res: Response) => {
+    if (!requireAuth(req, res)) return;
+
+    const id = parseInt(req.params.id as string);
+    if (isNaN(id)) {
+      res.status(400).json({ error: "Invalid workflow definition id" });
+      return;
+    }
+
+    const orgId = req.user!.orgId;
+    if (!orgId) {
+      res.status(400).json({ error: "Organization context required" });
+      return;
+    }
+
+    const userId = req.user!.id;
+    const inputs = req.body.inputs && typeof req.body.inputs === "object" ? req.body.inputs : {};
+    const title = req.body.title as string | undefined;
+
+    try {
+      const [wf] = await db
+        .select()
+        .from(workflowDefinitions)
+        .where(
+          and(
+            eq(workflowDefinitions.id, id),
+            eq(workflowDefinitions.orgId, orgId),
+            eq(workflowDefinitions.isPublished, true),
+          ),
+        );
+
+      if (!wf) {
+        res.status(404).json({ error: "Workflow definition not found or not published" });
+        return;
+      }
+
+      const [execution] = await db
+        .insert(workflowExecutions)
+        .values({
+          orgId,
+          workflowDefinitionId: wf.id,
+          triggeredByUserId: userId,
+          title: title || `Manual run: ${wf.name}`,
+          status: "pending",
+          inputs,
+          outputs: {},
+          currentStepIndex: 0,
+        })
+        .returning();
+
+      await inngest.send({
+        name: "workflow/execute",
+        data: { executionId: execution!.id, orgId },
+      });
+
+      res.status(201).json(execution);
+    } catch (err) {
+      req.log.error({ err }, "Failed to trigger workflow");
+      res.status(500).json({ error: "Failed to trigger workflow" });
+    }
+  },
 );
 
 export default router;

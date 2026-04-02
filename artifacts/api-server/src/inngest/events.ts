@@ -61,6 +61,22 @@ export type GrphintelEvents = {
     data: { playbookRunId: number; orgId: number };
   };
 
+  // Workflow trigger events
+  "workflow/webhook.received": {
+    data: {
+      webhookId: string;
+      orgId: number;
+      payload: unknown;
+    };
+  };
+  "workflow/event.received": {
+    data: {
+      eventName: string;
+      orgId: number;
+      payload: unknown;
+    };
+  };
+
   // Ads events
   "ads/campaign.publish": {
     data: { campaignId: number; orgId: number; platforms: string[] };

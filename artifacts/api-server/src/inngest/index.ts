@@ -12,6 +12,10 @@ export { adsMetricsSyncFunction } from "./functions/ads-metrics-sync";
 export { adsAutoOptimizeFunction } from "./functions/ads-auto-optimize";
 export { adsReportGenerateFunction } from "./functions/ads-report-generate";
 
+// Conversational workflow trigger functions
+export { workflowCronTriggerFunction } from "./functions/workflow-cron-trigger";
+export { workflowWebhookTriggerFunction } from "./functions/workflow-webhook-trigger";
+
 // Future functions (uncomment as implemented):
 // export { documentIndexFunction } from "./functions/document-index";
 // export { webhookProcessFunction } from "./functions/webhook-process";

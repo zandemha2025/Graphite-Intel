@@ -7,6 +7,7 @@ import {
 } from "@workspace/db";
 import { eq, and, desc } from "drizzle-orm";
 import { inngest } from "../inngest/client";
+import { compileWorkflow } from "../inngest/workflow-compiler";
 
 const router: IRouter = Router();
 
@@ -284,6 +285,106 @@ router.post(
       res.status(500).json({ error: "Failed to cancel workflow execution" });
     }
   }
+);
+
+/**
+ * POST /workflow-webhook/:webhookId
+ * Public endpoint that receives incoming webhook payloads and fires the
+ * "workflow/webhook.received" Inngest event.
+ *
+ * The orgId is resolved from a query parameter (?org=<id>) or the X-Org-Id header.
+ * Callers must supply one of these; requests without a resolvable orgId are rejected.
+ *
+ * Webhook trigger workflows must be published and have a matching webhookId in
+ * their trigger config to receive executions.
+ */
+router.post(
+  "/workflow-webhook/:webhookId",
+  async (req: Request, res: Response) => {
+    const { webhookId } = req.params;
+
+    const rawOrgId =
+      (req.query.org as string | undefined) ??
+      (req.headers["x-org-id"] as string | undefined);
+
+    const orgId = rawOrgId ? parseInt(rawOrgId) : undefined;
+
+    if (!orgId || isNaN(orgId)) {
+      res.status(400).json({ error: "org query param or X-Org-Id header required" });
+      return;
+    }
+
+    const payload: unknown = req.body ?? {};
+
+    try {
+      await inngest.send({
+        name: "workflow/webhook.received",
+        data: { webhookId: webhookId!, orgId, payload },
+      });
+
+      res.status(202).json({ accepted: true, webhookId });
+    } catch (err) {
+      req.log.error({ err }, "Failed to dispatch webhook event");
+      res.status(500).json({ error: "Failed to dispatch webhook event" });
+    }
+  },
+);
+
+/**
+ * GET /workflow-definitions/:id/compile
+ * Returns the compiled descriptor for a workflow definition — validates the
+ * trigger config, step types, and returns webhook URL / cron expression if applicable.
+ */
+router.get(
+  "/workflow-definitions/:id/compile",
+  async (req: Request, res: Response) => {
+    if (!requireAuth(req, res)) return;
+
+    const id = parseInt(req.params.id as string);
+    if (isNaN(id)) {
+      res.status(400).json({ error: "Invalid workflow definition id" });
+      return;
+    }
+
+    const orgId = req.user!.orgId;
+    if (!orgId) {
+      res.status(400).json({ error: "Organization context required" });
+      return;
+    }
+
+    try {
+      const { workflowSteps } = await import("@workspace/db");
+      const { asc } = await import("drizzle-orm");
+
+      const [definition] = await db
+        .select()
+        .from(workflowDefinitions)
+        .where(
+          and(
+            eq(workflowDefinitions.id, id),
+            eq(workflowDefinitions.orgId, orgId),
+          ),
+        );
+
+      if (!definition) {
+        res.status(404).json({ error: "Workflow definition not found" });
+        return;
+      }
+
+      const steps = await db
+        .select()
+        .from(workflowSteps)
+        .where(eq(workflowSteps.workflowDefinitionId, id))
+        .orderBy(asc(workflowSteps.stepIndex));
+
+      const compiled = compileWorkflow(definition, steps);
+
+      res.json(compiled);
+    } catch (err) {
+      req.log.error({ err }, "Failed to compile workflow definition");
+      res.status(500).json({ error: "Failed to compile workflow definition" });
+    }
+  },
 );
 
 export default router;
