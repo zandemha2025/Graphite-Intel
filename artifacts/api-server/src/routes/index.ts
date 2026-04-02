@@ -24,6 +24,7 @@ import commentsRouter from "./comments";
 import activityRouter from "./activity";
 import playbooksRouter from "./playbooks";
 import adsRouter from "./ads";
+import connectorsRouter from "./connectors";
 
 const router: IRouter = Router();
 
@@ -52,5 +53,6 @@ router.use(commentsRouter);
 router.use(activityRouter);
 router.use(playbooksRouter);
 router.use(adsRouter);
+router.use(connectorsRouter);
 
 export default router;

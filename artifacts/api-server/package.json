@@ -14,6 +14,7 @@
     "@workspace/api-zod": "workspace:*",
     "@workspace/db": "workspace:*",
     "@workspace/integrations-openai-ai-server": "workspace:*",
+    "@workspace/pipedream-connect": "workspace:*",
     "cookie-parser": "^1.4.7",
     "cors": "^2",
     "docx": "^8.5.0",
