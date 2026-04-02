@@ -2,7 +2,7 @@ import { Router, type IRouter, type Request, type Response } from "express";
 import { db, documents, conversationDocuments, conversations, documentChunks } from "@workspace/db";
 import { eq, and, inArray, sql } from "drizzle-orm";
 import { ObjectStorageService } from "../lib/objectStorage";
-import { openai } from "@workspace/integrations-openai-ai-server";
+import { getOpenAIClient } from "@workspace/integrations-openai-ai-server";
 
 const router: IRouter = Router();
 const objectStorageService = new ObjectStorageService();
@@ -48,7 +48,7 @@ async function embedChunks(chunks: string[]): Promise<number[][]> {
 
   for (let i = 0; i < chunks.length; i += BATCH_SIZE) {
     const batch = chunks.slice(i, i + BATCH_SIZE);
-    const response = await openai.embeddings.create({
+    const response = await getOpenAIClient().embeddings.create({
       model: "text-embedding-3-small",
       input: batch,
     });
@@ -278,7 +278,7 @@ router.post("/documents/search", async (req: Request, res: Response) => {
     }
 
     const [embeddingResponse] = await Promise.all([
-      openai.embeddings.create({
+      getOpenAIClient().embeddings.create({
         model: "text-embedding-3-small",
         input: query,
       }),

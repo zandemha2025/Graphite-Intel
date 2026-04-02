@@ -1,7 +1,7 @@
 import { Router, type IRouter, type Request, type Response } from "express";
 import { db, conversations, messages, companyProfiles, documents, conversationDocuments, documentChunks } from "@workspace/db";
 import { eq, desc, and, inArray, sql } from "drizzle-orm";
-import { openai } from "@workspace/integrations-openai-ai-server";
+import { getOpenAIClient } from "@workspace/integrations-openai-ai-server";
 
 const router: IRouter = Router();
 
@@ -48,7 +48,7 @@ type RetrievedChunk = {
 async function retrieveRelevantChunks(query: string, docIds: number[]): Promise<RetrievedChunk[]> {
   if (docIds.length === 0) return [];
 
-  const embeddingResponse = await openai.embeddings.create({
+  const embeddingResponse = await getOpenAIClient().embeddings.create({
     model: "text-embedding-3-small",
     input: query,
   });
@@ -331,7 +331,7 @@ router.post(
       const { prompt: systemPrompt, retrievedChunks } = await buildSystemPrompt(req, id, content);
       let fullResponse = "";
 
-      const stream = await openai.chat.completions.create({
+      const stream = await getOpenAIClient().chat.completions.create({
         model: "gpt-4o",
         messages: [
           { role: "system", content: systemPrompt },

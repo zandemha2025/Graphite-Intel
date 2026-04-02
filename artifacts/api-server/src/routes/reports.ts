@@ -1,7 +1,7 @@
 import { Router, type IRouter, type Request, type Response } from "express";
 import { db, reportsTable, companyProfiles } from "@workspace/db";
 import { eq, desc, and } from "drizzle-orm";
-import { openai } from "@workspace/integrations-openai-ai-server";
+import { getOpenAIClient } from "@workspace/integrations-openai-ai-server";
 import { ExportService } from "../lib/exportService.js";
 
 const router: IRouter = Router();
@@ -211,7 +211,7 @@ router.post("/reports", async (req: Request, res: Response) => {
     const systemPrompt = await buildSystemPrompt(req);
     const userPrompt = buildUserPrompt(reportType, company, context);
 
-    const stream = await openai.chat.completions.create({
+    const stream = await getOpenAIClient().chat.completions.create({
       model: "gpt-4o",
       messages: [
         { role: "system", content: systemPrompt },

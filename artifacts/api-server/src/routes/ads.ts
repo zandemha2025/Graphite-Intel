@@ -14,7 +14,7 @@ import {
 } from "@workspace/db";
 import { eq, and, desc, sql, between, inArray } from "drizzle-orm";
 import { inngest } from "../inngest/client";
-import { openai } from "@workspace/integrations-openai-ai-server";
+import { getOpenAIClient } from "@workspace/integrations-openai-ai-server";
 
 const router: IRouter = Router();
 
@@ -304,7 +304,7 @@ router.post("/ads/campaigns/:id/ai-suggestions", async (req: Request, res: Respo
       return;
     }
 
-    const response = await openai.chat.completions.create({
+    const response = await getOpenAIClient().chat.completions.create({
       model: "gpt-4o",
       messages: [
         {

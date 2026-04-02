@@ -1,7 +1,7 @@
 import { Router, type IRouter, type Request, type Response } from "express";
 import { db, workflowRuns, companyProfiles } from "@workspace/db";
 import { eq, desc, and } from "drizzle-orm";
-import { openai } from "@workspace/integrations-openai-ai-server";
+import { getOpenAIClient } from "@workspace/integrations-openai-ai-server";
 
 const router: IRouter = Router();
 
@@ -504,7 +504,7 @@ router.post("/workflows", async (req: Request, res: Response) => {
     const companyContext = await buildCompanyContext(userId, orgId);
     const systemPrompt = template.systemPrompt(companyContext, inputs as Record<string, string>);
 
-    const stream = await openai.chat.completions.create({
+    const stream = await getOpenAIClient().chat.completions.create({
       model: "gpt-4o",
       messages: [
         { role: "system", content: systemPrompt },
