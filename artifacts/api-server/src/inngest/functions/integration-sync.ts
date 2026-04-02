@@ -100,7 +100,7 @@ export const integrationSyncFunction = inngest.createFunction(
 
       const existingMap = new Map(existingSynced.map((f) => [f.externalId, f]));
 
-      return filesToSync.filter((file) => {
+      return (filesToSync as Array<{ id: string; name: string; mimeType: string; size?: string; modifiedTime?: string }>).filter((file) => {
         const existing = existingMap.get(file.id);
         if (!existing) return true; // New file
 

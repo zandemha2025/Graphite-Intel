@@ -208,7 +208,7 @@ router.post("/openai/conversations", async (req: Request, res: Response) => {
 router.get("/openai/conversations/:id", async (req: Request, res: Response) => {
   if (!requireAuth(req, res)) return;
 
-  const id = parseInt(req.params.id);
+  const id = parseInt(req.params.id as string);
   if (isNaN(id)) {
     res.status(400).json({ error: "Invalid conversation id" });
     return;
@@ -241,7 +241,7 @@ router.get("/openai/conversations/:id", async (req: Request, res: Response) => {
 router.delete("/openai/conversations/:id", async (req: Request, res: Response) => {
   if (!requireAuth(req, res)) return;
 
-  const id = parseInt(req.params.id);
+  const id = parseInt(req.params.id as string);
   if (isNaN(id)) {
     res.status(400).json({ error: "Invalid conversation id" });
     return;
@@ -271,7 +271,7 @@ router.post(
     if (!requireAuth(req, res)) return;
 
     const userId = req.user!.id;
-    const id = parseInt(req.params.id);
+    const id = parseInt(req.params.id as string);
     if (isNaN(id)) {
       res.status(400).json({ error: "Invalid conversation id" });
       return;

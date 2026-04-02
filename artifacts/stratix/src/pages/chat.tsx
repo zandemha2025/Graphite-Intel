@@ -439,7 +439,7 @@ export function Chat() {
             </div>
 
             <div className="flex-1 overflow-y-auto p-6 space-y-6" ref={scrollRef}>
-              {activeConversation?.messages.map((msg: Message) => (
+              {(activeConversation?.messages as unknown as Message[])?.map((msg: Message) => (
                 <div key={msg.id} className={`flex max-w-3xl mx-auto ${msg.role === "user" ? "justify-end" : "justify-start"}`}>
                   {msg.role === "user" ? (
                     <div

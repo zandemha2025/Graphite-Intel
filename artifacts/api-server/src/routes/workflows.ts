@@ -414,7 +414,7 @@ router.get("/workflows", async (req: Request, res: Response) => {
 router.get("/workflows/:id", async (req: Request, res: Response) => {
   if (!requireAuth(req, res)) return;
 
-  const id = parseInt(req.params.id);
+  const id = parseInt(req.params.id as string);
   if (isNaN(id)) {
     res.status(400).json({ error: "Invalid workflow run id" });
     return;

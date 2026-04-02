@@ -214,11 +214,11 @@ export function PlaybookRun() {
                     </div>
                   )}
 
-                  {result?.result && (
+                  {result?.result != null && (
                     <div className="mb-3 p-2" style={{ background: "var(--workspace-muted-bg)" }}>
                       <p className="text-[10px] uppercase tracking-wider mb-1" style={{ color: "var(--workspace-muted)" }}>Result</p>
                       <pre className="text-xs overflow-auto" style={{ color: "var(--workspace-fg)" }}>
-                        {typeof result.result === "string" ? result.result : JSON.stringify(result.result, null, 2)}
+                        {typeof result.result === "string" ? result.result : JSON.stringify(result.result as object, null, 2)}
                       </pre>
                     </div>
                   )}

@@ -176,7 +176,7 @@ function CustomTooltip({
       >
         {payload.map((entry, index) => (
           <div key={index}>
-            <span style={{ color: entry.color || "#FFFFFF" }}>
+            <span style={{ color: (entry as { color?: string }).color || "#FFFFFF" }}>
               {entry.name}: {entry.value}
             </span>
           </div>

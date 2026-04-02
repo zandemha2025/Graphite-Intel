@@ -3,7 +3,7 @@ import { Switch, Route, Router as WouterRouter, useLocation } from "wouter";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { useGetCurrentAuthUser, useGetCompanyProfile } from "@workspace/api-client-react";
+import { useGetCurrentAuthUser, useGetCompanyProfile, getGetCompanyProfileQueryKey } from "@workspace/api-client-react";
 import NotFound from "@/pages/not-found";
 
 import { Layout } from "@/components/layout";
@@ -73,7 +73,7 @@ function ProtectedRoute({ component: Component }: { component: React.ComponentTy
     isFetching: profileFetching,
     error: profileError,
     status: profileStatus,
-  } = useGetCompanyProfile({ query: { enabled: !!auth?.user } });
+  } = useGetCompanyProfile({ query: { enabled: !!auth?.user, queryKey: getGetCompanyProfileQueryKey() } });
   const [, setLocation] = useLocation();
 
   const user = auth?.user as any;
@@ -165,7 +165,7 @@ function OrgSetupRoute() {
 function OnboardingRoute() {
   const { data: auth, isLoading: authLoading } = useGetCurrentAuthUser();
   const { data: profile, isLoading: profileLoading } = useGetCompanyProfile({
-    query: { enabled: !!auth?.user }
+    query: { enabled: !!auth?.user, queryKey: getGetCompanyProfileQueryKey() }
   });
   const [, setLocation] = useLocation();
 

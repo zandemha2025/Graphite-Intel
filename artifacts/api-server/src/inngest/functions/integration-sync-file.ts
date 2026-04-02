@@ -58,6 +58,7 @@ async function embedChunks(chunks: string[]): Promise<number[][]> {
 
 async function extractText(buffer: Buffer, mimeType: string): Promise<string> {
   if (mimeType === "application/pdf") {
+    // @ts-ignore pdf-parse v2 ESM types lack .default declaration
     const pdfParse = (await import("pdf-parse")).default;
     const parsed = await pdfParse(buffer);
     return parsed.text;
@@ -150,7 +151,8 @@ export const integrationSyncFileFunction = inngest.createFunction(
 
     // Step 2: Download file from provider
     const { buffer, exportedMimeType, fileName } = await step.run("download-file", async () => {
-      const accessToken = await ensureFreshToken(integration);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const accessToken = await ensureFreshToken(integration as any);
       const mimeType = syncedFile?.mimeType ?? "application/octet-stream";
       const result = await downloadFile(accessToken, externalFileId, mimeType);
       return {
@@ -174,10 +176,14 @@ export const integrationSyncFileFunction = inngest.createFunction(
       })();
       const bucket = objectStorageClient.bucket(bucketName);
       const file = bucket.file(objectName);
-      await file.save(buffer, { contentType: exportedMimeType });
+      // Inngest JSON-serializes Buffer as { type: "Buffer", data: number[] } — reconstruct it
+      const actualBuffer = Buffer.isBuffer(buffer)
+        ? buffer
+        : Buffer.from((buffer as unknown as { data: number[] }).data);
+      await file.save(actualBuffer, { contentType: exportedMimeType });
 
       // Extract text
-      const text = await extractText(buffer, exportedMimeType);
+      const text = await extractText(actualBuffer, exportedMimeType);
 
       // Check if document already exists for this synced file
       if (syncedFile?.documentId) {

@@ -15,7 +15,7 @@ export function ReportsList() {
   const { toast } = useToast();
   const [searchTerm, setSearchTerm] = useState("");
 
-  const { data: reports, isLoading } = useListReports({
+  const { data: reports, isLoading } = useListReports(undefined, {
     query: { queryKey: getListReportsQueryKey() }
   });
 

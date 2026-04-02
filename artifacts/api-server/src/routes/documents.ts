@@ -138,7 +138,7 @@ router.post("/documents", async (req: Request, res: Response) => {
 
 router.delete("/documents/:id", async (req: Request, res: Response) => {
   if (!requireAuth(req, res)) return;
-  const id = parseInt(req.params.id);
+  const id = parseInt(req.params.id as string);
   if (isNaN(id)) {
     res.status(400).json({ error: "Invalid document id" });
     return;
@@ -164,7 +164,7 @@ router.delete("/documents/:id", async (req: Request, res: Response) => {
 
 router.post("/documents/:id/process", async (req: Request, res: Response) => {
   if (!requireAuth(req, res)) return;
-  const id = parseInt(req.params.id);
+  const id = parseInt(req.params.id as string);
   if (isNaN(id)) {
     res.status(400).json({ error: "Invalid document id" });
     return;
@@ -189,6 +189,7 @@ router.post("/documents/:id/process", async (req: Request, res: Response) => {
     let extractedText = "";
     try {
       if (doc.fileType === "pdf") {
+        // @ts-ignore pdf-parse v2 ESM types lack .default declaration
         const pdfParse = (await import("pdf-parse")).default;
         const parsed = await pdfParse(buffer);
         extractedText = parsed.text;
@@ -225,7 +226,7 @@ router.post("/documents/:id/process", async (req: Request, res: Response) => {
 
 router.patch("/documents/:id", async (req: Request, res: Response) => {
   if (!requireAuth(req, res)) return;
-  const id = parseInt(req.params.id);
+  const id = parseInt(req.params.id as string);
   if (isNaN(id)) {
     res.status(400).json({ error: "Invalid document id" });
     return;
@@ -313,7 +314,7 @@ router.post("/documents/search", async (req: Request, res: Response) => {
 router.get("/conversations/:id/documents", async (req: Request, res: Response) => {
   if (!requireAuth(req, res)) return;
   const userId = req.user!.id;
-  const conversationId = parseInt(req.params.id);
+  const conversationId = parseInt(req.params.id as string);
   if (isNaN(conversationId)) {
     res.status(400).json({ error: "Invalid conversation id" });
     return;
@@ -350,7 +351,7 @@ router.get("/conversations/:id/documents", async (req: Request, res: Response) =
 router.post("/conversations/:id/documents", async (req: Request, res: Response) => {
   if (!requireAuth(req, res)) return;
   const userId = req.user!.id;
-  const conversationId = parseInt(req.params.id);
+  const conversationId = parseInt(req.params.id as string);
   const { documentId } = req.body;
   if (isNaN(conversationId) || !documentId) {
     res.status(400).json({ error: "Invalid conversation id or document id" });
@@ -395,7 +396,7 @@ router.post("/conversations/:id/documents", async (req: Request, res: Response) 
 router.delete("/conversations/:id/documents", async (req: Request, res: Response) => {
   if (!requireAuth(req, res)) return;
   const userId = req.user!.id;
-  const conversationId = parseInt(req.params.id);
+  const conversationId = parseInt(req.params.id as string);
   const { documentId } = req.body;
   if (isNaN(conversationId) || !documentId) {
     res.status(400).json({ error: "Invalid conversation id or document id" });

@@ -37,7 +37,7 @@ router.get("/comments/:resourceType/:resourceId", async (req: Request, res: Resp
       .where(
         and(
           eq(comments.orgId, orgId),
-          eq(comments.resourceType, resourceType),
+          eq(comments.resourceType, resourceType as string),
           eq(comments.resourceId, resourceId),
         ),
       )

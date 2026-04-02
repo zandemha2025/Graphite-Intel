@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link } from "wouter";
 import { format } from "date-fns";
 import { FolderOpen, Plus, Trash2, Search, Loader2 } from "lucide-react";
@@ -28,7 +28,7 @@ export function Vault() {
   });
 
   // Load projects on mount
-  useState(() => {
+  useEffect(() => {
     loadProjects();
   }, []);
 

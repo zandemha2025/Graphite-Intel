@@ -142,7 +142,7 @@ router.delete("/org/members/:userId", async (req: Request, res: Response) => {
   if (!requireAdmin(req, res)) return;
 
   const orgId = req.user!.orgId!;
-  const targetUserId = req.params.userId;
+  const targetUserId = req.params.userId as string;
 
   if (targetUserId === req.user!.id) {
     res.status(400).json({ error: "You cannot remove yourself from the organization" });
@@ -229,7 +229,7 @@ router.delete("/org/invites/:id", async (req: Request, res: Response) => {
   if (!requireAdmin(req, res)) return;
 
   const orgId = req.user!.orgId!;
-  const id = parseInt(req.params.id);
+  const id = parseInt(req.params.id as string);
   if (isNaN(id)) {
     res.status(400).json({ error: "Invalid invite id" });
     return;

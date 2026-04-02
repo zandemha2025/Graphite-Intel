@@ -103,7 +103,7 @@ export const workflowExecuteFunction = inngest.createFunction(
               stepType: currentStep.type,
               stepName: currentStep.name,
               status: "running",
-              input: { ...currentStep.config, context: stepContext },
+              input: { ...(currentStep.config as Record<string, unknown>), context: stepContext },
               startedAt: new Date(),
             })
             .returning();

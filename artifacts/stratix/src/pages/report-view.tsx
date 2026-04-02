@@ -1,10 +1,10 @@
+import { useState } from "react";
 import { useRoute } from "wouter";
 import { format } from "date-fns";
 import ReactMarkdown from "react-markdown";
 import {
   useGetReport,
   getGetReportQueryKey,
-  useDownloadReport
 } from "@workspace/api-client-react";
 import { Download, ChevronLeft, FileDown, FileText, File } from "lucide-react";
 import { Link } from "wouter";
@@ -24,25 +24,28 @@ export function ReportView() {
     }
   });
 
-  const downloadReport = useDownloadReport();
+  const [isDownloading, setIsDownloading] = useState(false);
 
-  const handleDownload = () => {
-    downloadReport.mutate(
-      { id: reportId },
-      {
-        onSuccess: (data) => {
-          const blob = new Blob([data.content], { type: 'text/markdown' });
-          const url = URL.createObjectURL(blob);
-          const a = document.createElement('a');
-          a.href = url;
-          a.download = `${data.company.replace(/\s+/g, '_')}_${data.reportType}.md`;
-          document.body.appendChild(a);
-          a.click();
-          document.body.removeChild(a);
-          URL.revokeObjectURL(url);
-        }
-      }
-    );
+  const handleDownload = async () => {
+    setIsDownloading(true);
+    try {
+      const response = await fetch(`/api/reports/${reportId}/download`, { credentials: 'include' });
+      if (!response.ok) throw new Error('Download failed');
+      const data = await response.json();
+      const blob = new Blob([data.content], { type: 'text/markdown' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${data.company.replace(/\s+/g, '_')}_${data.reportType}.md`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      toast({ title: 'Download failed', variant: 'destructive' });
+    } finally {
+      setIsDownloading(false);
+    }
   };
 
   const handleExport = async (format: ExportFormat) => {
@@ -117,7 +120,7 @@ export function ReportView() {
                 className="shrink-0 flex items-center gap-2 px-4 py-2 text-xs uppercase tracking-widest mt-1 transition-colors"
                 style={{ border: "1px solid var(--workspace-border)", color: "var(--workspace-muted)", background: "#FFFFFF" }}
                 data-testid="btn-download-report"
-                disabled={downloadReport.isPending}
+                disabled={isDownloading}
               >
                 <Download className="w-3.5 h-3.5" />
                 Download

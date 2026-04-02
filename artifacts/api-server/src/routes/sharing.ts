@@ -91,7 +91,7 @@ router.get("/sharing/resource/:type/:id", async (req: Request, res: Response) =>
       .where(
         and(
           eq(resourceShares.orgId, orgId),
-          eq(resourceShares.resourceType, resourceType),
+          eq(resourceShares.resourceType, resourceType as string),
           eq(resourceShares.resourceId, resourceId),
           eq(resourceShares.isActive, true),
         ),
