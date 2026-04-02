@@ -11,6 +11,13 @@ import { executePromptStep } from "../steps/prompt-step";
 import { executeToolStep } from "../steps/tool-step";
 import { evaluateBranch } from "../steps/branch-step";
 import { executeLoop } from "../steps/loop-step";
+import { executeDataPullStep, type DataPullStepConfig } from "../steps/data-pull-step";
+import { executeActionStep, type ActionStepConfig } from "../steps/action-step";
+import type {
+  TransformStepConfig,
+  AIAnalysisStepConfig,
+  ConditionStepConfig,
+} from "../workflow-types";
 
 /**
  * Core workflow orchestration function.
@@ -136,6 +143,77 @@ export const workflowExecuteFunction = inngest.createFunction(
               case "human_review":
                 output = { needsReview: true, reviewData: stepContext };
                 break;
+
+              // ── New conversational workflow step types ──────────────────
+
+              case "data_pull": {
+                output = await executeDataPullStep(
+                  currentStep.config as DataPullStepConfig,
+                  stepContext,
+                );
+                break;
+              }
+
+              case "transform": {
+                const tConfig = currentStep.config as TransformStepConfig;
+                const inputValue = tConfig.inputKey
+                  ? stepContext[tConfig.inputKey]
+                  : stepContext;
+                const result = await executePromptStep(
+                  {
+                    systemPrompt: `You are a data transformation assistant. ${tConfig.outputFormat ? `Output format: ${tConfig.outputFormat}.` : ""}`,
+                    userPrompt: `${tConfig.instruction}\n\nInput data:\n${typeof inputValue === "string" ? inputValue : JSON.stringify(inputValue, null, 2)}`,
+                  },
+                  stepContext,
+                );
+                output = result;
+                tokensUsed = result.tokensUsed;
+                break;
+              }
+
+              case "ai_analysis": {
+                const aConfig = currentStep.config as AIAnalysisStepConfig;
+                const result = await executePromptStep(
+                  {
+                    systemPrompt: aConfig.systemPrompt,
+                    userPrompt: aConfig.analysisPrompt,
+                    model: aConfig.model,
+                    temperature: aConfig.temperature,
+                    maxTokens: aConfig.maxTokens,
+                  },
+                  stepContext,
+                );
+                output = result;
+                tokensUsed = result.tokensUsed;
+                break;
+              }
+
+              case "condition": {
+                const cConfig = currentStep.config as ConditionStepConfig;
+                // Reuse the branch evaluator with a two-branch condition
+                output = await evaluateBranch(
+                  {
+                    conditions: [
+                      {
+                        expression: cConfig.expression,
+                        nextStepIndex: cConfig.trueStepIndex,
+                      },
+                    ],
+                    defaultNextStepIndex: cConfig.falseStepIndex,
+                  },
+                  stepContext,
+                );
+                break;
+              }
+
+              case "action": {
+                output = await executeActionStep(
+                  currentStep.config as ActionStepConfig,
+                  stepContext,
+                );
+                break;
+              }
+
               default:
                 throw new Error(`Unknown step type: ${currentStep.type}`);
             }

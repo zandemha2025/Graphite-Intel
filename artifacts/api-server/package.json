@@ -23,6 +23,7 @@
     "inngest": "^3.0.0",
     "google-auth-library": "^10.6.2",
     "mammoth": "^1.12.0",
+    "openai": "^6.27.0",
     "openid-client": "^6.8.2",
     "pdf-parse": "^2.4.5",
     "pdfkit": "^0.14.0",
