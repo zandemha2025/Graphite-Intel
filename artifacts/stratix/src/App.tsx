@@ -40,6 +40,8 @@ import { AdsDashboard } from "@/pages/ads-dashboard";
 import { AdsCampaignDetail } from "@/pages/ads-campaign-detail";
 import { AdsCampaignNew } from "@/pages/ads-campaign-new";
 import { AdsReports } from "@/pages/ads-reports";
+import { Boards } from "@/pages/boards";
+import { BoardView } from "@/pages/board-view";
 import { Login } from "@/pages/login";
 
 const queryClient = new QueryClient({
@@ -209,6 +211,8 @@ function Router() {
       <Route path="/login" component={Login} />
       <Route path="/org-setup" component={OrgSetupRoute} />
       <Route path="/onboarding" component={OnboardingRoute} />
+      <Route path="/boards/:id" component={() => <ProtectedRoute component={BoardView} />} />
+      <Route path="/boards" component={() => <ProtectedRoute component={Boards} />} />
       <Route path="/dashboard" component={() => <ProtectedRoute component={Dashboard} />} />
       <Route path="/explore" component={() => <ProtectedRoute component={Explore} />} />
       <Route path="/chat" component={ChatRedirect} />
