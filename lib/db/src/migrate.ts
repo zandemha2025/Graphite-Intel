@@ -4,6 +4,32 @@ import { db } from "./index";
 export async function runStartupMigrations(): Promise<void> {
   await db.execute(sql`CREATE EXTENSION IF NOT EXISTS vector`);
 
+  // Ensure auth tables exist (idempotent — safe to run on every startup)
+  await db.execute(sql`
+    CREATE TABLE IF NOT EXISTS users (
+      id VARCHAR PRIMARY KEY DEFAULT gen_random_uuid(),
+      email VARCHAR UNIQUE,
+      password_hash VARCHAR,
+      first_name VARCHAR,
+      last_name VARCHAR,
+      profile_image_url VARCHAR,
+      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+      updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    )
+  `);
+
+  await db.execute(sql`
+    CREATE TABLE IF NOT EXISTS sessions (
+      sid VARCHAR PRIMARY KEY,
+      sess JSONB NOT NULL,
+      expire TIMESTAMPTZ NOT NULL
+    )
+  `);
+
+  await db.execute(sql`
+    CREATE INDEX IF NOT EXISTS "IDX_session_expire" ON sessions (expire)
+  `);
+
   // Phase 1: Backfill orgId on documents from org_members for existing rows
   try {
     await db.execute(sql`
