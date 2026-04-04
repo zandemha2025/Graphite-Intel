@@ -14,6 +14,7 @@ COPY lib/integrations-firecrawl/package.json lib/integrations-firecrawl/
 COPY lib/integrations-openai-ai-react/package.json lib/integrations-openai-ai-react/
 COPY lib/integrations-openai-ai-server/package.json lib/integrations-openai-ai-server/
 COPY lib/integrations-serpapi/package.json lib/integrations-serpapi/
+COPY lib/integrations-pipedream-workflows/package.json lib/integrations-pipedream-workflows/
 COPY lib/pipedream-connect/package.json lib/pipedream-connect/
 COPY lib/replit-auth-web/package.json lib/replit-auth-web/
 COPY artifacts/api-server/package.json artifacts/api-server/

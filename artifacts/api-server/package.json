@@ -17,6 +17,7 @@
     "@workspace/integrations-firecrawl": "workspace:*",
     "@workspace/integrations-openai-ai-server": "workspace:*",
     "@workspace/integrations-serpapi": "workspace:*",
+    "@workspace/integrations-pipedream-workflows": "workspace:*",
     "@workspace/pipedream-connect": "workspace:*",
     "cookie-parser": "^1.4.7",
     "cors": "^2",
