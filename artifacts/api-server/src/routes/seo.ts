@@ -41,7 +41,7 @@ function handleSerpError(err: unknown, label: string, req: Request, res: Respons
 // POST /api/seo/search — Google organic search
 // ---------------------------------------------------------------------------
 
-router.post("/api/seo/search", async (req: Request, res: Response) => {
+router.post("/seo/search", async (req: Request, res: Response) => {
   if (!requireAuth(req, res)) return;
 
   const { q, gl, hl, location, num, start } = req.body as {
@@ -87,7 +87,7 @@ router.post("/api/seo/search", async (req: Request, res: Response) => {
 // POST /api/seo/trends — Google Trends
 // ---------------------------------------------------------------------------
 
-router.post("/api/seo/trends", async (req: Request, res: Response) => {
+router.post("/seo/trends", async (req: Request, res: Response) => {
   if (!requireAuth(req, res)) return;
 
   const { q, date, geo, dataType, cat } = req.body as {
@@ -129,7 +129,7 @@ router.post("/api/seo/trends", async (req: Request, res: Response) => {
 // POST /api/seo/news — Google News
 // ---------------------------------------------------------------------------
 
-router.post("/api/seo/news", async (req: Request, res: Response) => {
+router.post("/seo/news", async (req: Request, res: Response) => {
   if (!requireAuth(req, res)) return;
 
   const { q, gl, hl, topicToken } = req.body as {
@@ -166,7 +166,7 @@ router.post("/api/seo/news", async (req: Request, res: Response) => {
 // POST /api/seo/shopping — Google Shopping
 // ---------------------------------------------------------------------------
 
-router.post("/api/seo/shopping", async (req: Request, res: Response) => {
+router.post("/seo/shopping", async (req: Request, res: Response) => {
   if (!requireAuth(req, res)) return;
 
   const { q, gl, hl, location, num, tbs } = req.body as {
@@ -211,7 +211,7 @@ router.post("/api/seo/shopping", async (req: Request, res: Response) => {
 // Runs all three SerpAPI calls in parallel for speed.
 // ---------------------------------------------------------------------------
 
-router.post("/api/seo/competitive", async (req: Request, res: Response) => {
+router.post("/seo/competitive", async (req: Request, res: Response) => {
   if (!requireAuth(req, res)) return;
 
   const { q, gl, hl } = req.body as {
