@@ -1,25 +1,38 @@
-import { useState } from "react";
+export type BoardType = "live" | "report" | "monitor";
 
-const BOARD_TYPES = [
-  { id: "live", label: "Live Dashboard" },
-  { id: "report", label: "Report" },
-  { id: "monitor", label: "Monitor" },
-] as const;
+const OPTIONS: { value: BoardType; label: string; desc: string }[] = [
+  { value: "live", label: "Live Dashboard", desc: "Real-time data" },
+  { value: "report", label: "Report", desc: "Static snapshot" },
+  { value: "monitor", label: "Monitor", desc: "Alerts & thresholds" },
+];
 
-type BoardType = (typeof BOARD_TYPES)[number]["id"];
-
-export function BoardTypeSelector({ value, onChange }: { value: BoardType; onChange: (v: BoardType) => void }) {
+export function BoardTypeSelector({
+  value,
+  onChange,
+}: {
+  value: BoardType;
+  onChange: (v: BoardType) => void;
+}) {
   return (
-    <div className="inline-flex rounded-lg bg-gray-100 p-1">
-      {BOARD_TYPES.map((t) => (
+    <div
+      className="flex items-center gap-0.5 p-0.5 rounded-md"
+      style={{ background: "#F3F4F6", border: "1px solid #E5E7EB" }}
+    >
+      {OPTIONS.map((opt) => (
         <button
-          key={t.id}
-          onClick={() => onChange(t.id)}
-          className={`px-3 py-1.5 text-sm font-medium rounded-md transition-colors ${
-            value === t.id ? "bg-white text-gray-900 shadow-sm" : "text-gray-500 hover:text-gray-700"
-          }`}
+          key={opt.value}
+          type="button"
+          onClick={() => onChange(opt.value)}
+          title={opt.desc}
+          className="px-3 py-1 text-xs rounded transition-all"
+          style={{
+            background: value === opt.value ? "#FFFFFF" : "transparent",
+            color: value === opt.value ? "#4F46E5" : "#6B7280",
+            fontWeight: value === opt.value ? 600 : 400,
+            boxShadow: value === opt.value ? "0 1px 2px rgba(0,0,0,0.08)" : "none",
+          }}
         >
-          {t.label}
+          {opt.label}
         </button>
       ))}
     </div>
