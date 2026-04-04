@@ -3,7 +3,7 @@ import { useGetCurrentAuthUser } from "@workspace/api-client-react";
 import { useState, useEffect } from "react";
 import {
   LayoutDashboard,
-  MessageSquareText,
+  Compass,
   Library,
   BookOpen,
   LogOut,
@@ -21,7 +21,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 
 const NAV_ITEMS = [
-  { href: "/chat", label: "Assistant", icon: MessageSquareText },
+  { href: "/explore", label: "Explore", icon: Compass },
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { href: "/workflows", label: "Workflows", icon: Zap },
   { href: "/workflow-builder", label: "Builder", icon: Blocks },
@@ -36,7 +36,8 @@ const ADMIN_NAV_ITEMS = [
 ];
 
 const PAGE_BREADCRUMBS: Record<string, { section?: string; title: string }> = {
-  "/chat": { title: "Assistant" },
+  "/explore": { title: "Explore" },
+  "/chat": { title: "Explore" },
   "/dashboard": { title: "Dashboard" },
   "/reports": { section: "Reports", title: "Report Library" },
   "/reports/new": { section: "Reports", title: "New Report" },
@@ -83,14 +84,16 @@ export function Layout({ children }: { children: React.ReactNode }) {
 
   const isAdmin = user?.orgRole === "admin" || user?.orgRole === "owner";
 
-  const isFullBleed = location === "/chat" || location.startsWith("/chat/");
+  const isFullBleed =
+    location === "/chat" || location.startsWith("/chat/") ||
+    location === "/explore" || location.startsWith("/explore/");
 
   return (
     <div className="flex h-screen" style={{ background: "#0D0C0B" }}>
       {/* Sidebar — dark chrome frame */}
       <div className="w-56 flex flex-col border-r z-10 shrink-0" style={{ background: "#0D0C0B", color: "#E8E4DC", borderColor: "rgba(255,255,255,0.08)" }}>
         <div className="px-5 py-5 border-b" style={{ borderColor: "rgba(255,255,255,0.08)" }}>
-          <Link href="/chat" className="flex items-center gap-2.5" data-testid="link-home">
+          <Link href="/explore" className="flex items-center gap-2.5" data-testid="link-home">
             <div className="h-6 w-6 border flex items-center justify-center" style={{ borderColor: "rgba(232,228,220,0.30)" }}>
               <span className="font-serif font-semibold text-xs leading-none" style={{ color: "#E8E4DC" }}>S</span>
             </div>
