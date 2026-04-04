@@ -1,0 +1,47 @@
+version: "3.9"
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: grphintel
+      POSTGRES_PASSWORD: grphintel
+      POSTGRES_DB: grphintel
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U grphintel"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  api-server:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      # Override DATABASE_URL to point at the local postgres container
+      DATABASE_URL: postgresql://grphintel:grphintel@postgres:5432/grphintel
+      NODE_ENV: development
+      PORT: 3000
+    ports:
+      - "3000:3000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  inngest:
+    image: inngest/inngest:latest
+    restart: unless-stopped
+    command: ["dev", "--port", "8288", "--no-discovery"]
+    ports:
+      - "8288:8288"
+
+volumes:
+  postgres_data:
