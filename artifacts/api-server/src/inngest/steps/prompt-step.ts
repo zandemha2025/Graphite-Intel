@@ -1,6 +1,10 @@
 import OpenAI from "openai";
 
-const openai = new OpenAI();
+let _openai: OpenAI | null = null;
+function getOpenAI(): OpenAI {
+  if (!_openai) _openai = new OpenAI({ apiKey: process.env.AI_INTEGRATIONS_OPENAI_API_KEY ?? process.env.OPENAI_API_KEY });
+  return _openai;
+}
 
 export interface PromptStepConfig {
   systemPrompt?: string;
@@ -41,7 +45,7 @@ export async function executePromptStep(
 
   messages.push({ role: "user", content: userPrompt });
 
-  const response = await openai.chat.completions.create({
+  const response = await getOpenAI().chat.completions.create({
     model: config.model || "gpt-4o",
     messages,
     temperature: config.temperature ?? 0.7,

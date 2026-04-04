@@ -1,7 +1,16 @@
 import OpenAI from "openai";
 import type { ParsedWorkflowDefinition } from "./workflow-types";
 
-const openai = new OpenAI();
+let _openai: OpenAI | null = null;
+
+function getOpenAI(): OpenAI {
+  if (!_openai) {
+    _openai = new OpenAI({
+      apiKey: process.env.AI_INTEGRATIONS_OPENAI_API_KEY ?? process.env.OPENAI_API_KEY,
+    });
+  }
+  return _openai;
+}
 
 const SYSTEM_PROMPT = `You are a workflow definition builder for GRPHINTEL, a business intelligence platform.
 Convert the user's natural language workflow description into a structured JSON definition.
@@ -54,7 +63,7 @@ Output schema:
 export async function parseNaturalLanguageWorkflow(
   userDescription: string,
 ): Promise<ParsedWorkflowDefinition> {
-  const response = await openai.chat.completions.create({
+  const response = await getOpenAI().chat.completions.create({
     model: "gpt-4o",
     messages: [
       { role: "system", content: SYSTEM_PROMPT },

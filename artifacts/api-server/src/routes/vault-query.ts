@@ -8,7 +8,11 @@ import {
 import OpenAI from "openai";
 
 const router: IRouter = Router();
-const openai = new OpenAI();
+let _openai: OpenAI | null = null;
+function getOpenAI(): OpenAI {
+  if (!_openai) _openai = new OpenAI({ apiKey: process.env.AI_INTEGRATIONS_OPENAI_API_KEY ?? process.env.OPENAI_API_KEY });
+  return _openai;
+}
 
 function requireAuth(req: Request, res: Response): boolean {
   if (!req.isAuthenticated()) {
@@ -80,7 +84,7 @@ router.post("/vault/query", async (req: Request, res: Response) => {
     // Generate embedding if needed for semantic/hybrid modes
     let queryEmbedding: number[] | undefined;
     if (searchMode !== "fulltext") {
-      const embeddingResponse = await openai.embeddings.create({
+      const embeddingResponse = await getOpenAI().embeddings.create({
         model: "text-embedding-3-small",
         input: query,
       });
