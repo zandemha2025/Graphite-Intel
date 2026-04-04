@@ -91,7 +91,7 @@ const SEED_LAYOUT: LayoutItem[] = [
 
 // ── page ────────────────────────────────────────────────────────────────────
 
-export function BoardView() {
+export default function BoardView() {
   const params = useParams<{ id: string }>();
   const [, setLocation] = useLocation();
 
