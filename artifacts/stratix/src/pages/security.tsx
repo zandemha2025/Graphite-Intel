@@ -11,12 +11,12 @@ export function Security() {
           </div>
           <span className="font-serif font-semibold text-lg tracking-tight text-[#E8E4DC] uppercase">Stratix</span>
         </Link>
-        <a
-          href="/api/login"
+        <Link
+          href="/login"
           className="text-sm font-medium bg-[#E8E4DC] text-[#0D0C0B] px-5 py-2 hover:bg-[#D4CEC5] transition-colors tracking-wide uppercase"
         >
           Sign In
-        </a>
+        </Link>
       </header>
 
       {/* Page title */}
