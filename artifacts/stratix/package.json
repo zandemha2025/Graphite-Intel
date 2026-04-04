@@ -76,5 +76,9 @@
     "vite": "catalog:",
     "wouter": "^3.3.5",
     "zod": "catalog:"
+  },
+  "dependencies": {
+    "@types/react-grid-layout": "^2.1.0",
+    "react-grid-layout": "^2.2.3"
   }
 }
