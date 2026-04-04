@@ -26,6 +26,7 @@ import playbooksRouter from "./playbooks";
 import adsRouter from "./ads";
 import connectorsRouter from "./connectors";
 import scrapeRouter from "./scrape";
+import seoRouter from "./seo";
 
 const router: IRouter = Router();
 
@@ -56,5 +57,6 @@ router.use(playbooksRouter);
 router.use(adsRouter);
 router.use(connectorsRouter);
 router.use(scrapeRouter);
+router.use(seoRouter);
 
 export default router;
