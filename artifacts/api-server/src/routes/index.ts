@@ -25,6 +25,7 @@ import activityRouter from "./activity";
 import playbooksRouter from "./playbooks";
 import adsRouter from "./ads";
 import connectorsRouter from "./connectors";
+import intelligenceRouter from "./intelligence";
 
 const router: IRouter = Router();
 
@@ -54,5 +55,6 @@ router.use(activityRouter);
 router.use(playbooksRouter);
 router.use(adsRouter);
 router.use(connectorsRouter);
+router.use(intelligenceRouter);
 
 export default router;
