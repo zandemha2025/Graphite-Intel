@@ -10,6 +10,7 @@ COPY lib/api-client-react/package.json lib/api-client-react/
 COPY lib/api-spec/package.json lib/api-spec/
 COPY lib/api-zod/package.json lib/api-zod/
 COPY lib/db/package.json lib/db/
+COPY lib/integrations-firecrawl/package.json lib/integrations-firecrawl/
 COPY lib/integrations-openai-ai-react/package.json lib/integrations-openai-ai-react/
 COPY lib/integrations-openai-ai-server/package.json lib/integrations-openai-ai-server/
 COPY lib/pipedream-connect/package.json lib/pipedream-connect/

@@ -2,6 +2,7 @@ import { Router, type IRouter, type Request, type Response } from "express";
 import { db, companyProfiles } from "@workspace/db";
 import { eq } from "drizzle-orm";
 import { getOpenAIClient } from "@workspace/integrations-openai-ai-server";
+import { scrapeUrl } from "@workspace/integrations-firecrawl";
 
 const router: IRouter = Router();
 
@@ -66,23 +67,12 @@ router.post("/research/company", async (req: Request, res: Response) => {
   try {
     sendEvent("status", { message: "Reading your website..." });
 
-    const jinaUrl = `https://r.jina.ai/${normalizedUrl}`;
     let websiteContent = "";
     try {
-      const jinaRes = await fetch(jinaUrl, {
-        headers: {
-          "Accept": "text/plain",
-          "X-Return-Format": "markdown",
-        },
-        signal: AbortSignal.timeout(20000),
-      });
-      if (jinaRes.ok) {
-        websiteContent = await jinaRes.text();
-        if (websiteContent.length > 20000) {
-          websiteContent = websiteContent.substring(0, 20000);
-        }
-      } else {
-        websiteContent = `Website URL: ${normalizedUrl}`;
+      const scraped = await scrapeUrl(normalizedUrl);
+      websiteContent = scraped.markdown ?? "";
+      if (websiteContent.length > 20000) {
+        websiteContent = websiteContent.substring(0, 20000);
       }
     } catch {
       websiteContent = `Website URL: ${normalizedUrl}`;
