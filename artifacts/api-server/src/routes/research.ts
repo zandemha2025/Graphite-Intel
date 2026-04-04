@@ -3,6 +3,7 @@ import { db, companyProfiles } from "@workspace/db";
 import { eq } from "drizzle-orm";
 import { getOpenAIClient } from "@workspace/integrations-openai-ai-server";
 import { scrapeUrl } from "@workspace/integrations-firecrawl";
+import { gatherMarketContext, type ResearchDepth } from "../lib/data-fusion";
 
 const router: IRouter = Router();
 
@@ -144,6 +145,48 @@ Extract the company intelligence profile as JSON.`;
     sendEvent("error", { error: "Research pipeline failed. Please try again." });
   } finally {
     res.end();
+  }
+});
+
+/**
+ * POST /research/query
+ * Unified research endpoint — fans out to all configured intelligence sources.
+ * Body: { query: string, sources?: string[], depth?: "quick" | "deep" }
+ */
+router.post("/research/query", async (req: Request, res: Response) => {
+  if (!requireAuth(req, res)) return;
+
+  const { query, sources, depth } = req.body as {
+    query?: string;
+    sources?: string[];
+    depth?: ResearchDepth;
+  };
+
+  if (!query || typeof query !== "string") {
+    res.status(400).json({ error: "query is required" });
+    return;
+  }
+
+  const validDepths: ResearchDepth[] = ["quick", "deep"];
+  const resolvedDepth: ResearchDepth =
+    depth && validDepths.includes(depth) ? depth : "quick";
+
+  try {
+    const fusionCtx = await gatherMarketContext(query, {
+      depth: resolvedDepth,
+      sources,
+    });
+
+    res.json({
+      query,
+      depth: resolvedDepth,
+      sourcesUsed: fusionCtx.sourcesUsed,
+      sources: fusionCtx.sources,
+      contextText: fusionCtx.contextText,
+    });
+  } catch (err) {
+    req.log.error({ err }, "Research query failed");
+    res.status(500).json({ error: "Research query failed" });
   }
 });
 

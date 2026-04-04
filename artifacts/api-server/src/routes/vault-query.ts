@@ -6,6 +6,7 @@ import {
   type SearchOptions,
 } from "../lib/search";
 import OpenAI from "openai";
+import { gatherMarketContext } from "../lib/data-fusion";
 
 const router: IRouter = Router();
 let _openai: OpenAI | null = null;
@@ -91,7 +92,10 @@ router.post("/vault/query", async (req: Request, res: Response) => {
       queryEmbedding = embeddingResponse.data[0].embedding;
     }
 
-    const results = await executeSearch(searchOptions, queryEmbedding);
+    const [results, fusionCtx] = await Promise.all([
+      executeSearch(searchOptions, queryEmbedding),
+      gatherMarketContext(query).catch(() => ({ contextText: "", sources: [], sourcesUsed: [] })),
+    ]);
 
     res.json({
       results,
@@ -99,6 +103,9 @@ router.post("/vault/query", async (req: Request, res: Response) => {
       query,
       searchMode,
       projectsSearched: projectIds || [],
+      externalContext: fusionCtx.sources.length > 0
+        ? { sources: fusionCtx.sources, sourcesUsed: fusionCtx.sourcesUsed }
+        : null,
     });
   } catch (err) {
     req.log.error({ err }, "Failed to execute vault query");

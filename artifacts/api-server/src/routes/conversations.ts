@@ -2,6 +2,7 @@ import { Router, type IRouter, type Request, type Response } from "express";
 import { db, conversations, messages, companyProfiles, documents, conversationDocuments, documentChunks } from "@workspace/db";
 import { eq, desc, and, inArray, sql } from "drizzle-orm";
 import { getOpenAIClient } from "@workspace/integrations-openai-ai-server";
+import { gatherMarketContext } from "../lib/data-fusion";
 
 const router: IRouter = Router();
 
@@ -328,7 +329,16 @@ router.post(
         content: m.content,
       }));
 
-      const { prompt: systemPrompt, retrievedChunks } = await buildSystemPrompt(req, id, content);
+      const [{ prompt: basePrompt, retrievedChunks }, fusionCtx] = await Promise.all([
+        buildSystemPrompt(req, id, content),
+        gatherMarketContext(content).catch(() => ({ contextText: "", sources: [], sourcesUsed: [] })),
+      ]);
+
+      let systemPrompt = basePrompt;
+      if (fusionCtx.contextText) {
+        systemPrompt += `\n\nLIVE MARKET INTELLIGENCE (gathered in real-time for this query — cite sources where relevant):\n${fusionCtx.contextText}`;
+      }
+
       let fullResponse = "";
 
       const stream = await getOpenAIClient().chat.completions.create({
