@@ -9,7 +9,7 @@ import NotFound from "@/pages/not-found";
 import { Layout } from "@/components/layout";
 import { Landing } from "@/pages/landing";
 import { Dashboard } from "@/pages/dashboard";
-import { Chat } from "@/pages/chat";
+import { Explore } from "@/pages/explore";
 import { ReportsList } from "@/pages/reports-list";
 import { ReportNew } from "@/pages/report-new";
 import { ReportView } from "@/pages/report-view";
@@ -130,7 +130,7 @@ function HomeRedirect() {
       if (!user?.orgId) {
         setLocation("/org-setup");
       } else {
-        setLocation("/chat");
+        setLocation("/explore");
       }
     }
   }, [isLoading, auth, setLocation]);
@@ -195,6 +195,12 @@ function OnboardingRoute() {
   return <Onboarding />;
 }
 
+function ChatRedirect() {
+  const [, setLocation] = useLocation();
+  useEffect(() => { setLocation("/explore"); }, [setLocation]);
+  return null;
+}
+
 function Router() {
   return (
     <Switch>
@@ -203,7 +209,8 @@ function Router() {
       <Route path="/org-setup" component={OrgSetupRoute} />
       <Route path="/onboarding" component={OnboardingRoute} />
       <Route path="/dashboard" component={() => <ProtectedRoute component={Dashboard} />} />
-      <Route path="/chat" component={() => <ProtectedRoute component={Chat} />} />
+      <Route path="/explore" component={() => <ProtectedRoute component={Explore} />} />
+      <Route path="/chat" component={ChatRedirect} />
       <Route path="/reports/new" component={() => <ProtectedRoute component={ReportNew} />} />
       <Route path="/reports/:id" component={() => <ProtectedRoute component={ReportView} />} />
       <Route path="/reports" component={() => <ProtectedRoute component={ReportsList} />} />
