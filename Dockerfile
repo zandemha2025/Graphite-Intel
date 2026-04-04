@@ -8,6 +8,7 @@ COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 COPY .npmrc ./
 COPY lib/api-zod/package.json lib/api-zod/
 COPY lib/db/package.json lib/db/
+COPY lib/integrations-firecrawl/package.json lib/integrations-firecrawl/
 COPY lib/integrations-openai-ai-server/package.json lib/integrations-openai-ai-server/
 COPY artifacts/api-server/package.json artifacts/api-server/
 
