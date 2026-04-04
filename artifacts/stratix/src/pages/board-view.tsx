@@ -2,7 +2,6 @@ import { useState, useCallback } from "react";
 import { useParams, useLocation } from "wouter";
 import GridLayout, { LayoutItem, Layout as GridLayoutType } from "react-grid-layout";
 import "react-grid-layout/css/styles.css";
-import "react-resizable/css/styles.css";
 import { ArrowLeft } from "lucide-react";
 import { BoardToolbar } from "@/components/boards/BoardToolbar";
 import { BoardCard } from "@/components/boards/BoardCard";
