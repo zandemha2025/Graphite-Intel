@@ -34,7 +34,7 @@ import { VaultSearch } from "@/pages/vault-search";
 import { ContextPage } from "@/pages/context";
 import { SharedWithMe } from "@/pages/shared-with-me";
 import { BoardsList } from "@/pages/boards";
-import { BoardView } from "@/pages/board-view";
+import BoardView from "@/pages/board-view";
 import { ActivityFeed } from "@/pages/activity";
 import { Playbooks } from "@/pages/playbooks";
 import { PlaybookRun } from "@/pages/playbook-run";
@@ -42,11 +42,7 @@ import { AdsDashboard } from "@/pages/ads-dashboard";
 import { AdsCampaignDetail } from "@/pages/ads-campaign-detail";
 import { AdsCampaignNew } from "@/pages/ads-campaign-new";
 import { AdsReports } from "@/pages/ads-reports";
-import { Boards } from "@/pages/boards";
-import { BoardView } from "@/pages/board-view";
 import { Login } from "@/pages/login";
-import BoardsPage from "@/pages/boards";
-import BoardViewPage from "@/pages/board-view";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -222,6 +218,7 @@ function Router() {
       <Route path="/org-setup" component={OrgSetupRoute} />
       <Route path="/onboarding" component={OnboardingRoute} />
       <Route path="/dashboard" component={DashboardRedirect} />
+      <Route path="/boards/new" component={() => <ProtectedRoute component={BoardView} />} />
       <Route path="/boards/:id" component={() => <ProtectedRoute component={BoardView} />} />
       <Route path="/boards" component={() => <ProtectedRoute component={BoardsList} />} />
       <Route path="/explore" component={() => <ProtectedRoute component={Explore} />} />
@@ -255,9 +252,6 @@ function Router() {
       <Route path="/ads/campaigns/:id" component={() => <ProtectedRoute component={AdsCampaignDetail} />} />
       <Route path="/ads/reports" component={() => <ProtectedRoute component={AdsReports} />} />
       <Route path="/ads" component={() => <ProtectedRoute component={AdsDashboard} />} />
-      <Route path="/boards/new" component={() => <ProtectedRoute component={BoardViewPage} />} />
-      <Route path="/boards/:id" component={() => <ProtectedRoute component={BoardViewPage} />} />
-      <Route path="/boards" component={() => <ProtectedRoute component={BoardsPage} />} />
       <Route component={NotFound} />
     </Switch>
   );

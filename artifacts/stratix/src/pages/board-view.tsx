@@ -161,10 +161,15 @@ export default function BoardView() {
           className="layout"
           layout={layout as GridLayoutType}
           width={containerWidth - 32}
-          onLayoutChange={(l) => setLayout([...l])}
-          gridConfig={{ cols: 12, rowHeight: 80, margin: [12, 12] as readonly [number, number], containerPadding: [0, 0] as readonly [number, number] }}
-          dragConfig={{ enabled: viewMode === "edit", handle: ".drag-handle", bounded: false, cancel: undefined, threshold: 3 }}
-          resizeConfig={{ enabled: viewMode === "edit", handles: ["se"] as readonly import("react-grid-layout").ResizeHandleAxis[] }}
+          onLayoutChange={(l: GridLayoutType) => setLayout([...l])}
+          cols={12}
+          rowHeight={80}
+          margin={[12, 12] as [number, number]}
+          containerPadding={[0, 0] as [number, number]}
+          isDraggable={viewMode === "edit"}
+          isResizable={viewMode === "edit"}
+          draggableHandle=".drag-handle"
+          resizeHandles={["se"]}
         >
           {cards.map((card) => (
             <div key={card.id} className="relative group">
