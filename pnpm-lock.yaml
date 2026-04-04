@@ -180,6 +180,9 @@ importers:
       '@workspace/integrations-openai-ai-server':
         specifier: workspace:*
         version: link:../../lib/integrations-openai-ai-server
+      '@workspace/integrations-pipedream-workflows':
+        specifier: workspace:*
+        version: link:../../lib/integrations-pipedream-workflows
       '@workspace/pipedream-connect':
         specifier: workspace:*
         version: link:../../lib/pipedream-connect
@@ -703,6 +706,19 @@ importers:
       p-retry:
         specifier: ^7.1.1
         version: 7.1.1
+
+  lib/integrations-pipedream-workflows:
+    dependencies:
+      openai:
+        specifier: ^6.27.0
+        version: 6.33.0(zod@3.25.76)
+      zod:
+        specifier: 'catalog:'
+        version: 3.25.76
+    devDependencies:
+      '@types/node':
+        specifier: 'catalog:'
+        version: 25.3.5
 
   lib/pipedream-connect:
     dependencies:
@@ -8662,6 +8678,10 @@ snapshots:
   once@1.4.0:
     dependencies:
       wrappy: 1.0.2
+
+  openai@6.33.0(zod@3.25.76):
+    optionalDependencies:
+      zod: 3.25.76
 
   openai@6.33.0(zod@4.3.6):
     optionalDependencies:

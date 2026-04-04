@@ -9,6 +9,7 @@ COPY .npmrc ./
 COPY lib/api-zod/package.json lib/api-zod/
 COPY lib/db/package.json lib/db/
 COPY lib/integrations-openai-ai-server/package.json lib/integrations-openai-ai-server/
+COPY lib/integrations-pipedream-workflows/package.json lib/integrations-pipedream-workflows/
 COPY artifacts/api-server/package.json artifacts/api-server/
 
 # Enable hoisting so transitive deps (e.g. openai) are accessible across workspace packages
