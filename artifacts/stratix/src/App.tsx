@@ -41,6 +41,8 @@ import { AdsCampaignDetail } from "@/pages/ads-campaign-detail";
 import { AdsCampaignNew } from "@/pages/ads-campaign-new";
 import { AdsReports } from "@/pages/ads-reports";
 import { Login } from "@/pages/login";
+import BoardsPage from "@/pages/boards";
+import BoardViewPage from "@/pages/board-view";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -241,6 +243,9 @@ function Router() {
       <Route path="/ads/campaigns/:id" component={() => <ProtectedRoute component={AdsCampaignDetail} />} />
       <Route path="/ads/reports" component={() => <ProtectedRoute component={AdsReports} />} />
       <Route path="/ads" component={() => <ProtectedRoute component={AdsDashboard} />} />
+      <Route path="/boards/new" component={() => <ProtectedRoute component={BoardViewPage} />} />
+      <Route path="/boards/:id" component={() => <ProtectedRoute component={BoardViewPage} />} />
+      <Route path="/boards" component={() => <ProtectedRoute component={BoardsPage} />} />
       <Route component={NotFound} />
     </Switch>
   );
