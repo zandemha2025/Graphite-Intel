@@ -7,8 +7,9 @@ interface AuthState {
   user: AuthUser | null;
   isLoading: boolean;
   isAuthenticated: boolean;
-  login: () => void;
-  logout: () => void;
+  login: (email: string, password: string) => Promise<void>;
+  signup: (email: string, password: string) => Promise<void>;
+  logout: () => Promise<void>;
 }
 
 export function useAuth(): AuthState {
@@ -41,13 +42,42 @@ export function useAuth(): AuthState {
     };
   }, []);
 
-  const login = useCallback(() => {
-    const base = ((import.meta as unknown as { env: { BASE_URL: string } }).env.BASE_URL ?? "").replace(/\/+$/, "") || "/";
-    window.location.href = `/api/login?returnTo=${encodeURIComponent(base)}`;
+  const login = useCallback(async (email: string, password: string) => {
+    const res = await fetch("/api/login", {
+      method: "POST",
+      credentials: "include",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email, password }),
+    });
+    if (!res.ok) {
+      const body = (await res.json().catch(() => ({}))) as { error?: string };
+      throw new Error(body.error ?? "Login failed");
+    }
+    const data = (await res.json()) as { user: AuthUser };
+    setUser(data.user);
   }, []);
 
-  const logout = useCallback(() => {
-    window.location.href = "/api/logout";
+  const signup = useCallback(async (email: string, password: string) => {
+    const res = await fetch("/api/signup", {
+      method: "POST",
+      credentials: "include",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email, password }),
+    });
+    if (!res.ok) {
+      const body = (await res.json().catch(() => ({}))) as { error?: string };
+      throw new Error(body.error ?? "Signup failed");
+    }
+    const data = (await res.json()) as { user: AuthUser };
+    setUser(data.user);
+  }, []);
+
+  const logout = useCallback(async () => {
+    await fetch("/api/logout", {
+      method: "POST",
+      credentials: "include",
+    });
+    setUser(null);
   }, []);
 
   return {
@@ -55,6 +85,7 @@ export function useAuth(): AuthState {
     isLoading,
     isAuthenticated: !!user,
     login,
+    signup,
     logout,
   };
 }

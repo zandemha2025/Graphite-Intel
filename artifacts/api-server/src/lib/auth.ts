@@ -1,31 +1,42 @@
-import * as client from "openid-client";
 import crypto from "crypto";
 import { type Request, type Response } from "express";
 import { db, sessionsTable } from "@workspace/db";
 import { eq } from "drizzle-orm";
 import type { AuthUser } from "@workspace/api-zod";
 
-export const ISSUER_URL = process.env.ISSUER_URL ?? "https://replit.com/oidc";
 export const SESSION_COOKIE = "sid";
 export const SESSION_TTL = 7 * 24 * 60 * 60 * 1000;
 
 export interface SessionData {
   user: AuthUser;
-  access_token: string;
-  refresh_token?: string;
-  expires_at?: number;
 }
 
-let oidcConfig: client.Configuration | null = null;
+export async function hashPassword(password: string): Promise<string> {
+  const salt = crypto.randomBytes(16).toString("hex");
+  const hash = await new Promise<Buffer>((resolve, reject) =>
+    crypto.scrypt(password, salt, 64, (err, key) =>
+      err ? reject(err) : resolve(key),
+    ),
+  );
+  return `${salt}:${hash.toString("hex")}`;
+}
 
-export async function getOidcConfig(): Promise<client.Configuration> {
-  if (!oidcConfig) {
-    oidcConfig = await client.discovery(
-      new URL(ISSUER_URL),
-      process.env.REPL_ID!,
-    );
+export async function verifyPassword(
+  password: string,
+  stored: string,
+): Promise<boolean> {
+  const [salt, hash] = stored.split(":");
+  if (!salt || !hash) return false;
+  const keyBuffer = await new Promise<Buffer>((resolve, reject) =>
+    crypto.scrypt(password, salt, 64, (err, key) =>
+      err ? reject(err) : resolve(key),
+    ),
+  );
+  try {
+    return crypto.timingSafeEqual(Buffer.from(hash, "hex"), keyBuffer);
+  } catch {
+    return false;
   }
-  return oidcConfig;
 }
 
 export async function createSession(data: SessionData): Promise<string> {
@@ -50,19 +61,6 @@ export async function getSession(sid: string): Promise<SessionData | null> {
   }
 
   return row.sess as unknown as SessionData;
-}
-
-export async function updateSession(
-  sid: string,
-  data: SessionData,
-): Promise<void> {
-  await db
-    .update(sessionsTable)
-    .set({
-      sess: data as unknown as Record<string, unknown>,
-      expire: new Date(Date.now() + SESSION_TTL),
-    })
-    .where(eq(sessionsTable.sid, sid));
 }
 
 export async function deleteSession(sid: string): Promise<void> {
