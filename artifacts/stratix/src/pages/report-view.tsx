@@ -31,12 +31,11 @@ export function ReportView() {
     try {
       const response = await fetch(`/api/reports/${reportId}/download`, { credentials: 'include' });
       if (!response.ok) throw new Error('Download failed');
-      const data = await response.json();
-      const blob = new Blob([data.content], { type: 'text/markdown' });
+      const blob = await response.blob();
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `${data.company.replace(/\s+/g, '_')}_${data.reportType}.md`;
+      a.download = `${report!.company.replace(/\s+/g, '_')}_${report!.reportType}.md`;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
