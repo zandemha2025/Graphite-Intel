@@ -11,7 +11,7 @@ import {
   ChevronDown,
   Zap,
   Users,
-  FolderOpen,
+  Database,
   Blocks,
   Shield,
   BarChart3,
@@ -27,7 +27,7 @@ const NAV_ITEMS = [
   { href: "/workflow-builder", label: "Builder", icon: Blocks },
   { href: "/reports", label: "Report Library", icon: Library },
   { href: "/knowledge", label: "Knowledge", icon: BookOpen },
-  { href: "/vault", label: "Vault", icon: FolderOpen },
+  { href: "/context", label: "Context", icon: Database },
 ];
 
 const ADMIN_NAV_ITEMS = [
@@ -44,7 +44,8 @@ const PAGE_BREADCRUMBS: Record<string, { section?: string; title: string }> = {
   "/profile": { section: "Settings", title: "Company Profile" },
   "/knowledge": { title: "Knowledge" },
   "/settings/team": { section: "Settings", title: "Team" },
-  "/vault": { title: "Vault" },
+  "/context": { title: "Context" },
+  "/vault": { title: "Context" },
   "/workflow-builder": { title: "Workflow Builder" },
   "/audit": { section: "Admin", title: "Audit Log" },
   "/analytics": { section: "Admin", title: "Analytics" },
@@ -77,6 +78,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
     (location.startsWith("/reports/") ? { section: "Reports", title: "Intelligence Brief" } :
     location.startsWith("/workflows/new/") ? { section: "Workflows", title: "Launch Workflow" } :
     location.startsWith("/workflows/") ? { section: "Workflows", title: "Workflow Run" } :
+    location.startsWith("/context") ? { title: "Context" } :
     location.startsWith("/vault/") ? { section: "Vault", title: "Project" } :
     location.startsWith("/workflow-builder/") ? { section: "Builder", title: "Edit Workflow" } :
     { title: "Stratix" });

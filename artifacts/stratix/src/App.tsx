@@ -31,6 +31,7 @@ import { WorkflowBuilderEdit } from "@/pages/workflow-builder-edit";
 import { Integrations } from "@/pages/integrations";
 import { HumanReviews } from "@/pages/human-reviews";
 import { VaultSearch } from "@/pages/vault-search";
+import { ContextPage } from "@/pages/context";
 import { SharedWithMe } from "@/pages/shared-with-me";
 import { ActivityFeed } from "@/pages/activity";
 import { Playbooks } from "@/pages/playbooks";
@@ -214,8 +215,9 @@ function Router() {
       <Route path="/settings/team" component={() => <ProtectedRoute component={Team} />} />
       <Route path="/security" component={Security} />
       <Route path="/knowledge" component={() => <ProtectedRoute component={Knowledge} />} />
+      <Route path="/context" component={() => <ProtectedRoute component={ContextPage} />} />
       <Route path="/vault/:id" component={() => <ProtectedRoute component={VaultProject} />} />
-      <Route path="/vault" component={() => <ProtectedRoute component={Vault} />} />
+      <Route path="/vault" component={() => <ProtectedRoute component={ContextPage} />} />
       <Route path="/workflow-builder/new" component={() => <ProtectedRoute component={WorkflowBuilderEdit} />} />
       <Route path="/workflow-builder/:id" component={() => <ProtectedRoute component={WorkflowBuilderEdit} />} />
       <Route path="/workflow-builder" component={() => <ProtectedRoute component={WorkflowBuilder} />} />
