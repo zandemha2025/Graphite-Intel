@@ -2,7 +2,7 @@ import { Link, useLocation } from "wouter";
 import { useGetCurrentAuthUser } from "@workspace/api-client-react";
 import { useState, useEffect } from "react";
 import {
-  LayoutDashboard,
+  LayoutGrid,
   Compass,
   Library,
   BookOpen,
@@ -24,7 +24,6 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSepara
 const NAV_ITEMS = [
   { href: "/explore", label: "Explore", icon: Compass },
   { href: "/boards", label: "Boards", icon: LayoutGrid },
-  { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { href: "/workflows", label: "Workflows", icon: Zap },
   { href: "/workflow-builder", label: "Builder", icon: Blocks },
   { href: "/reports", label: "Report Library", icon: Library },
@@ -40,8 +39,8 @@ const ADMIN_NAV_ITEMS = [
 const PAGE_BREADCRUMBS: Record<string, { section?: string; title: string }> = {
   "/explore": { title: "Explore" },
   "/chat": { title: "Explore" },
+  "/dashboard": { title: "Boards" },
   "/boards": { title: "Boards" },
-  "/dashboard": { title: "Dashboard" },
   "/reports": { section: "Reports", title: "Report Library" },
   "/reports/new": { section: "Reports", title: "New Report" },
   "/workflows": { title: "Workflows" },
@@ -83,6 +82,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
     location.startsWith("/reports/") ? { section: "Reports", title: "Intelligence Brief" } :
     location.startsWith("/workflows/new/") ? { section: "Workflows", title: "Launch Workflow" } :
     location.startsWith("/workflows/") ? { section: "Workflows", title: "Workflow Run" } :
+    location.startsWith("/boards/") ? { section: "Boards", title: "Board" } :
     location.startsWith("/context") ? { title: "Context" } :
     location.startsWith("/vault/") ? { section: "Vault", title: "Project" } :
     location.startsWith("/workflow-builder/") ? { section: "Builder", title: "Edit Workflow" } :
@@ -92,7 +92,8 @@ export function Layout({ children }: { children: React.ReactNode }) {
 
   const isFullBleed =
     location === "/chat" || location.startsWith("/chat/") ||
-    location === "/explore" || location.startsWith("/explore/");
+    location === "/explore" || location.startsWith("/explore/") ||
+    location.startsWith("/boards/");
 
   return (
     <div className="flex h-screen" style={{ background: "#0D0C0B" }}>

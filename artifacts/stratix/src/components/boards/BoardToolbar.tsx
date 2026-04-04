@@ -1,153 +1,127 @@
-import { Edit2, Eye, Plus, Share2, Check, X } from "lucide-react";
-import { useState, useRef, useEffect } from "react";
-import { BoardTypeSelector, type BoardType } from "./BoardTypeSelector";
+import { useState } from "react";
+import { RefreshCw, Download, Share2, Edit3, Eye } from "lucide-react";
+import { BoardTypeSelector, BoardType } from "./BoardTypeSelector";
+
+type ViewMode = "layout" | "edit";
 
 type Props = {
   title: string;
   boardType: BoardType;
-  isEditMode: boolean;
+  viewMode: ViewMode;
   onTitleChange: (t: string) => void;
   onBoardTypeChange: (t: BoardType) => void;
-  onToggleEditMode: () => void;
-  onAddCard: () => void;
-  onShare: () => void;
+  onViewModeChange: (m: ViewMode) => void;
+  onRefresh?: () => void;
+  onAddCard?: () => void;
 };
 
 export function BoardToolbar({
   title,
   boardType,
-  isEditMode,
+  viewMode,
   onTitleChange,
   onBoardTypeChange,
-  onToggleEditMode,
+  onViewModeChange,
+  onRefresh,
   onAddCard,
-  onShare,
 }: Props) {
-  const [editing, setEditing] = useState(false);
-  const [draft, setDraft] = useState(title);
-  const inputRef = useRef<HTMLInputElement>(null);
+  const [editingTitle, setEditingTitle] = useState(false);
+  const [titleDraft, setTitleDraft] = useState(title);
 
-  useEffect(() => {
-    if (editing) inputRef.current?.focus();
-  }, [editing]);
-
-  function commitTitle() {
-    const trimmed = draft.trim();
-    if (trimmed) onTitleChange(trimmed);
-    else setDraft(title);
-    setEditing(false);
-  }
-
-  function cancelTitle() {
-    setDraft(title);
-    setEditing(false);
-  }
+  const commitTitle = () => {
+    onTitleChange(titleDraft.trim() || title);
+    setEditingTitle(false);
+  };
 
   return (
     <div
-      className="flex items-center gap-3 px-5 py-3 border-b shrink-0"
+      className="flex items-center justify-between px-5 py-3 border-b shrink-0"
       style={{ background: "#FFFFFF", borderColor: "#E5E7EB" }}
     >
-      {/* Title */}
-      <div className="flex items-center gap-2 min-w-0 flex-1">
-        {editing ? (
-          <>
-            <input
-              ref={inputRef}
-              value={draft}
-              onChange={(e) => setDraft(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter") commitTitle();
-                if (e.key === "Escape") cancelTitle();
-              }}
-              className="text-sm font-semibold border rounded px-2 py-0.5 outline-none min-w-0 flex-1"
-              style={{ borderColor: "#4F46E5", color: "#111827" }}
-            />
-            <button onClick={commitTitle} className="p-1 rounded hover:bg-gray-100" style={{ color: "#4F46E5" }}>
-              <Check className="h-3.5 w-3.5" />
-            </button>
-            <button onClick={cancelTitle} className="p-1 rounded hover:bg-gray-100" style={{ color: "#6B7280" }}>
-              <X className="h-3.5 w-3.5" />
-            </button>
-          </>
+      {/* Left: title + type */}
+      <div className="flex items-center gap-3">
+        {editingTitle ? (
+          <input
+            autoFocus
+            value={titleDraft}
+            onChange={(e) => setTitleDraft(e.target.value)}
+            onBlur={commitTitle}
+            onKeyDown={(e) => { if (e.key === "Enter") commitTitle(); if (e.key === "Escape") setEditingTitle(false); }}
+            className="text-sm font-semibold outline-none border-b-2 bg-transparent"
+            style={{ color: "#111827", borderColor: "#4F46E5", minWidth: 120 }}
+          />
         ) : (
-          <>
-            <span
-              className="text-sm font-semibold truncate cursor-pointer hover:text-indigo-600 transition-colors"
-              style={{ color: "#111827" }}
-              onClick={() => { setDraft(title); setEditing(true); }}
-            >
-              {title}
-            </span>
-            <button
-              onClick={() => { setDraft(title); setEditing(true); }}
-              className="p-1 rounded hover:bg-gray-100 opacity-0 group-hover:opacity-100 transition-opacity"
-              style={{ color: "#9CA3AF" }}
-            >
-              <Edit2 className="h-3 w-3" />
-            </button>
-          </>
+          <button
+            onClick={() => { setTitleDraft(title); setEditingTitle(true); }}
+            className="flex items-center gap-1.5 group"
+          >
+            <span className="text-sm font-semibold" style={{ color: "#111827" }}>{title}</span>
+            <Edit3 className="h-3.5 w-3.5 opacity-0 group-hover:opacity-50 transition-opacity" style={{ color: "#6B7280" }} />
+          </button>
         )}
+        <BoardTypeSelector value={boardType} onChange={onBoardTypeChange} />
       </div>
 
-      {/* Board type selector */}
-      <BoardTypeSelector value={boardType} onChange={onBoardTypeChange} />
+      {/* Right: actions */}
+      <div className="flex items-center gap-2">
+        {/* View mode toggle */}
+        <div className="flex items-center rounded-md p-0.5" style={{ background: "#F3F4F6", border: "1px solid #E5E7EB" }}>
+          <button
+            onClick={() => onViewModeChange("layout")}
+            className="flex items-center gap-1.5 px-2.5 py-1.5 rounded text-xs font-medium transition-all"
+            style={{
+              background: viewMode === "layout" ? "#FFFFFF" : "transparent",
+              color: viewMode === "layout" ? "#111827" : "#6B7280",
+              border: viewMode === "layout" ? "1px solid #E5E7EB" : "1px solid transparent",
+            }}
+          >
+            <Eye className="h-3.5 w-3.5" />
+            Layout
+          </button>
+          <button
+            onClick={() => onViewModeChange("edit")}
+            className="flex items-center gap-1.5 px-2.5 py-1.5 rounded text-xs font-medium transition-all"
+            style={{
+              background: viewMode === "edit" ? "#FFFFFF" : "transparent",
+              color: viewMode === "edit" ? "#111827" : "#6B7280",
+              border: viewMode === "edit" ? "1px solid #E5E7EB" : "1px solid transparent",
+            }}
+          >
+            <Edit3 className="h-3.5 w-3.5" />
+            Edit
+          </button>
+        </div>
 
-      {/* Edit / View toggle */}
-      <div
-        className="flex items-center gap-0.5 p-0.5 rounded-md"
-        style={{ background: "#F3F4F6", border: "1px solid #E5E7EB" }}
-      >
+        {viewMode === "edit" && onAddCard && (
+          <button
+            onClick={onAddCard}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded text-xs font-medium"
+            style={{ background: "#4F46E5", color: "#FFFFFF" }}
+          >
+            + Add Card
+          </button>
+        )}
+
         <button
-          type="button"
-          onClick={() => !isEditMode && onToggleEditMode()}
-          className="flex items-center gap-1.5 px-2.5 py-1 text-xs rounded transition-all"
-          style={{
-            background: isEditMode ? "#FFFFFF" : "transparent",
-            color: isEditMode ? "#4F46E5" : "#6B7280",
-            fontWeight: isEditMode ? 600 : 400,
-            boxShadow: isEditMode ? "0 1px 2px rgba(0,0,0,0.08)" : "none",
-          }}
+          onClick={onRefresh}
+          className="p-1.5 rounded hover:bg-gray-100 transition-colors"
+          title="Refresh"
         >
-          <Edit2 className="h-3 w-3" />
-          Edit
+          <RefreshCw className="h-4 w-4" style={{ color: "#6B7280" }} />
         </button>
         <button
-          type="button"
-          onClick={() => isEditMode && onToggleEditMode()}
-          className="flex items-center gap-1.5 px-2.5 py-1 text-xs rounded transition-all"
-          style={{
-            background: !isEditMode ? "#FFFFFF" : "transparent",
-            color: !isEditMode ? "#4F46E5" : "#6B7280",
-            fontWeight: !isEditMode ? 600 : 400,
-            boxShadow: !isEditMode ? "0 1px 2px rgba(0,0,0,0.08)" : "none",
-          }}
+          className="p-1.5 rounded hover:bg-gray-100 transition-colors"
+          title="Export (PDF/PPTX)"
         >
-          <Eye className="h-3 w-3" />
-          View
+          <Download className="h-4 w-4" style={{ color: "#6B7280" }} />
+        </button>
+        <button
+          className="p-1.5 rounded hover:bg-gray-100 transition-colors"
+          title="Share"
+        >
+          <Share2 className="h-4 w-4" style={{ color: "#6B7280" }} />
         </button>
       </div>
-
-      {/* Actions */}
-      {isEditMode && (
-        <button
-          onClick={onAddCard}
-          className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-md transition-colors"
-          style={{ background: "#4F46E5", color: "#FFFFFF" }}
-        >
-          <Plus className="h-3.5 w-3.5" />
-          Add Card
-        </button>
-      )}
-
-      <button
-        onClick={onShare}
-        className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-md border transition-colors hover:bg-gray-50"
-        style={{ borderColor: "#E5E7EB", color: "#374151" }}
-      >
-        <Share2 className="h-3.5 w-3.5" />
-        Share
-      </button>
     </div>
   );
 }

@@ -1,242 +1,205 @@
-import { useState, useCallback, useRef } from "react";
-import { BoardToolbar } from "../components/boards/BoardToolbar";
-import { BoardCard } from "../components/boards/BoardCard";
-import { AddCardModal } from "../components/boards/AddCardModal";
-import { type BoardType } from "../components/boards/BoardTypeSelector";
-import { type ChartCell } from "../components/charts/types";
+import { useState, useCallback } from "react";
+import { useParams, useLocation } from "wouter";
+import GridLayout, { LayoutItem, Layout as GridLayoutType } from "react-grid-layout";
+import "react-grid-layout/css/styles.css";
+import "react-resizable/css/styles.css";
+import { ArrowLeft } from "lucide-react";
+import { BoardToolbar } from "@/components/boards/BoardToolbar";
+import { BoardCard } from "@/components/boards/BoardCard";
+import { AddCardModal } from "@/components/boards/AddCardModal";
+import type { BoardCardData, BoardCardContent } from "@/components/boards/BoardCard";
+import type { BoardType } from "@/components/boards/BoardTypeSelector";
 
-type GridItem = {
-  id: string;
-  cell: ChartCell;
-  col: number; // 0-based column (out of 3)
-  row: number; // 0-based row
-  colSpan: number; // 1 or 2
-};
+// ── seed helpers ────────────────────────────────────────────────────────────
 
-const DEMO_CELLS: GridItem[] = [
-  {
-    id: "g1",
-    cell: {
-      type: "bar",
+function makeSeedCards(): BoardCardData[] {
+  return [
+    {
+      id: "c1",
       title: "Revenue by Quarter",
-      data: [
-        { label: "Q1", value: 420 },
-        { label: "Q2", value: 580 },
-        { label: "Q3", value: 510 },
-        { label: "Q4", value: 740 },
-      ],
-      xKey: "label",
-      yKey: "value",
-      metadata: { source: "Finance", confidence: 0.97, freshness: "Updated today" },
+      source: "CRM",
+      content: {
+        kind: "chart",
+        cell: {
+          type: "bar",
+          title: "Revenue by Quarter",
+          data: [
+            { name: "Q1", value: 42000 },
+            { name: "Q2", value: 68000 },
+            { name: "Q3", value: 55000 },
+            { name: "Q4", value: 81000 },
+          ],
+          xKey: "name",
+          yKey: "value",
+        },
+      },
     },
-    col: 0,
-    row: 0,
-    colSpan: 2,
-  },
-  {
-    id: "g2",
-    cell: {
-      type: "stat",
-      title: "Total Pipeline",
-      data: [{ value: "$4.2M", label: "Pipeline", change: "+18%" }],
-      metadata: { source: "CRM" },
+    {
+      id: "c2",
+      title: "Monthly Active Users",
+      source: "Analytics",
+      content: {
+        kind: "chart",
+        cell: {
+          type: "line",
+          title: "Monthly Active Users",
+          data: [
+            { name: "Jan", value: 1200 },
+            { name: "Feb", value: 1450 },
+            { name: "Mar", value: 1380 },
+            { name: "Apr", value: 1710 },
+            { name: "May", value: 1960 },
+          ],
+          xKey: "name",
+          yKey: "value",
+        },
+      },
     },
-    col: 2,
-    row: 0,
-    colSpan: 1,
-  },
-  {
-    id: "g3",
-    cell: {
-      type: "line",
-      title: "Weekly Active Users",
-      data: [
-        { label: "W1", value: 1200 },
-        { label: "W2", value: 1350 },
-        { label: "W3", value: 1100 },
-        { label: "W4", value: 1600 },
-        { label: "W5", value: 1850 },
-        { label: "W6", value: 2100 },
-      ],
-      xKey: "label",
-      yKey: "value",
-      metadata: { source: "Analytics" },
+    {
+      id: "c3",
+      title: "Total Revenue",
+      source: "Finance",
+      content: { kind: "stat", label: "Total Revenue (YTD)", value: "$246K", change: "+18% vs last year", positive: true },
     },
-    col: 0,
-    row: 1,
-    colSpan: 1,
-  },
-  {
-    id: "g4",
-    cell: {
-      type: "pie",
-      title: "Traffic Sources",
-      data: [
-        { label: "Direct", value: 38 },
-        { label: "Organic", value: 27 },
-        { label: "Referral", value: 22 },
-        { label: "Paid", value: 13 },
-      ],
-      metadata: { source: "Marketing" },
+    {
+      id: "c4",
+      title: "Segment Breakdown",
+      source: "CRM",
+      content: {
+        kind: "chart",
+        cell: {
+          type: "pie",
+          title: "Segment Breakdown",
+          data: [
+            { name: "Enterprise", value: 55 },
+            { name: "Mid-Market", value: 30 },
+            { name: "SMB", value: 15 },
+          ],
+          xKey: "name",
+          yKey: "value",
+        },
+      },
     },
-    col: 1,
-    row: 1,
-    colSpan: 2,
-  },
+  ];
+}
+
+const SEED_LAYOUT: LayoutItem[] = [
+  { i: "c1", x: 0, y: 0, w: 6, h: 4 },
+  { i: "c2", x: 6, y: 0, w: 6, h: 4 },
+  { i: "c3", x: 0, y: 4, w: 3, h: 3 },
+  { i: "c4", x: 3, y: 4, w: 5, h: 3 },
 ];
 
-// Drag state
-type DragState = {
-  id: string;
-  originCol: number;
-  originRow: number;
-};
+// ── page ────────────────────────────────────────────────────────────────────
 
 export function BoardView() {
-  const [title, setTitle] = useState("Growth Overview");
+  const params = useParams<{ id: string }>();
+  const [, setLocation] = useLocation();
+
+  const [title, setTitle] = useState("Untitled Board");
   const [boardType, setBoardType] = useState<BoardType>("live");
-  const [isEditMode, setIsEditMode] = useState(true);
-  const [showAddModal, setShowAddModal] = useState(false);
-  const [items, setItems] = useState<GridItem[]>(DEMO_CELLS);
+  const [viewMode, setViewMode] = useState<"layout" | "edit">("layout");
+  const [cards, setCards] = useState<BoardCardData[]>(makeSeedCards);
+  const [layout, setLayout] = useState<LayoutItem[]>(SEED_LAYOUT);
+  const [addOpen, setAddOpen] = useState(false);
+  const [containerWidth, setContainerWidth] = useState(900);
 
-  const dragRef = useRef<DragState | null>(null);
-  const [dragOverId, setDragOverId] = useState<string | null>(null);
-
-  function addCard(cell: ChartCell) {
-    const maxRow = items.reduce((m, i) => Math.max(m, i.row), -1);
-    setItems((prev) => [
-      ...prev,
-      {
-        id: String(Date.now()),
-        cell,
-        col: 0,
-        row: maxRow + 1,
-        colSpan: cell.type === "stat" ? 1 : 2,
-      },
-    ]);
-  }
-
-  function removeCard(id: string) {
-    setItems((prev) => prev.filter((i) => i.id !== id));
-  }
-
-  // Drag handlers
-  const onDragStart = useCallback((id: string, col: number, row: number) => {
-    dragRef.current = { id, originCol: col, originRow: row };
-  }, []);
-
-  const onDragOver = useCallback((e: React.DragEvent, id: string) => {
-    e.preventDefault();
-    setDragOverId(id);
-  }, []);
-
-  const onDrop = useCallback((e: React.DragEvent, targetId: string) => {
-    e.preventDefault();
-    setDragOverId(null);
-    if (!dragRef.current || dragRef.current.id === targetId) return;
-
-    const srcId = dragRef.current.id;
-    setItems((prev) => {
-      const srcIdx = prev.findIndex((i) => i.id === srcId);
-      const tgtIdx = prev.findIndex((i) => i.id === targetId);
-      if (srcIdx === -1 || tgtIdx === -1) return prev;
-
-      const next = [...prev];
-      const srcItem = next[srcIdx];
-      const tgtItem = next[tgtIdx];
-
-      // Swap positions
-      const srcPos = { col: srcItem.col, row: srcItem.row };
-      next[srcIdx] = { ...srcItem, col: tgtItem.col, row: tgtItem.row };
-      next[tgtIdx] = { ...tgtItem, col: srcPos.col, row: srcPos.row };
-      return next;
+  const containerRef = useCallback((node: HTMLDivElement | null) => {
+    if (!node) return;
+    const ro = new ResizeObserver(([entry]) => {
+      setContainerWidth(entry.contentRect.width);
     });
-    dragRef.current = null;
+    ro.observe(node);
   }, []);
 
-  const onDragEnd = useCallback(() => {
-    setDragOverId(null);
-    dragRef.current = null;
-  }, []);
+  const handleAddCard = (cardTitle: string, content: BoardCardContent) => {
+    const id = `c-${Date.now()}`;
+    setCards((prev) => [...prev, { id, title: cardTitle, content }]);
+    setLayout((prev) => [...prev, { i: id, x: 0, y: Infinity, w: 6, h: 4 }]);
+  };
 
-  // Build a sorted render order
-  const sorted = [...items].sort((a, b) => a.row - b.row || a.col - b.col);
+  const handleRemove = (id: string) => {
+    setCards((prev) => prev.filter((c) => c.id !== id));
+    setLayout((prev) => prev.filter((l) => l.i !== id));
+  };
+
+  const handleDuplicate = (id: string) => {
+    const original = cards.find((c) => c.id === id);
+    if (!original) return;
+    const newId = `c-${Date.now()}`;
+    setCards((prev) => [...prev, { ...original, id: newId, title: `${original.title} (copy)` }]);
+    const origLayout = layout.find((l) => l.i === id);
+    setLayout((prev) => [...prev, { ...(origLayout ?? { w: 6, h: 4, x: 0 }), i: newId, y: Infinity }]);
+  };
 
   return (
-    <div className="flex flex-col h-full" style={{ background: "#F9FAFB" }}>
+    <div className="flex flex-col h-full" style={{ background: "#F3F4F6" }}>
+      {/* Back nav */}
+      <div className="flex items-center gap-2 px-5 py-2.5 border-b" style={{ background: "#FFFFFF", borderColor: "#E5E7EB" }}>
+        <button
+          onClick={() => setLocation("/boards")}
+          className="flex items-center gap-1.5 text-xs hover:opacity-70 transition-opacity"
+          style={{ color: "#6B7280" }}
+        >
+          <ArrowLeft className="h-3.5 w-3.5" />
+          Boards
+        </button>
+      </div>
+
       <BoardToolbar
         title={title}
         boardType={boardType}
-        isEditMode={isEditMode}
+        viewMode={viewMode}
         onTitleChange={setTitle}
         onBoardTypeChange={setBoardType}
-        onToggleEditMode={() => setIsEditMode((v) => !v)}
-        onAddCard={() => setShowAddModal(true)}
-        onShare={() => {}}
+        onViewModeChange={setViewMode}
+        onAddCard={() => setAddOpen(true)}
       />
 
       {/* Grid canvas */}
-      <div className="flex-1 overflow-y-auto p-6">
-        <div
-          className="grid gap-4"
-          style={{ gridTemplateColumns: "repeat(3, minmax(0, 1fr))" }}
+      <div className="flex-1 overflow-auto p-4" ref={containerRef}>
+        <GridLayout
+          className="layout"
+          layout={layout as GridLayoutType}
+          width={containerWidth - 32}
+          onLayoutChange={(l) => setLayout([...l])}
+          gridConfig={{ cols: 12, rowHeight: 80, margin: [12, 12] as readonly [number, number], containerPadding: [0, 0] as readonly [number, number] }}
+          dragConfig={{ enabled: viewMode === "edit", handle: ".drag-handle", bounded: false, cancel: undefined, threshold: 3 }}
+          resizeConfig={{ enabled: viewMode === "edit", handles: ["se"] as readonly import("react-grid-layout").ResizeHandleAxis[] }}
         >
-          {sorted.map((item) => (
-            <div
-              key={item.id}
-              draggable={isEditMode}
-              onDragStart={() => onDragStart(item.id, item.col, item.row)}
-              onDragOver={(e) => onDragOver(e, item.id)}
-              onDrop={(e) => onDrop(e, item.id)}
-              onDragEnd={onDragEnd}
-              style={{
-                gridColumn: `span ${item.colSpan}`,
-                minHeight: item.cell.type === "stat" ? 100 : 240,
-                opacity: dragOverId === item.id ? 0.6 : 1,
-                transition: "opacity 0.15s",
-                outline: dragOverId === item.id ? "2px dashed #4F46E5" : "none",
-                borderRadius: 12,
-              }}
-            >
+          {cards.map((card) => (
+            <div key={card.id} className="relative group">
+              {viewMode === "edit" && (
+                <div
+                  className="drag-handle absolute top-0 left-0 right-0 h-7 cursor-grab active:cursor-grabbing z-10 rounded-t-lg"
+                  style={{ background: "rgba(79,70,229,0.06)" }}
+                />
+              )}
               <BoardCard
-                cell={item.cell}
-                isEditMode={isEditMode}
-                onRemove={() => removeCard(item.id)}
-                dragHandleProps={{
-                  draggable: true,
-                  onDragStart: (e) => {
-                    e.stopPropagation();
-                    onDragStart(item.id, item.col, item.row);
-                  },
-                }}
+                card={card}
+                editMode={viewMode === "edit"}
+                onRemove={handleRemove}
+                onDuplicate={handleDuplicate}
               />
             </div>
           ))}
+        </GridLayout>
 
-          {/* Add card tile — only in edit mode */}
-          {isEditMode && (
-            <div
-              onClick={() => setShowAddModal(true)}
-              className="flex flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed cursor-pointer transition-colors hover:border-indigo-300 hover:bg-indigo-50/40"
-              style={{ borderColor: "#E5E7EB", minHeight: 140 }}
+        {cards.length === 0 && (
+          <div className="flex flex-col items-center justify-center py-24 gap-3">
+            <div className="text-sm" style={{ color: "#9CA3AF" }}>No cards yet.</div>
+            <button
+              onClick={() => setAddOpen(true)}
+              className="flex items-center gap-1.5 px-4 py-2 rounded-md text-sm font-medium"
+              style={{ background: "#4F46E5", color: "#FFFFFF" }}
             >
-              <div
-                className="h-8 w-8 rounded-full flex items-center justify-center"
-                style={{ background: "#F3F4F6" }}
-              >
-                <span className="text-xl font-light" style={{ color: "#9CA3AF", lineHeight: 1 }}>+</span>
-              </div>
-              <span className="text-xs font-medium" style={{ color: "#9CA3AF" }}>
-                Add card
-              </span>
-            </div>
-          )}
-        </div>
+              + Add Card
+            </button>
+          </div>
+        )}
       </div>
 
-      {showAddModal && (
-        <AddCardModal onAdd={addCard} onClose={() => setShowAddModal(false)} />
-      )}
+      <AddCardModal open={addOpen} onClose={() => setAddOpen(false)} onAdd={handleAddCard} />
     </div>
   );
 }

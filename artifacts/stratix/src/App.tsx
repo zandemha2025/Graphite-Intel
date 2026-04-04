@@ -33,6 +33,8 @@ import { HumanReviews } from "@/pages/human-reviews";
 import { VaultSearch } from "@/pages/vault-search";
 import { ContextPage } from "@/pages/context";
 import { SharedWithMe } from "@/pages/shared-with-me";
+import { BoardsList } from "@/pages/boards";
+import { BoardView } from "@/pages/board-view";
 import { ActivityFeed } from "@/pages/activity";
 import { Playbooks } from "@/pages/playbooks";
 import { PlaybookRun } from "@/pages/playbook-run";
@@ -206,6 +208,12 @@ function ChatRedirect() {
   return null;
 }
 
+function DashboardRedirect() {
+  const [, setLocation] = useLocation();
+  useEffect(() => { setLocation("/boards"); }, [setLocation]);
+  return null;
+}
+
 function Router() {
   return (
     <Switch>
@@ -213,9 +221,9 @@ function Router() {
       <Route path="/login" component={Login} />
       <Route path="/org-setup" component={OrgSetupRoute} />
       <Route path="/onboarding" component={OnboardingRoute} />
+      <Route path="/dashboard" component={DashboardRedirect} />
       <Route path="/boards/:id" component={() => <ProtectedRoute component={BoardView} />} />
-      <Route path="/boards" component={() => <ProtectedRoute component={Boards} />} />
-      <Route path="/dashboard" component={() => <ProtectedRoute component={Dashboard} />} />
+      <Route path="/boards" component={() => <ProtectedRoute component={BoardsList} />} />
       <Route path="/explore" component={() => <ProtectedRoute component={Explore} />} />
       <Route path="/chat" component={ChatRedirect} />
       <Route path="/reports/new" component={() => <ProtectedRoute component={ReportNew} />} />

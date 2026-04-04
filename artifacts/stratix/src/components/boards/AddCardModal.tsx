@@ -1,214 +1,155 @@
-import { X, BarChart2, LineChart, PieChart, Hash, Table, Activity } from "lucide-react";
 import { useState } from "react";
-import { type ChartCell } from "../charts/types";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { BarChart3, TrendingUp, PieChart, Hash, AlignLeft, Table2 } from "lucide-react";
+import type { BoardCardContent } from "./BoardCard";
+import type { ChartCell } from "@/components/charts/types";
 
-type CardTypeOption = {
-  type: ChartCell["type"];
-  label: string;
-  icon: React.ComponentType<{ className?: string }>;
-  desc: string;
+type CardKind = "chart" | "stat" | "text" | "table";
+type ChartType = "bar" | "line" | "pie";
+
+const CARD_TYPES: { kind: CardKind; label: string; description: string; icon: React.ComponentType<React.SVGProps<SVGSVGElement>> }[] = [
+  { kind: "chart", label: "Chart", description: "Bar, line, or pie chart", icon: BarChart3 },
+  { kind: "stat", label: "Stat", description: "Single KPI metric", icon: Hash },
+  { kind: "table", label: "Table", description: "Tabular data", icon: Table2 },
+  { kind: "text", label: "Text", description: "Markdown text block", icon: AlignLeft },
+];
+
+const CHART_ICONS: Record<ChartType, React.ComponentType<React.SVGProps<SVGSVGElement>>> = {
+  bar: BarChart3,
+  line: TrendingUp,
+  pie: PieChart,
 };
 
-const CARD_TYPES: CardTypeOption[] = [
-  { type: "bar", label: "Bar Chart", icon: BarChart2, desc: "Compare values across categories" },
-  { type: "line", label: "Line Chart", icon: LineChart, desc: "Show trends over time" },
-  { type: "pie", label: "Pie Chart", icon: PieChart, desc: "Show proportions of a whole" },
-  { type: "stat", label: "Stat Card", icon: Hash, desc: "Highlight a key metric" },
-  { type: "table", label: "Data Table", icon: Table, desc: "Tabular data view" },
-  { type: "area", label: "Area Chart", icon: Activity, desc: "Filled trend visualization" },
-];
-
-const DATA_SOURCES = [
-  "CRM — Opportunities",
-  "Marketing — Campaigns",
-  "Finance — Revenue",
-  "Support — Tickets",
-  "Custom Query",
-];
+function buildSampleContent(kind: CardKind, chartType: ChartType, cardTitle: string): BoardCardContent {
+  switch (kind) {
+    case "chart": {
+      const cell: ChartCell =
+        chartType === "bar"
+          ? { type: "bar", title: cardTitle, data: [{ name: "Q1", value: 40 }, { name: "Q2", value: 65 }, { name: "Q3", value: 52 }, { name: "Q4", value: 78 }], xKey: "name", yKey: "value" }
+          : chartType === "line"
+          ? { type: "line", title: cardTitle, data: [{ name: "Jan", value: 30 }, { name: "Feb", value: 45 }, { name: "Mar", value: 38 }, { name: "Apr", value: 62 }], xKey: "name", yKey: "value" }
+          : { type: "pie", title: cardTitle, data: [{ name: "A", value: 40 }, { name: "B", value: 35 }, { name: "C", value: 25 }], xKey: "name", yKey: "value" };
+      return { kind: "chart", cell };
+    }
+    case "stat":
+      return { kind: "stat", label: cardTitle, value: "—", change: "+0%", positive: true };
+    case "text":
+      return { kind: "text", body: "Enter your text or analysis here." };
+    case "table":
+      return { kind: "table", headers: ["Name", "Value", "Change"], rows: [["Item A", "100", "+5%"], ["Item B", "85", "-2%"]] };
+  }
+}
 
 type Props = {
-  onAdd: (cell: ChartCell) => void;
+  open: boolean;
   onClose: () => void;
+  onAdd: (title: string, content: BoardCardContent) => void;
 };
 
-export function AddCardModal({ onAdd, onClose }: Props) {
-  const [selectedType, setSelectedType] = useState<ChartCell["type"]>("bar");
-  const [title, setTitle] = useState("");
-  const [source, setSource] = useState(DATA_SOURCES[0]);
+export function AddCardModal({ open, onClose, onAdd }: Props) {
+  const [selectedKind, setSelectedKind] = useState<CardKind>("chart");
+  const [chartType, setChartType] = useState<ChartType>("bar");
+  const [cardTitle, setCardTitle] = useState("");
 
-  function handleAdd() {
-    const card: ChartCell = {
-      type: selectedType,
-      title: title.trim() || CARD_TYPES.find((c) => c.type === selectedType)?.label || "New Card",
-      data: generateSampleData(selectedType),
-      xKey: selectedType !== "stat" ? "label" : undefined,
-      yKey: selectedType !== "stat" && selectedType !== "pie" ? "value" : undefined,
-      metadata: { source },
-    };
-    onAdd(card);
+  const handleAdd = () => {
+    const title = cardTitle.trim() || `New ${selectedKind === "chart" ? chartType + " chart" : selectedKind}`;
+    onAdd(title, buildSampleContent(selectedKind, chartType, title));
+    setCardTitle("");
     onClose();
-  }
+  };
 
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center"
-      style={{ background: "rgba(0,0,0,0.35)" }}
-      onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
-    >
-      <div
-        className="w-[560px] max-h-[85vh] flex flex-col rounded-2xl overflow-hidden"
-        style={{ background: "#FFFFFF", boxShadow: "0 20px 60px rgba(0,0,0,0.18)" }}
-      >
-        {/* Header */}
-        <div
-          className="flex items-center justify-between px-6 py-4 border-b"
-          style={{ borderColor: "#E5E7EB" }}
-        >
-          <span className="text-sm font-semibold" style={{ color: "#111827" }}>
-            Add Card
-          </span>
-          <button onClick={onClose} className="p-1 rounded hover:bg-gray-100" style={{ color: "#6B7280" }}>
-            <X className="h-4 w-4" />
-          </button>
-        </div>
+    <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
+      <DialogContent className="max-w-md" style={{ background: "#FFFFFF", border: "1px solid #E5E7EB" }}>
+        <DialogHeader>
+          <DialogTitle className="text-sm font-semibold" style={{ color: "#111827" }}>Add Card</DialogTitle>
+        </DialogHeader>
 
-        <div className="flex-1 overflow-y-auto p-6 space-y-6">
+        <div className="space-y-4 py-2">
           {/* Card type picker */}
           <div>
-            <label className="block text-xs font-medium mb-2" style={{ color: "#374151" }}>
-              Card type
-            </label>
-            <div className="grid grid-cols-3 gap-2">
-              {CARD_TYPES.map((opt) => {
-                const active = selectedType === opt.type;
-                return (
-                  <button
-                    key={opt.type}
-                    type="button"
-                    onClick={() => setSelectedType(opt.type)}
-                    className="flex flex-col items-start gap-1 p-3 rounded-lg border text-left transition-all"
-                    style={{
-                      borderColor: active ? "#4F46E5" : "#E5E7EB",
-                      background: active ? "#EEF2FF" : "#FFFFFF",
-                      boxShadow: active ? "0 0 0 2px rgba(79,70,229,0.15)" : "none",
-                    }}
-                  >
-                    <opt.icon className="h-4 w-4" style={{ color: active ? "#4F46E5" : "#6B7280" }} />
-                    <span className="text-xs font-medium" style={{ color: active ? "#4F46E5" : "#111827" }}>
-                      {opt.label}
-                    </span>
-                    <span className="text-[10px] leading-tight" style={{ color: "#9CA3AF" }}>
-                      {opt.desc}
-                    </span>
-                  </button>
-                );
-              })}
+            <label className="text-xs font-medium block mb-2" style={{ color: "#374151" }}>Card Type</label>
+            <div className="grid grid-cols-2 gap-2">
+              {CARD_TYPES.map((ct) => (
+                <button
+                  key={ct.kind}
+                  onClick={() => setSelectedKind(ct.kind)}
+                  className="flex items-start gap-2.5 p-3 rounded-lg text-left transition-all"
+                  style={{
+                    background: selectedKind === ct.kind ? "#EEF2FF" : "#F9FAFB",
+                    border: selectedKind === ct.kind ? "1.5px solid #4F46E5" : "1.5px solid #E5E7EB",
+                  }}
+                >
+                  <ct.icon className="h-4 w-4 mt-0.5 shrink-0" style={{ color: selectedKind === ct.kind ? "#4F46E5" : "#6B7280" }} />
+                  <div>
+                    <div className="text-xs font-medium" style={{ color: selectedKind === ct.kind ? "#4F46E5" : "#111827" }}>{ct.label}</div>
+                    <div className="text-[10px] mt-0.5" style={{ color: "#6B7280" }}>{ct.description}</div>
+                  </div>
+                </button>
+              ))}
             </div>
           </div>
 
-          {/* Title input */}
+          {/* Chart sub-type */}
+          {selectedKind === "chart" && (
+            <div>
+              <label className="text-xs font-medium block mb-2" style={{ color: "#374151" }}>Chart Type</label>
+              <div className="flex gap-2">
+                {(["bar", "line", "pie"] as ChartType[]).map((ct) => {
+                  const Icon = CHART_ICONS[ct];
+                  return (
+                    <button
+                      key={ct}
+                      onClick={() => setChartType(ct)}
+                      className="flex items-center gap-1.5 px-3 py-1.5 rounded text-xs font-medium capitalize transition-all"
+                      style={{
+                        background: chartType === ct ? "#4F46E5" : "#F3F4F6",
+                        color: chartType === ct ? "#FFFFFF" : "#374151",
+                        border: "1px solid transparent",
+                      }}
+                    >
+                      <Icon className="h-3.5 w-3.5" />
+                      {ct}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
+          {/* Title */}
           <div>
-            <label className="block text-xs font-medium mb-1.5" style={{ color: "#374151" }}>
-              Title
-            </label>
+            <label className="text-xs font-medium block mb-1.5" style={{ color: "#374151" }}>Card Title</label>
             <input
               type="text"
-              placeholder={CARD_TYPES.find((c) => c.type === selectedType)?.label}
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              className="w-full border rounded-lg px-3 py-2 text-sm outline-none focus:ring-2"
-              style={{
-                borderColor: "#E5E7EB",
-                color: "#111827",
-              }}
+              value={cardTitle}
+              onChange={(e) => setCardTitle(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && handleAdd()}
+              placeholder={selectedKind === "chart" ? `${chartType} chart` : selectedKind}
+              className="w-full px-3 py-2 rounded-md text-sm outline-none"
+              style={{ background: "#F9FAFB", border: "1px solid #E5E7EB", color: "#111827" }}
             />
           </div>
 
-          {/* Data source selector */}
-          <div>
-            <label className="block text-xs font-medium mb-1.5" style={{ color: "#374151" }}>
-              Data source
-            </label>
-            <select
-              value={source}
-              onChange={(e) => setSource(e.target.value)}
-              className="w-full border rounded-lg px-3 py-2 text-sm outline-none"
-              style={{ borderColor: "#E5E7EB", color: "#111827", background: "#FFFFFF" }}
+          {/* Actions */}
+          <div className="flex justify-end gap-2 pt-1">
+            <button
+              onClick={onClose}
+              className="px-3 py-1.5 rounded text-xs font-medium"
+              style={{ background: "#F3F4F6", color: "#374151" }}
             >
-              {DATA_SOURCES.map((s) => (
-                <option key={s} value={s}>{s}</option>
-              ))}
-            </select>
-          </div>
-
-          {/* Preview */}
-          <div>
-            <label className="block text-xs font-medium mb-1.5" style={{ color: "#374151" }}>
-              Preview
-            </label>
-            <div
-              className="rounded-lg p-4 flex items-center justify-center"
-              style={{ background: "#F3F4F6", minHeight: 80 }}
+              Cancel
+            </button>
+            <button
+              onClick={handleAdd}
+              className="px-4 py-1.5 rounded text-xs font-medium"
+              style={{ background: "#4F46E5", color: "#FFFFFF" }}
             >
-              {(() => {
-                const opt = CARD_TYPES.find((c) => c.type === selectedType);
-                if (!opt) return null;
-                return (
-                  <div className="flex flex-col items-center gap-2">
-                    <opt.icon className="h-8 w-8" style={{ color: "#4F46E5" }} />
-                    <span className="text-xs" style={{ color: "#6B7280" }}>
-                      {title.trim() || opt.label} · {source}
-                    </span>
-                  </div>
-                );
-              })()}
-            </div>
+              Add Card
+            </button>
           </div>
         </div>
-
-        {/* Footer */}
-        <div
-          className="flex items-center justify-end gap-2 px-6 py-4 border-t"
-          style={{ borderColor: "#E5E7EB" }}
-        >
-          <button
-            onClick={onClose}
-            className="px-4 py-2 text-xs font-medium rounded-lg border transition-colors hover:bg-gray-50"
-            style={{ borderColor: "#E5E7EB", color: "#374151" }}
-          >
-            Cancel
-          </button>
-          <button
-            onClick={handleAdd}
-            className="px-4 py-2 text-xs font-medium rounded-lg transition-colors"
-            style={{ background: "#4F46E5", color: "#FFFFFF" }}
-          >
-            Add card
-          </button>
-        </div>
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   );
-}
-
-function generateSampleData(type: ChartCell["type"]): Array<Record<string, any>> {
-  if (type === "stat") {
-    return [{ value: "2,847", label: "Total", change: "+12%" }];
-  }
-  if (type === "pie") {
-    return [
-      { label: "Direct", value: 40 },
-      { label: "Organic", value: 30 },
-      { label: "Referral", value: 20 },
-      { label: "Other", value: 10 },
-    ];
-  }
-  return [
-    { label: "Jan", value: 42 },
-    { label: "Feb", value: 58 },
-    { label: "Mar", value: 35 },
-    { label: "Apr", value: 71 },
-    { label: "May", value: 63 },
-    { label: "Jun", value: 88 },
-  ];
 }
