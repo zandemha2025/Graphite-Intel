@@ -1,6 +1,6 @@
 import { db, documents } from "@workspace/db";
 import { eq, sql } from "drizzle-orm";
-import OpenAI from "openai";
+import { createEmbedding } from "../../lib/ai-client";
 
 export interface DataPullStepConfig {
   stepType: "data_pull";
@@ -35,13 +35,8 @@ export async function executeDataPullStep(
       const query = config.query ?? (context.query as string | undefined);
       if (!query) throw new Error("data_pull vault source requires a 'query' field");
 
-      const openai = new OpenAI();
-      const embResp = await openai.embeddings.create({
-        model: "text-embedding-3-small",
-        input: query,
-      });
-      const embedding = embResp.data[0]!.embedding;
-      const embeddingStr = `[${embedding.join(",")}]`;
+      const [embedding] = await createEmbedding(query);
+      const embeddingStr = `[${embedding!.join(",")}]`;
       const limit = config.limit ?? 10;
 
       const results = await db.execute(sql`

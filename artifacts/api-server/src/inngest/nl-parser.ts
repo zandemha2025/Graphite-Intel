@@ -1,7 +1,5 @@
-import OpenAI from "openai";
+import { structuredOutput } from "../lib/ai-client";
 import type { ParsedWorkflowDefinition } from "./workflow-types";
-
-const openai = new OpenAI();
 
 const SYSTEM_PROMPT = `You are a workflow definition builder for GRPHINTEL, a business intelligence platform.
 Convert the user's natural language workflow description into a structured JSON definition.
@@ -54,30 +52,21 @@ Output schema:
 export async function parseNaturalLanguageWorkflow(
   userDescription: string,
 ): Promise<ParsedWorkflowDefinition> {
-  const response = await openai.chat.completions.create({
-    model: "gpt-4o",
-    messages: [
-      { role: "system", content: SYSTEM_PROMPT },
-      { role: "user", content: userDescription },
-    ],
-    response_format: { type: "json_object" },
-    temperature: 0.2,
-    max_tokens: 2048,
-  });
-
-  const content = response.choices[0]?.message?.content;
-  if (!content) {
-    throw new Error("NL parser returned an empty response");
-  }
-
   let parsed: ParsedWorkflowDefinition;
   try {
-    parsed = JSON.parse(content) as ParsedWorkflowDefinition;
+    parsed = await structuredOutput<ParsedWorkflowDefinition>(
+      "structured_data",
+      [
+        { role: "system", content: SYSTEM_PROMPT },
+        { role: "user", content: userDescription },
+      ],
+      { temperature: 0.2, max_tokens: 2048 },
+    );
   } catch (err) {
     throw new Error(`Failed to parse workflow JSON from NL parser: ${(err as Error).message}`);
   }
 
-  if (!parsed.name || typeof parsed.name !== "string") {
+  if (!parsed?.name || typeof parsed.name !== "string") {
     throw new Error("Invalid workflow structure: missing name");
   }
   if (!parsed.steps || !Array.isArray(parsed.steps) || parsed.steps.length === 0) {

@@ -5,10 +5,9 @@ import {
   executeSearch,
   type SearchOptions,
 } from "../lib/search";
-import OpenAI from "openai";
+import { createEmbedding } from "../lib/ai-client";
 
 const router: IRouter = Router();
-const openai = new OpenAI();
 
 function requireAuth(req: Request, res: Response): boolean {
   if (!req.isAuthenticated()) {
@@ -80,11 +79,8 @@ router.post("/vault/query", async (req: Request, res: Response) => {
     // Generate embedding if needed for semantic/hybrid modes
     let queryEmbedding: number[] | undefined;
     if (searchMode !== "fulltext") {
-      const embeddingResponse = await openai.embeddings.create({
-        model: "text-embedding-3-small",
-        input: query,
-      });
-      queryEmbedding = embeddingResponse.data[0].embedding;
+      const [embedding] = await createEmbedding(query);
+      queryEmbedding = embedding;
     }
 
     const results = await executeSearch(searchOptions, queryEmbedding);

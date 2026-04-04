@@ -1,6 +1,5 @@
 import OpenAI from "openai";
-
-const openai = new OpenAI();
+import { getClient } from "../../lib/ai-client";
 
 export interface PromptStepConfig {
   systemPrompt?: string;
@@ -41,8 +40,8 @@ export async function executePromptStep(
 
   messages.push({ role: "user", content: userPrompt });
 
-  const response = await openai.chat.completions.create({
-    model: config.model || "gpt-4o",
+  const response = await getClient().chat.completions.create({
+    model: config.model || "openai/gpt-4o",
     messages,
     temperature: config.temperature ?? 0.7,
     max_tokens: config.maxTokens ?? 4096,

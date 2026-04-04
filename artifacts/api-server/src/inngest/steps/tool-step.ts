@@ -38,14 +38,9 @@ const toolRegistry: Record<
     if (!query) throw new Error("vault_search requires a 'query' param");
 
     // Generate embedding for the query
-    const OpenAI = (await import("openai")).default;
-    const openai = new OpenAI();
-    const embeddingResponse = await openai.embeddings.create({
-      model: "text-embedding-3-small",
-      input: query,
-    });
-    const embedding = embeddingResponse.data[0].embedding;
-    const embeddingStr = `[${embedding.join(",")}]`;
+    const { createEmbedding } = await import("../../lib/ai-client");
+    const [embedding] = await createEmbedding(query);
+    const embeddingStr = `[${embedding!.join(",")}]`;
 
     // Build query conditions
     let docIds: number[] | undefined;
