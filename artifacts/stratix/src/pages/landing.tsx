@@ -65,13 +65,13 @@ export function Landing() {
               Dashboard
             </Link>
           ) : (
-            <a
-              href="/api/login"
+            <Link
+              href="/login"
               className="text-sm font-medium bg-[#E8E4DC] text-[#0D0C0B] px-5 py-2 hover:bg-[#D4CEC5] transition-colors tracking-wide uppercase"
               data-testid="button-signin-nav"
             >
               Sign In
-            </a>
+            </Link>
           )}
         </nav>
       </header>
@@ -113,13 +113,13 @@ export function Landing() {
               Enter Dashboard
             </Link>
           ) : (
-            <a
-              href="/api/login"
+            <Link
+              href="/login"
               className="inline-flex items-center gap-3 bg-[#E8E4DC] text-[#0D0C0B] px-8 py-3.5 font-medium hover:bg-[#D4CEC5] transition-colors text-sm uppercase tracking-widest"
               data-testid="button-signin-hero"
             >
               Access the Platform
-            </a>
+            </Link>
           )}
         </div>
 

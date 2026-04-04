@@ -39,6 +39,7 @@ import { AdsDashboard } from "@/pages/ads-dashboard";
 import { AdsCampaignDetail } from "@/pages/ads-campaign-detail";
 import { AdsCampaignNew } from "@/pages/ads-campaign-new";
 import { AdsReports } from "@/pages/ads-reports";
+import { Login } from "@/pages/login";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -198,6 +199,7 @@ function Router() {
   return (
     <Switch>
       <Route path="/" component={HomeRedirect} />
+      <Route path="/login" component={Login} />
       <Route path="/org-setup" component={OrgSetupRoute} />
       <Route path="/onboarding" component={OnboardingRoute} />
       <Route path="/dashboard" component={() => <ProtectedRoute component={Dashboard} />} />
