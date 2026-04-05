@@ -27,28 +27,34 @@ interface SummaryData {
   totalWorkflows: number;
   totalDocuments: number;
   totalConversations: number;
-  totalTokens: number;
-  totalCost: number;
+  totalUsers: number;
+  costThisMonth: number;
 }
 
 interface UsageByUser {
   userId: string;
-  totalActions: number;
-  totalTokens: number;
-  totalCost: number;
+  userName: string;
+  reportsCount: number;
+  conversationsCount: number;
+  workflowsCount: number;
+  documentsCount: number;
 }
 
 interface UsageByFeature {
   feature: string;
-  totalActions: number;
-  totalTokens: number;
-  totalCost: number;
+  data: Array<{ timestamp: string; count: number }>;
 }
 
-interface CostTracking {
-  date: string;
+interface CostTrackingResponse {
   totalTokens: number;
   totalCost: number;
+  costByFeature: Array<{ feature: string; cost: number; tokens: number }>;
+  costTrend: Array<{ date: string; cost: number }>;
+}
+
+interface CostTrendPoint {
+  date: string;
+  cost: number;
 }
 
 interface SummaryCard {
@@ -59,18 +65,21 @@ interface SummaryCard {
 }
 
 // Utility functions
-const formatCurrency = (val: number) => {
-  return `$${val.toFixed(2)}`;
+const formatCurrency = (val: number | null | undefined) => {
+  const num = val ?? 0;
+  return `$${(num as number).toFixed(2)}`;
 };
 
-const formatNumber = (val: number) => {
-  if (val >= 1000000) return `${(val / 1000000).toFixed(1)}M`;
-  if (val >= 1000) return `${(val / 1000).toFixed(1)}K`;
-  return val.toString();
+const formatNumber = (val: number | null | undefined) => {
+  const num = val ?? 0;
+  if (num >= 1000000) return `${(num / 1000000).toFixed(1)}M`;
+  if (num >= 1000) return `${(num / 1000).toFixed(1)}K`;
+  return num.toString();
 };
 
-const formatTokens = (val: number) => {
-  return `${(val / 1000).toFixed(1)}K`;
+const formatTokens = (val: number | null | undefined) => {
+  const num = val ?? 0;
+  return `${(num / 1000).toFixed(1)}K`;
 };
 
 // Summary Card Component
@@ -191,7 +200,9 @@ export function Analytics() {
   const [summary, setSummary] = useState<SummaryData | null>(null);
   const [usageByUser, setUsageByUser] = useState<UsageByUser[]>([]);
   const [usageByFeature, setUsageByFeature] = useState<UsageByFeature[]>([]);
-  const [costTracking, setCostTracking] = useState<CostTracking[]>([]);
+  const [costTrend, setCostTrend] = useState<CostTrendPoint[]>([]);
+  const [totalTokens, setTotalTokens] = useState<number>(0);
+  const [totalCost, setTotalCost] = useState<number>(0);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -212,15 +223,33 @@ export function Analytics() {
           throw new Error("Failed to fetch analytics data");
         }
 
-        const summaryData: SummaryData = await summaryRes.json();
+        const summaryData: SummaryData | null = await summaryRes.json();
         const userData: UsageByUser[] = await userRes.json();
         const featureData: UsageByFeature[] = await featureRes.json();
-        const costData: CostTracking[] = await costRes.json();
+        const costData: CostTrackingResponse = await costRes.json();
 
         setSummary(summaryData);
-        setUsageByUser(userData.sort((a, b) => b.totalActions - a.totalActions));
-        setUsageByFeature(featureData);
-        setCostTracking(costData);
+        setUsageByUser(
+          Array.isArray(userData)
+            ? userData.sort((a, b) => {
+                const aTotal =
+                  (a.reportsCount ?? 0) +
+                  (a.conversationsCount ?? 0) +
+                  (a.workflowsCount ?? 0) +
+                  (a.documentsCount ?? 0);
+                const bTotal =
+                  (b.reportsCount ?? 0) +
+                  (b.conversationsCount ?? 0) +
+                  (b.workflowsCount ?? 0) +
+                  (b.documentsCount ?? 0);
+                return bTotal - aTotal;
+              })
+            : [],
+        );
+        setUsageByFeature(Array.isArray(featureData) ? featureData : []);
+        setCostTrend(Array.isArray(costData?.costTrend) ? costData.costTrend : []);
+        setTotalTokens(costData?.totalTokens ?? 0);
+        setTotalCost(costData?.totalCost ?? 0);
       } catch (err) {
         setError(
           err instanceof Error ? err.message : "Failed to load analytics"
@@ -279,39 +308,39 @@ export function Analytics() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           <SummaryCard
             label="Total Reports"
-            value={summary.totalReports}
+            value={summary?.totalReports ?? 0}
             icon={FileText}
           />
           <SummaryCard
             label="Total Workflows"
-            value={summary.totalWorkflows}
+            value={summary?.totalWorkflows ?? 0}
             icon={Zap}
           />
           <SummaryCard
             label="Total Documents"
-            value={summary.totalDocuments}
+            value={summary?.totalDocuments ?? 0}
             icon={BarChart3}
           />
           <SummaryCard
             label="Total Conversations"
-            value={summary.totalConversations}
+            value={summary?.totalConversations ?? 0}
             icon={MessageSquareText}
           />
           <SummaryCard
             label="Total Tokens Used"
-            value={formatTokens(summary.totalTokens)}
+            value={formatTokens(totalTokens)}
             icon={TrendingUp}
           />
           <SummaryCard
             label="Total Cost"
-            value={formatCurrency(summary.totalCost)}
+            value={formatCurrency(totalCost)}
             icon={DollarSign}
           />
         </div>
       )}
 
       {/* Cost Over Time Chart */}
-      {costTracking.length > 0 && (
+      {costTrend && costTrend.length > 0 && (
         <div
           className="px-5 py-4"
           style={{ border: "1px solid var(--workspace-border)", background: "#FFFFFF" }}
@@ -321,11 +350,11 @@ export function Analytics() {
               Cost Over Time
             </p>
             <h3 className="text-sm font-medium mt-1" style={{ color: "var(--workspace-fg)" }}>
-              Daily token usage and costs
+              Daily costs over the last 30 days
             </h3>
           </div>
           <ResponsiveContainer width="100%" height={300}>
-            <LineChart data={costTracking}>
+            <LineChart data={costTrend}>
               <CartesianGrid
                 strokeDasharray="3 3"
                 stroke="#E5E3DF"
@@ -337,13 +366,6 @@ export function Analytics() {
                 style={{ fontSize: "12px" }}
               />
               <YAxis
-                yAxisId="left"
-                stroke="#6B6763"
-                style={{ fontSize: "12px" }}
-              />
-              <YAxis
-                yAxisId="right"
-                orientation="right"
                 stroke="#6B6763"
                 style={{ fontSize: "12px" }}
               />
@@ -353,18 +375,8 @@ export function Analytics() {
                 iconType="line"
               />
               <Line
-                yAxisId="left"
                 type="monotone"
-                dataKey="totalTokens"
-                stroke="#1A1917"
-                name="Tokens"
-                dot={false}
-                strokeWidth={2}
-              />
-              <Line
-                yAxisId="right"
-                type="monotone"
-                dataKey="totalCost"
+                dataKey="cost"
                 stroke="#6B6763"
                 name="Cost ($)"
                 dot={false}
@@ -376,7 +388,7 @@ export function Analytics() {
       )}
 
       {/* Usage by Feature Chart */}
-      {usageByFeature.length > 0 && (
+      {usageByFeature && usageByFeature.length > 0 && (
         <div
           className="px-5 py-4"
           style={{ border: "1px solid var(--workspace-border)", background: "#FFFFFF" }}
@@ -386,11 +398,14 @@ export function Analytics() {
               Usage by Feature
             </p>
             <h3 className="text-sm font-medium mt-1" style={{ color: "var(--workspace-fg)" }}>
-              Actions and costs per feature
+              Events per feature over time
             </h3>
           </div>
           <ResponsiveContainer width="100%" height={300}>
-            <BarChart data={usageByFeature}>
+            <BarChart data={usageByFeature.map((f) => ({
+              feature: f?.feature ?? "unknown",
+              count: (f?.data ?? []).length,
+            }))}>
               <CartesianGrid
                 strokeDasharray="3 3"
                 stroke="#E5E3DF"
@@ -402,13 +417,6 @@ export function Analytics() {
                 style={{ fontSize: "12px" }}
               />
               <YAxis
-                yAxisId="left"
-                stroke="#6B6763"
-                style={{ fontSize: "12px" }}
-              />
-              <YAxis
-                yAxisId="right"
-                orientation="right"
                 stroke="#6B6763"
                 style={{ fontSize: "12px" }}
               />
@@ -417,17 +425,9 @@ export function Analytics() {
                 wrapperStyle={{ fontSize: "12px" }}
               />
               <Bar
-                yAxisId="left"
-                dataKey="totalActions"
+                dataKey="count"
                 fill="#1A1917"
-                name="Actions"
-                radius={[2, 2, 0, 0]}
-              />
-              <Bar
-                yAxisId="right"
-                dataKey="totalCost"
-                fill="#E5E3DF"
-                name="Cost ($)"
+                name="Event Count"
                 radius={[2, 2, 0, 0]}
               />
             </BarChart>
@@ -436,7 +436,7 @@ export function Analytics() {
       )}
 
       {/* Usage by User Table */}
-      {usageByUser.length > 0 && (
+      {usageByUser && usageByUser.length > 0 && (
         <div
           style={{ border: "1px solid var(--workspace-border)", background: "#FFFFFF" }}
         >
@@ -445,29 +445,30 @@ export function Analytics() {
               Usage by User
             </p>
             <h3 className="text-sm font-medium mt-1" style={{ color: "var(--workspace-fg)" }}>
-              Top users by actions and costs
+              Top users by activity
             </h3>
           </div>
           <div>
             {/* Table Header */}
             <div
-              className="grid grid-cols-4 gap-4 px-5 py-3 text-[10px] uppercase tracking-[0.1em]"
+              className="grid grid-cols-5 gap-4 px-5 py-3 text-[10px] uppercase tracking-[0.1em]"
               style={{
                 color: "var(--workspace-muted)",
                 borderBottom: "1px solid var(--workspace-border)",
               }}
             >
-              <div>User ID</div>
-              <div className="text-right">Actions</div>
-              <div className="text-right">Tokens</div>
-              <div className="text-right">Cost</div>
+              <div>User</div>
+              <div className="text-right">Reports</div>
+              <div className="text-right">Conversations</div>
+              <div className="text-right">Workflows</div>
+              <div className="text-right">Documents</div>
             </div>
 
             {/* Table Rows */}
             {usageByUser.map((user, i) => (
               <div
-                key={user.userId}
-                className="grid grid-cols-4 gap-4 px-5 py-3 transition-colors"
+                key={user?.userId ?? `user-${i}`}
+                className="grid grid-cols-5 gap-4 px-5 py-3 transition-colors"
                 style={{
                   borderTop: i > 0 ? "1px solid var(--workspace-border)" : undefined,
                   background: "#FFFFFF",
@@ -480,25 +481,31 @@ export function Analytics() {
                 }
               >
                 <div className="text-xs" style={{ color: "var(--workspace-fg)" }}>
-                  {user.userId}
+                  {user?.userName || user?.userId || "Unknown"}
                 </div>
                 <div
                   className="text-xs text-right"
                   style={{ color: "var(--workspace-fg)" }}
                 >
-                  {formatNumber(user.totalActions)}
+                  {formatNumber(user?.reportsCount)}
                 </div>
                 <div
                   className="text-xs text-right"
-                  style={{ color: "var(--workspace-muted)" }}
+                  style={{ color: "var(--workspace-fg)" }}
                 >
-                  {formatTokens(user.totalTokens)}
+                  {formatNumber(user?.conversationsCount)}
+                </div>
+                <div
+                  className="text-xs text-right"
+                  style={{ color: "var(--workspace-fg)" }}
+                >
+                  {formatNumber(user?.workflowsCount)}
                 </div>
                 <div
                   className="text-xs text-right font-medium"
                   style={{ color: "var(--workspace-fg)" }}
                 >
-                  {formatCurrency(user.totalCost)}
+                  {formatNumber(user?.documentsCount)}
                 </div>
               </div>
             ))}

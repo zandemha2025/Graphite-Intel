@@ -89,6 +89,7 @@ export function WorkflowBuilderEdit() {
   const [location, navigate] = useLocation();
   const workflowId = location.split("/").pop();
   const [executionId, setExecutionId] = useState<string | null>(null);
+  const isNew = workflowId === "new";
 
   const [workflow, setWorkflow] = useState<WorkflowDefinition | null>(null);
   const [execution, setExecution] = useState<WorkflowExecution | null>(null);
@@ -110,23 +111,38 @@ export function WorkflowBuilderEdit() {
     const fetchData = async () => {
       setLoading(true);
       try {
-        // Fetch workflow definition
-        const workflowResponse = await fetch(`/api/workflow-definitions/${workflowId}`, {
-          credentials: "include",
-        });
-        if (workflowResponse.ok) {
-          const workflowData = await workflowResponse.json();
-          setWorkflow(workflowData);
-        }
-
-        // Fetch execution if provided
-        if (executionId) {
-          const executionResponse = await fetch(`/api/workflow-executions/${executionId}`, {
+        // If creating a new workflow, initialize with blank template
+        if (isNew) {
+          const blankWorkflow: WorkflowDefinition = {
+            id: "new",
+            name: "Untitled Workflow",
+            description: "",
+            steps: [],
+            status: "draft",
+            version: 1,
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+          };
+          setWorkflow(blankWorkflow);
+        } else {
+          // Fetch workflow definition
+          const workflowResponse = await fetch(`/api/workflow-definitions/${workflowId}`, {
             credentials: "include",
           });
-          if (executionResponse.ok) {
-            const executionData = await executionResponse.json();
-            setExecution(executionData);
+          if (workflowResponse.ok) {
+            const workflowData = await workflowResponse.json();
+            setWorkflow(workflowData);
+          }
+
+          // Fetch execution if provided
+          if (executionId) {
+            const executionResponse = await fetch(`/api/workflow-executions/${executionId}`, {
+              credentials: "include",
+            });
+            if (executionResponse.ok) {
+              const executionData = await executionResponse.json();
+              setExecution(executionData);
+            }
           }
         }
       } catch (error) {
@@ -137,29 +153,53 @@ export function WorkflowBuilderEdit() {
     };
 
     fetchData();
-  }, [workflowId, executionId]);
+  }, [workflowId, executionId, isNew]);
 
   const handleSave = async () => {
     if (!workflow) return;
 
     setSaving(true);
     try {
-      const response = await fetch(`/api/workflow-definitions/${workflowId}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify({
-          name: workflow.name,
-          description: workflow.description,
-          steps: workflow.steps,
-        }),
-      });
+      if (isNew) {
+        // Create new workflow
+        const response = await fetch("/api/workflow-definitions", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          credentials: "include",
+          body: JSON.stringify({
+            name: workflow.name,
+            description: workflow.description,
+            steps: workflow.steps,
+          }),
+        });
 
-      if (response.ok) {
-        const updated = await response.json();
-        setWorkflow(updated);
+        if (response.ok) {
+          const created = await response.json();
+          setWorkflow(created);
+          // Navigate to the newly created workflow
+          navigate(`/workflow-builder/${created.id}`);
+        } else {
+          alert("Failed to create workflow");
+        }
       } else {
-        alert("Failed to save workflow");
+        // Update existing workflow
+        const response = await fetch(`/api/workflow-definitions/${workflowId}`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          credentials: "include",
+          body: JSON.stringify({
+            name: workflow.name,
+            description: workflow.description,
+            steps: workflow.steps,
+          }),
+        });
+
+        if (response.ok) {
+          const updated = await response.json();
+          setWorkflow(updated);
+        } else {
+          alert("Failed to save workflow");
+        }
       }
     } catch (error) {
       alert("Error saving workflow");
@@ -170,6 +210,12 @@ export function WorkflowBuilderEdit() {
 
   const handlePublish = async () => {
     if (!workflow) return;
+
+    // Cannot publish a new unsaved workflow
+    if (isNew) {
+      alert("Please save the workflow first before publishing");
+      return;
+    }
 
     try {
       const response = await fetch(`/api/workflow-definitions/${workflowId}/publish`, {
@@ -192,6 +238,12 @@ export function WorkflowBuilderEdit() {
 
   const handleExecute = async () => {
     if (!workflow) return;
+
+    // Cannot execute a new unsaved workflow
+    if (isNew) {
+      alert("Please save the workflow first before executing");
+      return;
+    }
 
     try {
       const response = await fetch("/api/workflow-executions", {

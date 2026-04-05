@@ -64,6 +64,18 @@ router.post("/research/company", async (req: Request, res: Response) => {
     res.write(`event: ${event}\ndata: ${JSON.stringify(data)}\n\n`);
   };
 
+  // Initialize OpenAI client early to catch failures before processing
+  let openaiClient;
+  try {
+    openaiClient = getOpenAIClient();
+  } catch (err) {
+    req.log.error({ err }, "Failed to initialize OpenAI client");
+    sendEvent("error", { error: "Research pipeline failed. Please try again." });
+    await new Promise((r) => setTimeout(r, 100));
+    res.end();
+    return;
+  }
+
   try {
     sendEvent("status", { message: "Reading your website..." });
 
@@ -95,7 +107,7 @@ ${websiteContent}
 
 Extract the company intelligence profile as JSON.`;
 
-    const completion = await getOpenAIClient().chat.completions.create({
+    const completion = await openaiClient.chat.completions.create({
       model: "gpt-4o",
       messages: [
         { role: "system", content: RESEARCH_PROMPT },
@@ -142,6 +154,8 @@ Extract the company intelligence profile as JSON.`;
   } catch (err) {
     req.log.error({ err }, "Research pipeline failed");
     sendEvent("error", { error: "Research pipeline failed. Please try again." });
+    // Small delay to ensure error event is flushed before closing
+    await new Promise((r) => setTimeout(r, 100));
   } finally {
     res.end();
   }

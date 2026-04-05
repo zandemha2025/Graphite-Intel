@@ -115,12 +115,18 @@ function ResearchingPhase({ url, onComplete, onError }: {
 }) {
   const [statusLines, setStatusLines] = useState<StatusLine[]>([]);
   const startedRef = useRef(false);
+  const receivedCompleteRef = useRef(false);
 
   useEffect(() => {
     if (startedRef.current) return;
     startedRef.current = true;
 
     const BASE_URL = import.meta.env.BASE_URL.replace(/\/$/, "");
+    const timeoutId = setTimeout(() => {
+      if (!receivedCompleteRef.current) {
+        onError("Research took too long. Please try again.");
+      }
+    }, 60000);
 
     const run = async () => {
       try {
@@ -140,47 +146,65 @@ function ResearchingPhase({ url, onComplete, onError }: {
         const decoder = new TextDecoder();
         let buffer = "";
 
-        while (true) {
-          const { done, value } = await reader.read();
-          if (done) break;
-
-          buffer += decoder.decode(value, { stream: true });
-          const parts = buffer.split("\n\n");
-          buffer = parts.pop() || "";
-
-          for (const part of parts) {
-            const lines = part.split("\n");
-            let event = "";
-            let data = "";
-
-            for (const line of lines) {
-              if (line.startsWith("event: ")) event = line.slice(7).trim();
-              if (line.startsWith("data: ")) data = line.slice(6).trim();
-            }
-
-            if (!data) continue;
-
-            try {
-              const parsed = JSON.parse(data);
-
-              if (event === "status") {
-                setStatusLines((prev) => {
-                  const exists = prev.find((s) => s.message === parsed.message);
-                  if (exists) return prev;
-                  return [...prev, { message: parsed.message, visible: true }];
-                });
-              } else if (event === "complete") {
-                onComplete(parsed as ResearchResult);
-              } else if (event === "error") {
-                onError(parsed.error || "Research failed");
+        try {
+          while (true) {
+            const { done, value } = await reader.read();
+            if (done) {
+              // Stream ended without receiving complete event
+              if (!receivedCompleteRef.current) {
+                onError("Research pipeline failed. Please try again...");
               }
-            } catch {
-              // ignore parse errors
+              break;
             }
+
+            buffer += decoder.decode(value, { stream: true });
+            const parts = buffer.split("\n\n");
+            buffer = parts.pop() || "";
+
+            for (const part of parts) {
+              const lines = part.split("\n");
+              let event = "";
+              let data = "";
+
+              for (const line of lines) {
+                if (line.startsWith("event: ")) event = line.slice(7).trim();
+                if (line.startsWith("data: ")) data = line.slice(6).trim();
+              }
+
+              if (!data) continue;
+
+              try {
+                const parsed = JSON.parse(data);
+
+                if (event === "status") {
+                  setStatusLines((prev) => {
+                    const exists = prev.find((s) => s.message === parsed.message);
+                    if (exists) return prev;
+                    return [...prev, { message: parsed.message, visible: true }];
+                  });
+                } else if (event === "complete") {
+                  receivedCompleteRef.current = true;
+                  clearTimeout(timeoutId);
+                  onComplete(parsed as ResearchResult);
+                } else if (event === "error") {
+                  receivedCompleteRef.current = true;
+                  clearTimeout(timeoutId);
+                  onError(parsed.error || "Research failed");
+                }
+              } catch {
+                // ignore parse errors
+              }
+            }
+          }
+        } catch (streamErr) {
+          if (!receivedCompleteRef.current) {
+            onError("Stream interrupted. Please try again.");
           }
         }
       } catch {
         onError("Connection error. Please try again.");
+      } finally {
+        clearTimeout(timeoutId);
       }
     };
 

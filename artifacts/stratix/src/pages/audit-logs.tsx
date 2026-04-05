@@ -26,10 +26,12 @@ type AuditLog = {
 };
 
 type FetchResponse = {
-  data: AuditLog[];
-  total: number;
-  limit: number;
-  offset: number;
+  logs: AuditLog[];
+  pagination: {
+    total: number;
+    limit: number;
+    offset: number;
+  };
 };
 
 const RESOURCE_TYPES = ["report", "workflow", "document", "conversation", "team", "integration"];
@@ -65,8 +67,8 @@ function useFetchAuditLogs() {
       if (!res.ok) throw new Error("Failed to load audit logs");
 
       const data: FetchResponse = await res.json();
-      setLogs(data.data);
-      setTotal(data.total);
+      setLogs(Array.isArray(data?.logs) ? data.logs : []);
+      setTotal(data?.pagination?.total ?? 0);
       setError(null);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to load audit logs");
