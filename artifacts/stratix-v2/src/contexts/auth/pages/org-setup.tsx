@@ -4,7 +4,6 @@ import { useQueryClient } from "@tanstack/react-query";
 import { apiPost, ApiError } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Card } from "@/components/ui/card";
 
 export default function OrgSetupPage() {
   const [, navigate] = useLocation();
@@ -54,44 +53,54 @@ export default function OrgSetupPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#F6F5F4] flex items-center justify-center px-4">
-      <div className="w-full max-w-sm">
-        {/* Logo */}
-        <div className="flex items-center justify-center gap-2 mb-8">
-          <div className="w-7 h-7 rounded-lg bg-[#0A0A0A] flex items-center justify-center text-white text-xs font-bold">
+    <div className="min-h-screen bg-[#F8F8F7] flex items-center justify-center px-4">
+      <div className="w-full max-w-[400px]">
+        {/* S Logo Icon */}
+        <div className="flex justify-center mb-8">
+          <div className="w-10 h-10 rounded-xl bg-[#0A0A0A] flex items-center justify-center text-white text-sm font-bold shadow-sm">
             S
           </div>
-          <span className="text-lg font-semibold text-[#0A0A0A]">Stratix</span>
         </div>
 
-        <p className="text-center text-xs text-[#9CA3AF] mb-4">Step 2 of 3</p>
+        {/* Step indicator */}
+        <p className="text-center text-sm text-[#9CA3AF] mb-6">Step 2 of 3</p>
 
-        <Card className="p-6">
-          <h2 className="text-lg font-semibold text-[#0A0A0A] mb-1">Create your organization</h2>
-          <p className="text-sm text-[#404040] mb-6">
+        {/* Card container - no border, subtle shadow */}
+        <div className="bg-white rounded-2xl shadow-[0_1px_3px_rgba(0,0,0,0.04),0_4px_12px_rgba(0,0,0,0.03)] p-7">
+          <h2 className="text-xl font-semibold text-[#0A0A0A] mb-1.5">
+            Create your organization
+          </h2>
+          <p className="text-sm text-[#525252] mb-7 leading-relaxed">
             This is the workspace where your team will collaborate.
           </p>
 
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form onSubmit={handleSubmit} className="space-y-5">
             <div>
-              <label className="block text-sm text-[#404040] mb-1.5">Organization name</label>
+              <label className="block text-sm font-medium text-[#0A0A0A] mb-2">
+                Organization name
+              </label>
               <Input
                 value={orgName}
                 onChange={(e) => setOrgName(e.target.value)}
-                placeholder="Acme Corp"
                 autoFocus
+                className="h-11 rounded-lg border-[#D4D4D4] focus:border-[#0A0A0A] focus:ring-[#0A0A0A]/10"
               />
             </div>
 
             {error && (
-              <p className="text-sm text-[#DC2626] bg-[#FEF2F2] rounded-lg px-3 py-2">{error}</p>
+              <p className="text-sm text-[#DC2626] bg-[#FEF2F2] rounded-lg px-3 py-2.5">{error}</p>
             )}
 
-            <Button type="submit" className="w-full" size="lg" loading={loading}>
+            <Button
+              type="submit"
+              className="w-full h-11 rounded-lg bg-[#0A0A0A] hover:bg-[#1A1A1A] text-white text-sm font-medium"
+              size="lg"
+              loading={loading}
+            >
               Create Organization
             </Button>
           </form>
-        </Card>
+        </div>
       </div>
     </div>
   );

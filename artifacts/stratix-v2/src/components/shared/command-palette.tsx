@@ -99,29 +99,29 @@ export function CommandPalette() {
   return (
     <Dialog.Root open={open} onOpenChange={setOpen}>
       <Dialog.Portal>
-        <Dialog.Overlay className="fixed inset-0 bg-black/30 z-50" />
-        <Dialog.Content className="fixed top-[20%] left-1/2 -translate-x-1/2 w-full max-w-[560px] z-50 outline-none">
-          <Command className="bg-white rounded-xl border border-[#E5E5E3] shadow-2xl overflow-hidden">
-            <div className="flex items-center gap-2 px-4 border-b border-[#E5E5E3]">
-              <Search size={16} className="text-[#9CA3AF] flex-shrink-0" />
+        <Dialog.Overlay className="fixed inset-0 bg-black/20 backdrop-blur-sm z-50" />
+        <Dialog.Content className="fixed top-[20%] left-1/2 -translate-x-1/2 w-full max-w-lg z-50 outline-none">
+          <Command className="bg-white rounded-2xl border border-[#E5E5E3]/50 shadow-2xl overflow-hidden">
+            <div className="flex items-center gap-2.5 px-4 border-b border-[#E5E5E3]/60">
+              <Search size={16} className="text-[#8A8A8A] flex-shrink-0" />
               <Command.Input
                 placeholder="Search pages, actions..."
-                className="flex-1 h-12 text-sm bg-transparent outline-none placeholder:text-[#9CA3AF]"
+                className="flex-1 h-12 text-base bg-transparent outline-none placeholder:text-[#A3A3A3]"
               />
-              <kbd className="text-[11px] text-[#9CA3AF] bg-[#F0EFED] px-1.5 py-0.5 rounded border border-[#E5E5E3]">
+              <kbd className="text-[10px] text-[#A3A3A3] bg-[#F5F5F4] px-1.5 py-0.5 rounded border border-[#E5E5E3]/60 font-medium">
                 ESC
               </kbd>
             </div>
 
-            <Command.List className="max-h-[320px] overflow-y-auto p-2">
-              <Command.Empty className="py-6 text-center text-sm text-[#9CA3AF]">
+            <Command.List className="max-h-[320px] overflow-y-auto p-1.5">
+              <Command.Empty className="py-8 text-center text-sm text-[#A3A3A3]">
                 No results found.
               </Command.Empty>
 
               {recents.length > 0 && (
                 <Command.Group
                   heading={
-                    <span className="text-[11px] font-semibold text-[#9CA3AF] uppercase tracking-wider">
+                    <span className="text-[10px] font-semibold text-[#A3A3A3] uppercase tracking-wide px-4 py-2 block">
                       Recent
                     </span>
                   }
@@ -131,9 +131,9 @@ export function CommandPalette() {
                       key={`recent-${item.path}`}
                       value={`recent ${item.label}`}
                       onSelect={() => navigate(item.path, item.label)}
-                      className="flex items-center gap-2.5 px-2.5 py-2 text-sm text-[#404040] rounded-lg cursor-pointer data-[selected=true]:bg-[#F0EFED]"
+                      className="flex items-center gap-2.5 py-2.5 px-4 text-sm text-[#404040] rounded-lg cursor-pointer data-[selected=true]:bg-[#F5F5F4]"
                     >
-                      <Clock size={16} className="text-[#9CA3AF]" />
+                      <Clock size={16} className="text-[#8A8A8A] flex-shrink-0" />
                       {item.label}
                     </Command.Item>
                   ))}
@@ -142,7 +142,7 @@ export function CommandPalette() {
 
               <Command.Group
                 heading={
-                  <span className="text-[11px] font-semibold text-[#9CA3AF] uppercase tracking-wider">
+                  <span className="text-[10px] font-semibold text-[#A3A3A3] uppercase tracking-wide px-4 py-2 block">
                     Navigation
                   </span>
                 }
@@ -154,9 +154,9 @@ export function CommandPalette() {
                       key={item.path}
                       value={item.label}
                       onSelect={() => navigate(item.path, item.label)}
-                      className="flex items-center gap-2.5 px-2.5 py-2 text-sm text-[#404040] rounded-lg cursor-pointer data-[selected=true]:bg-[#F0EFED]"
+                      className="flex items-center gap-2.5 py-2.5 px-4 text-sm text-[#404040] rounded-lg cursor-pointer data-[selected=true]:bg-[#F5F5F4]"
                     >
-                      <Icon size={16} className="text-[#9CA3AF]" />
+                      <Icon size={16} className="text-[#8A8A8A] flex-shrink-0" />
                       {item.label}
                     </Command.Item>
                   );
@@ -165,7 +165,7 @@ export function CommandPalette() {
 
               <Command.Group
                 heading={
-                  <span className="text-[11px] font-semibold text-[#9CA3AF] uppercase tracking-wider">
+                  <span className="text-[10px] font-semibold text-[#A3A3A3] uppercase tracking-wide px-4 py-2 block">
                     Actions
                   </span>
                 }
@@ -177,9 +177,9 @@ export function CommandPalette() {
                       key={`action-${item.path}`}
                       value={`action ${item.label}`}
                       onSelect={() => navigate(item.path, item.label)}
-                      className="flex items-center gap-2.5 px-2.5 py-2 text-sm text-[#404040] rounded-lg cursor-pointer data-[selected=true]:bg-[#F0EFED]"
+                      className="flex items-center gap-2.5 py-2.5 px-4 text-sm text-[#404040] rounded-lg cursor-pointer data-[selected=true]:bg-[#F5F5F4]"
                     >
-                      <Icon size={16} className="text-[#9CA3AF]" />
+                      <Icon size={16} className="text-[#8A8A8A] flex-shrink-0" />
                       {item.label}
                     </Command.Item>
                   );
@@ -187,10 +187,10 @@ export function CommandPalette() {
               </Command.Group>
             </Command.List>
 
-            <div className="flex items-center justify-between px-4 py-2 border-t border-[#E5E5E3] bg-[#FAFAF9]">
-              <span className="text-[11px] text-[#9CA3AF]">
-                Navigate with <kbd className="font-mono">↑↓</kbd> &middot; Select with{" "}
-                <kbd className="font-mono">↵</kbd>
+            <div className="flex items-center justify-between px-4 py-2.5 border-t border-[#E5E5E3]/40 bg-[#FAFAF9]/50">
+              <span className="text-[11px] text-[#A3A3A3]">
+                Navigate with <kbd className="font-mono text-[10px]">↑↓</kbd> &middot; Select with{" "}
+                <kbd className="font-mono text-[10px]">↵</kbd>
               </span>
             </div>
           </Command>

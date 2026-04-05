@@ -23,7 +23,7 @@ export function Shell({ user, children }: ShellProps) {
   }, []);
 
   return (
-    <div className="flex h-screen bg-[#FAFAF9]">
+    <div className="flex h-screen">
       {/* Desktop sidebar */}
       <div className="hidden md:flex">
         <Sidebar user={user} />
@@ -32,7 +32,7 @@ export function Shell({ user, children }: ShellProps) {
       {/* Mobile backdrop */}
       {mobileOpen && (
         <div
-          className="fixed inset-0 bg-black/30 z-40 md:hidden"
+          className="fixed inset-0 bg-black/20 backdrop-blur-[2px] z-40 md:hidden"
           onClick={handleMobileClose}
         />
       )}
@@ -49,19 +49,19 @@ export function Shell({ user, children }: ShellProps) {
       {/* Main content area */}
       <main className="flex-1 overflow-y-auto bg-[#FAFAF9]">
         {/* Mobile header with hamburger */}
-        <div className="sticky top-0 z-30 flex items-center h-[52px] px-3 border-b border-[#E5E5E3]/60 bg-[#FAFAF9] md:hidden">
+        <div className="sticky top-0 z-30 flex items-center h-[52px] px-3 border-b border-[#E5E5E3]/40 bg-[#FAFAF9] md:hidden">
           <button
             onClick={() => setMobileOpen(true)}
-            className="p-1.5 rounded-md hover:bg-[#F5F5F4] text-[#525252] transition-colors"
+            className="p-1.5 rounded-lg hover:bg-[#F5F5F4] text-[#525252] transition-colors"
             aria-label="Open navigation"
           >
             <Menu size={20} />
           </button>
           <div className="ml-2 flex items-center gap-2">
-            <div className="w-6 h-6 rounded-md bg-[#0A0A0A] flex items-center justify-center">
-              <span className="text-white text-[10px] font-bold">S</span>
+            <div className="w-7 h-7 rounded-lg bg-[#1A1A1A] flex items-center justify-center">
+              <span className="text-white text-[11px] font-bold">S</span>
             </div>
-            <span className="text-sm font-semibold text-[#0A0A0A]">Stratix</span>
+            <span className="text-[13px] font-semibold text-[#1A1A1A]">Stratix</span>
           </div>
         </div>
         {children}

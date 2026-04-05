@@ -38,7 +38,8 @@ export function SessionList({
   if (isCollapsed) return null;
 
   return (
-    <aside className="w-60 shrink-0 border-r border-[#E5E5E3]/60 bg-[#FAFAF9] flex flex-col h-full">
+    <aside className="w-64 shrink-0 border-r border-[#E5E5E3] bg-white flex flex-col h-full">
+      {/* New Session button */}
       <div className="p-3 border-b border-[#E5E5E3]/60">
         <button
           onClick={onNew}
@@ -49,6 +50,7 @@ export function SessionList({
         </button>
       </div>
 
+      {/* Session list */}
       <div className="flex-1 overflow-y-auto p-2 space-y-0.5">
         {conversations.length === 0 && (
           <p className="text-xs text-[#A3A3A3] text-center mt-8">
@@ -56,57 +58,60 @@ export function SessionList({
           </p>
         )}
 
-        {conversations.map((conv, i) => (
-          <button
-            key={conv.id}
-            onClick={() => onSelect(conv.id)}
-            className={cn(
-              "relative w-full text-left px-3 py-2.5 rounded-xl text-sm transition-all group",
-              activeId === conv.id
-                ? "bg-white shadow-sm border-l-2 border-l-[#1A1A1A] border border-[#E5E5E3]/50"
-                : "text-[#525252] hover:bg-[#F5F5F4] border border-transparent border-l-2 border-l-transparent"
-            )}
-          >
-            <div className="flex items-start gap-2.5">
-              <span
-                className={cn(
-                  "w-2 h-2 rounded-full mt-1 shrink-0",
-                  DOT_COLORS[i % DOT_COLORS.length]
-                )}
-              />
-              <div className="min-w-0 flex-1">
+        {conversations.map((conv, i) => {
+          const isActive = activeId === conv.id;
+          return (
+            <button
+              key={conv.id}
+              onClick={() => onSelect(conv.id)}
+              className={cn(
+                "relative w-full text-left px-3 py-2.5 rounded-lg text-sm transition-all group",
+                isActive
+                  ? "bg-[#F0EFED] font-medium border-l-2 border-l-[#1A1A1A]"
+                  : "text-[#525252] hover:bg-[#F5F5F4] border-l-2 border-l-transparent"
+              )}
+            >
+              <div className="flex items-start gap-2.5">
                 <span
                   className={cn(
-                    "block truncate font-medium text-xs",
-                    activeId === conv.id
-                      ? "text-[#1A1A1A]"
-                      : "text-[#525252]"
+                    "w-2 h-2 rounded-full mt-1.5 shrink-0",
+                    DOT_COLORS[i % DOT_COLORS.length]
                   )}
-                >
-                  {conv.title}
-                </span>
-                <span className="block text-[11px] text-[#A3A3A3] mt-0.5">
-                  {conv.updatedAt &&
-                  !isNaN(new Date(conv.updatedAt).getTime())
-                    ? formatDistanceToNow(new Date(conv.updatedAt), {
-                        addSuffix: true,
-                      })
-                    : "just now"}
-                </span>
+                />
+                <div className="min-w-0 flex-1">
+                  <span
+                    className={cn(
+                      "block truncate text-xs",
+                      isActive
+                        ? "text-[#1A1A1A] font-medium"
+                        : "text-[#525252]"
+                    )}
+                  >
+                    {conv.title}
+                  </span>
+                  <span className="block text-[11px] text-[#A3A3A3] mt-0.5">
+                    {conv.updatedAt &&
+                    !isNaN(new Date(conv.updatedAt).getTime())
+                      ? formatDistanceToNow(new Date(conv.updatedAt), {
+                          addSuffix: true,
+                        })
+                      : "just now"}
+                  </span>
+                </div>
               </div>
-            </div>
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                onDelete(conv.id);
-              }}
-              className="absolute right-2 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 p-1 rounded-lg hover:bg-[#F5F5F4] text-[#A3A3A3] hover:text-red-500 transition-all"
-              aria-label="Delete conversation"
-            >
-              <Trash2 className="h-3.5 w-3.5" />
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onDelete(conv.id);
+                }}
+                className="absolute right-2 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 p-1 rounded-lg hover:bg-[#F5F5F4] text-[#A3A3A3] hover:text-red-500 transition-all"
+                aria-label="Delete conversation"
+              >
+                <Trash2 className="h-3.5 w-3.5" />
+              </button>
             </button>
-          </button>
-        ))}
+          );
+        })}
       </div>
     </aside>
   );

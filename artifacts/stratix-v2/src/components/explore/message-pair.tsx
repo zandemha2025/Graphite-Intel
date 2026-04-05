@@ -1,13 +1,10 @@
 import ReactMarkdown from "react-markdown";
 import {
-  User,
   Copy,
   Share2,
   Bookmark,
   FileText,
 } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
-import { Card } from "@/components/ui/card";
 
 export interface Source {
   id: string;
@@ -37,49 +34,51 @@ export function MessagePair({
   onShare,
 }: MessagePairProps) {
   return (
-    <Card className="p-0 overflow-hidden">
-      {/* Question */}
-      <div className="flex items-start gap-3 px-5 pt-5 pb-3">
-        <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-stone-900 text-white">
-          <User className="h-3.5 w-3.5" />
+    <div className="space-y-4">
+      {/* User message — right-aligned bubble */}
+      <div className="flex justify-end">
+        <div className="bg-[#F5F5F4] rounded-2xl px-4 py-3 max-w-[80%]">
+          <p className="text-sm text-[#1A1A1A] leading-relaxed">
+            {pair.question}
+          </p>
         </div>
-        <p className="text-sm text-stone-900 leading-relaxed pt-0.5">
-          {pair.question}
-        </p>
       </div>
 
-      {/* Answer */}
-      <div className="px-5 pb-4 pl-14">
-        <div className="prose prose-sm prose-stone max-w-none text-stone-700 leading-relaxed">
+      {/* AI response — left-aligned, no background, full width */}
+      <div className="max-w-full">
+        <div className="prose prose-sm prose-stone max-w-none text-[#525252] leading-relaxed">
           <ReactMarkdown>{pair.answer}</ReactMarkdown>
         </div>
 
         {pair.isStreaming && (
           <div className="flex items-center gap-1 mt-2">
-            <span className="h-1.5 w-1.5 rounded-full bg-stone-400 animate-bounce" />
-            <span className="h-1.5 w-1.5 rounded-full bg-stone-400 animate-bounce [animation-delay:150ms]" />
-            <span className="h-1.5 w-1.5 rounded-full bg-stone-400 animate-bounce [animation-delay:300ms]" />
+            <span className="h-1.5 w-1.5 rounded-full bg-[#A3A3A3] animate-bounce" />
+            <span className="h-1.5 w-1.5 rounded-full bg-[#A3A3A3] animate-bounce [animation-delay:150ms]" />
+            <span className="h-1.5 w-1.5 rounded-full bg-[#A3A3A3] animate-bounce [animation-delay:300ms]" />
           </div>
         )}
 
-        {/* Sources */}
+        {/* Source badges */}
         {pair.sources.length > 0 && (
-          <div className="flex flex-wrap gap-1.5 mt-3 pt-3 border-t border-stone-100">
+          <div className="flex flex-wrap gap-1.5 mt-3">
             {pair.sources.map((source) => (
-              <Badge key={source.id} variant="default" className="gap-1">
-                <FileText className="h-3 w-3" />
+              <span
+                key={source.id}
+                className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-[#F5F5F4] text-[11px] font-medium text-[#525252] border border-[#E5E5E3]"
+              >
+                <FileText className="h-3 w-3 text-[#A3A3A3]" />
                 {source.title}
-              </Badge>
+              </span>
             ))}
           </div>
         )}
 
         {/* Actions */}
         {!pair.isStreaming && pair.answer && (
-          <div className="flex items-center gap-1 mt-3 pt-3 border-t border-stone-100">
+          <div className="flex items-center gap-1 mt-3 pt-3 border-t border-[#E5E5E3]/40">
             <button
               onClick={() => onCopy(pair.answer)}
-              className="inline-flex items-center gap-1.5 px-2.5 py-1.5 text-xs text-stone-500 hover:text-stone-700 hover:bg-stone-50 rounded-md transition-colors"
+              className="inline-flex items-center gap-1.5 px-2.5 py-1.5 text-xs text-[#A3A3A3] hover:text-[#525252] hover:bg-[#F5F5F4] rounded-md transition-colors"
             >
               <Copy className="h-3.5 w-3.5" />
               Copy
@@ -87,7 +86,7 @@ export function MessagePair({
             {onSaveToBoard && (
               <button
                 onClick={onSaveToBoard}
-                className="inline-flex items-center gap-1.5 px-2.5 py-1.5 text-xs text-stone-500 hover:text-stone-700 hover:bg-stone-50 rounded-md transition-colors"
+                className="inline-flex items-center gap-1.5 px-2.5 py-1.5 text-xs text-[#A3A3A3] hover:text-[#525252] hover:bg-[#F5F5F4] rounded-md transition-colors"
               >
                 <Bookmark className="h-3.5 w-3.5" />
                 Save to Board
@@ -96,7 +95,7 @@ export function MessagePair({
             {onShare && (
               <button
                 onClick={onShare}
-                className="inline-flex items-center gap-1.5 px-2.5 py-1.5 text-xs text-stone-500 hover:text-stone-700 hover:bg-stone-50 rounded-md transition-colors"
+                className="inline-flex items-center gap-1.5 px-2.5 py-1.5 text-xs text-[#A3A3A3] hover:text-[#525252] hover:bg-[#F5F5F4] rounded-md transition-colors"
               >
                 <Share2 className="h-3.5 w-3.5" />
                 Share
@@ -105,6 +104,6 @@ export function MessagePair({
           </div>
         )}
       </div>
-    </Card>
+    </div>
   );
 }
