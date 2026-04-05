@@ -21,17 +21,19 @@ const Landing = lazy(() => import("@/pages/placeholder").then((m) => ({ default:
 const Login = lazy(() => import("@/pages/placeholder").then((m) => ({ default: m.Login })));
 const OrgSetup = lazy(() => import("@/pages/placeholder").then((m) => ({ default: m.OrgSetup })));
 const Onboarding = lazy(() => import("@/pages/placeholder").then((m) => ({ default: m.Onboarding })));
-const Explore = lazy(() => import("@/pages/placeholder").then((m) => ({ default: m.Explore })));
-const Notebooks = lazy(() => import("@/pages/placeholder").then((m) => ({ default: m.Notebooks })));
-const NotebookEdit = lazy(() => import("@/pages/placeholder").then((m) => ({ default: m.NotebookEdit })));
-const Boards = lazy(() => import("@/pages/placeholder").then((m) => ({ default: m.Boards })));
-const BoardView = lazy(() => import("@/pages/placeholder").then((m) => ({ default: m.BoardView })));
-const Reports = lazy(() => import("@/pages/placeholder").then((m) => ({ default: m.Reports })));
-const ReportNew = lazy(() => import("@/pages/placeholder").then((m) => ({ default: m.ReportNew })));
-const ReportView = lazy(() => import("@/pages/placeholder").then((m) => ({ default: m.ReportView })));
-const Workflows = lazy(() => import("@/pages/placeholder").then((m) => ({ default: m.Workflows })));
-const WorkflowRunner = lazy(() => import("@/pages/placeholder").then((m) => ({ default: m.WorkflowRunner })));
-const WorkflowBuilder = lazy(() => import("@/pages/placeholder").then((m) => ({ default: m.WorkflowBuilder })));
+const Explore = lazy(() => import("@/pages/explore"));
+const Notebooks = lazy(() => import("@/pages/notebooks"));
+const NotebookEdit = lazy(() => import("@/pages/notebook-edit"));
+const Boards = lazy(() => import("@/pages/boards"));
+const BoardView = lazy(() => import("@/pages/board-view"));
+const Reports = lazy(() => import("@/pages/reports"));
+const ReportNew = lazy(() => import("@/pages/report-new"));
+const ReportView = lazy(() => import("@/pages/report-view"));
+const Workflows = lazy(() => import("@/pages/workflows"));
+const WorkflowRunner = lazy(() => import("@/pages/workflow-runner"));
+const WorkflowView = lazy(() => import("@/pages/workflow-view"));
+const WorkflowBuilder = lazy(() => import("@/pages/workflow-builder"));
+const WorkflowBuilderEdit = lazy(() => import("@/pages/workflow-builder-edit"));
 const Playbooks = lazy(() => import("@/pages/placeholder").then((m) => ({ default: m.Playbooks })));
 const PlaybookEdit = lazy(() => import("@/pages/placeholder").then((m) => ({ default: m.PlaybookEdit })));
 const PlaybookRun = lazy(() => import("@/pages/placeholder").then((m) => ({ default: m.PlaybookRun })));
@@ -109,7 +111,9 @@ function AuthenticatedApp() {
 
           {/* OPERATIONS */}
           <Route path="/workflows/new/:key" component={WorkflowRunner} />
+          <Route path="/workflows/:id" component={WorkflowView} />
           <Route path="/workflows" component={Workflows} />
+          <Route path="/workflow-builder/:id" component={WorkflowBuilderEdit} />
           <Route path="/workflow-builder" component={WorkflowBuilder} />
           <Route path="/playbooks/runs/:id" component={PlaybookRun} />
           <Route path="/playbooks/:id" component={PlaybookEdit} />
