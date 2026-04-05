@@ -9,18 +9,36 @@ import {
   Trash2,
   Clock,
   ChevronRight,
+  Timer,
+  Database,
+  BarChart3,
+  Hand,
 } from "lucide-react";
 
 interface WorkflowDefinition {
   id: number;
   name: string;
   description: string;
+  config: Record<string, any>;
   status: string;
   isPublished: boolean;
   version: number;
   usageCount: number;
   createdAt: string;
   updatedAt: string;
+}
+
+const TRIGGER_BADGES: Record<string, { label: string; icon: typeof Zap; color: string }> = {
+  manual: { label: "Manual", icon: Hand, color: "var(--workspace-muted)" },
+  cron: { label: "Scheduled", icon: Timer, color: "#3b82f6" },
+  data_change: { label: "Auto", icon: Database, color: "#8b5cf6" },
+  threshold: { label: "Threshold", icon: BarChart3, color: "#f59e0b" },
+  webhook: { label: "Webhook", icon: Zap, color: "#06b6d4" },
+  event: { label: "Event", icon: Zap, color: "#10b981" },
+};
+
+function getTriggerType(config: Record<string, any> | null | undefined): string {
+  return config?.trigger?.type ?? "manual";
 }
 
 interface WorkflowExecution {
@@ -264,7 +282,7 @@ export function WorkflowBuilder() {
                     </div>
                   </div>
 
-                  {/* Status & Version */}
+                  {/* Status, Trigger & Version */}
                   <div className="flex items-center gap-2 pt-2 border-t" style={{ borderColor: "var(--workspace-border)" }}>
                     <span
                       className="text-[10px] uppercase tracking-wide px-2 py-0.5"
@@ -275,6 +293,20 @@ export function WorkflowBuilder() {
                     >
                       {STATUS_LABELS[workflow.status]}
                     </span>
+                    {(() => {
+                      const triggerType = getTriggerType(workflow.config);
+                      const badge = TRIGGER_BADGES[triggerType] ?? TRIGGER_BADGES.manual!;
+                      const TriggerIcon = badge.icon;
+                      return (
+                        <span
+                          className="flex items-center gap-1 text-[10px] uppercase tracking-wide px-2 py-0.5"
+                          style={{ border: `1px solid ${badge.color}33`, color: badge.color }}
+                        >
+                          <TriggerIcon className="h-2.5 w-2.5" />
+                          {badge.label}
+                        </span>
+                      );
+                    })()}
                     <span className="text-[10px]" style={{ color: "var(--workspace-muted)" }}>
                       v{Number(workflow.version) || 1}
                     </span>

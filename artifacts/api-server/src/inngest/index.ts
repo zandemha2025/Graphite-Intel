@@ -15,8 +15,14 @@ export { adsReportGenerateFunction } from "./functions/ads-report-generate";
 // Conversational workflow trigger functions
 export { workflowCronTriggerFunction } from "./functions/workflow-cron-trigger";
 export { workflowWebhookTriggerFunction } from "./functions/workflow-webhook-trigger";
+export {
+  workflowDataTriggerFunction,
+  workflowThresholdTriggerFunction,
+} from "./functions/workflow-data-trigger";
 
 export { documentExtractionFunction } from "./functions/document-extraction";
+
+export { connectorDataSyncFunction } from "./functions/connector-data-sync";
 
 // Future functions (uncomment as implemented):
 // export { documentIndexFunction } from "./functions/document-index";

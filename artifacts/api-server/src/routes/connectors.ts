@@ -9,6 +9,8 @@ import {
   pullDataRequestSchema,
   type DataSource,
 } from "@workspace/pipedream-connect";
+import { inngest } from "../inngest/client";
+import { listSyncedData, getAppProfile } from "../lib/connector-sync";
 
 const router: IRouter = Router();
 
@@ -107,6 +109,19 @@ router.post("/connectors/accounts", async (req: Request, res: Response) => {
       .returning();
 
     req.log.info({ connectorId: connector.id, source }, "Pipedream connector registered");
+
+    // Fire async data sync for the newly connected app
+    try {
+      await inngest.send({
+        name: "connector/data.sync",
+        data: { connectorId: connector.id },
+      });
+      req.log.info({ connectorId: connector.id }, "Queued initial connector data sync");
+    } catch (syncErr) {
+      // Non-blocking — registration succeeds even if sync queueing fails
+      req.log.warn({ syncErr }, "Failed to queue initial connector data sync");
+    }
+
     res.status(201).json(connector);
   } catch (err) {
     if (err instanceof PipedreamApiError) {
@@ -237,6 +252,96 @@ router.post("/connectors/accounts/:id/data", async (req: Request, res: Response)
     }
     req.log.error({ err }, "Failed to pull data");
     res.status(500).json({ error: "Failed to pull data" });
+  }
+});
+
+// ---------------------------------------------------------------------------
+// Trigger a manual re-sync for a connector
+// ---------------------------------------------------------------------------
+router.post("/connectors/accounts/:id/sync", async (req: Request, res: Response) => {
+  if (!requireAuth(req, res)) return;
+  const orgId = req.user!.orgId!;
+  const connectorId = parseInt(req.params.id as string);
+
+  if (isNaN(connectorId)) {
+    res.status(400).json({ error: "Invalid connector id" });
+    return;
+  }
+
+  try {
+    const [connector] = await db
+      .select()
+      .from(pipedreamConnectors)
+      .where(and(eq(pipedreamConnectors.id, connectorId), eq(pipedreamConnectors.orgId, orgId)));
+
+    if (!connector) {
+      res.status(404).json({ error: "Connector not found" });
+      return;
+    }
+
+    if (!connector.isActive) {
+      res.status(400).json({ error: "Connector is not active" });
+      return;
+    }
+
+    const profile = getAppProfile(connector.appSlug);
+
+    await inngest.send({
+      name: "connector/data.sync",
+      data: { connectorId: connector.id },
+    });
+
+    res.json({
+      success: true,
+      message: "Sync queued",
+      connectorId: connector.id,
+      appSlug: connector.appSlug,
+      category: profile.category,
+    });
+  } catch (err) {
+    req.log.error({ err }, "Failed to trigger connector sync");
+    res.status(500).json({ error: "Failed to trigger sync" });
+  }
+});
+
+// ---------------------------------------------------------------------------
+// List synced data for a connector
+// ---------------------------------------------------------------------------
+router.get("/connectors/accounts/:id/synced-data", async (req: Request, res: Response) => {
+  if (!requireAuth(req, res)) return;
+  const orgId = req.user!.orgId!;
+  const connectorId = parseInt(req.params.id as string);
+
+  if (isNaN(connectorId)) {
+    res.status(400).json({ error: "Invalid connector id" });
+    return;
+  }
+
+  try {
+    // Verify the connector belongs to this org
+    const [connector] = await db
+      .select()
+      .from(pipedreamConnectors)
+      .where(and(eq(pipedreamConnectors.id, connectorId), eq(pipedreamConnectors.orgId, orgId)));
+
+    if (!connector) {
+      res.status(404).json({ error: "Connector not found" });
+      return;
+    }
+
+    const limit = Math.min(parseInt(req.query.limit as string) || 100, 500);
+    const offset = parseInt(req.query.offset as string) || 0;
+
+    const data = await listSyncedData(connectorId, orgId, limit, offset);
+
+    res.json({
+      connectorId,
+      appSlug: connector.appSlug,
+      ...data,
+    });
+  } catch (err) {
+    req.log.error({ err }, "Failed to list synced data");
+    res.status(500).json({ error: "Failed to list synced data" });
   }
 });
 

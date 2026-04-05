@@ -78,6 +78,33 @@ export type GrphintelEvents = {
     };
   };
 
+  // Connector / data-sync events
+  "connector/data.sync": {
+    data: { connectorId: number };
+  };
+  "connector/data.synced": {
+    data: {
+      connectorId: string;
+      orgId: number;
+      dataType?: string;
+      recordCount: number;
+      syncedAt: string;
+      /** Optional sample of synced data forwarded as workflow input */
+      payload?: Record<string, unknown>;
+    };
+  };
+
+  // Threshold check events (fired by metrics monitoring)
+  "metrics/threshold.crossed": {
+    data: {
+      orgId: number;
+      metric: string;
+      currentValue: number;
+      previousValue: number;
+      crossedAt: string;
+    };
+  };
+
   // Vault extraction events
   "vault/extraction.requested": {
     data: { extractionId: number };

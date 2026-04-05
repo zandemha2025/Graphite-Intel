@@ -30,6 +30,22 @@ export async function runStartupMigrations(): Promise<void> {
     CREATE INDEX IF NOT EXISTS "IDX_session_expire" ON sessions (expire)
   `);
 
+  // Ensure boards table exists (idempotent)
+  await db.execute(sql`
+    CREATE TABLE IF NOT EXISTS boards (
+      id SERIAL PRIMARY KEY,
+      org_id INTEGER NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,
+      created_by_user_id VARCHAR NOT NULL,
+      title VARCHAR NOT NULL,
+      description TEXT,
+      type VARCHAR NOT NULL DEFAULT 'live',
+      config JSONB,
+      is_shared BOOLEAN NOT NULL DEFAULT false,
+      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+      updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    )
+  `);
+
   // Phase 1: Backfill orgId on documents from org_members for existing rows
   try {
     await db.execute(sql`

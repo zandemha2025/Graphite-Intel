@@ -18,6 +18,11 @@ import {
   UserCheck,
   ArrowRight,
   ChevronRight,
+  MessageSquare,
+  Database,
+  Zap,
+  Globe,
+  Plug,
 } from "lucide-react";
 
 /* ------------------------------------------------------------------ */
@@ -123,6 +128,63 @@ const FEATURES = [
     description:
       "Shared workspaces with role-based access control. Collaborate on research, share findings, and align on strategy.",
   },
+];
+
+const COMPARISONS = [
+  {
+    prompt: "Tell me about our top competitor's pricing strategy.",
+    generic: {
+      label: "General AI",
+      answer:
+        "Here's what I found on their public website and recent press releases. They appear to offer three tiers...",
+      tone: "Wikipedia-level summary from public sources",
+    },
+    stratix: {
+      label: "Stratix",
+      answer:
+        "Based on 47 Gong calls this quarter, reps report they've dropped pricing 15% on enterprise deals. Your Salesforce pipeline shows 6 overlapping opportunities worth $2.1M. Here's a recommended counter-strategy.",
+      tone: "Actionable intelligence from your own systems",
+    },
+  },
+  {
+    prompt: "How is our Q1 pipeline looking?",
+    generic: {
+      label: "General AI",
+      answer:
+        "I don't have access to your CRM data. I can help you think about pipeline metrics to track...",
+      tone: "Generic advice, no data access",
+    },
+    stratix: {
+      label: "Stratix",
+      answer:
+        "Q1 pipeline is at $14.2M across 38 opportunities. Stage 3+ is $6.8M, up 22% from last quarter. Three deals flagged as at-risk based on engagement drop-off in Gong and email activity.",
+      tone: "Real numbers from Salesforce, Gong, and HubSpot",
+    },
+  },
+  {
+    prompt: "Draft a competitive battle card for the sales team.",
+    generic: {
+      label: "General AI",
+      answer:
+        "Here's a generic template with sections for strengths, weaknesses, and positioning...",
+      tone: "Template with placeholder content",
+    },
+    stratix: {
+      label: "Stratix",
+      answer:
+        "Battle card generated from 128 closed-won and 43 closed-lost deals. Top objection: pricing (34%). Win rate jumps from 28% to 61% when the ROI calculator is used in Stage 2. Auto-shared to #sales-enablement in Slack.",
+      tone: "Data-driven playbook, auto-distributed to your team",
+    },
+  },
+];
+
+const INTEGRATION_CATEGORIES = [
+  { label: "CRM", examples: "Salesforce, HubSpot, Pipedrive" },
+  { label: "Communication", examples: "Slack, Teams, Gmail" },
+  { label: "Analytics", examples: "Gong, Mixpanel, Amplitude" },
+  { label: "Support", examples: "Zendesk, Intercom, Freshdesk" },
+  { label: "Marketing", examples: "Marketo, Mailchimp, Meta Ads" },
+  { label: "Dev Tools", examples: "GitHub, Jira, Linear" },
 ];
 
 const STEPS = [
@@ -285,9 +347,9 @@ export function Landing() {
             transition={{ duration: 0.7, delay: 0.4 }}
             className="text-base md:text-lg text-[#E8E4DC]/45 max-w-2xl mx-auto mb-12 font-light leading-relaxed"
           >
-            AI-powered research, analysis, and workflows that transform how
-            leadership teams make decisions. From competitive intelligence to
-            due diligence — in minutes, not months.
+            The intelligence layer that connects your data sources, applies AI
+            analysis, and delivers strategic insights no general-purpose AI
+            can match.
           </motion.p>
 
           <motion.div
@@ -419,6 +481,129 @@ export function Landing() {
               );
             })}
           </StaggerContainer>
+        </div>
+      </section>
+
+      {/* ---- Why Stratix ---- */}
+      <section className="border-t border-white/[0.06] px-6 md:px-12 py-20 md:py-28 bg-[#0A0908]">
+        <div className="max-w-6xl mx-auto">
+          <FadeIn className="mb-16 text-center max-w-3xl mx-auto">
+            <span className="text-[10px] font-medium uppercase tracking-[0.3em] text-[#E8E4DC]/30 border border-[#E8E4DC]/10 px-3 py-1 inline-block mb-6">
+              Why Stratix
+            </span>
+            <h2 className="font-serif text-3xl md:text-5xl font-light tracking-tight text-[#E8E4DC] leading-[1.1] mb-4">
+              AI tools answer questions.
+              <br />
+              <span className="text-[#E8E4DC]/40">Stratix answers YOUR questions.</span>
+            </h2>
+            <p className="text-sm md:text-base text-[#E8E4DC]/35 font-light leading-relaxed">
+              ChatGPT, Claude, and Copilot know the internet. Stratix knows your
+              business. Same AI models — your data, your context, completely
+              different answers.
+            </p>
+          </FadeIn>
+
+          {/* Comparison cards */}
+          <div className="space-y-6">
+            {COMPARISONS.map((c, i) => (
+              <FadeIn key={i} delay={i * 0.1}>
+                <div className="border border-white/[0.06]">
+                  {/* Prompt bar */}
+                  <div className="px-6 md:px-8 py-4 border-b border-white/[0.06] flex items-center gap-3">
+                    <MessageSquare className="w-4 h-4 text-[#E8E4DC]/30 flex-shrink-0" />
+                    <p className="text-sm text-[#E8E4DC]/60 font-light italic">
+                      "{c.prompt}"
+                    </p>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 divide-y md:divide-y-0 md:divide-x divide-white/[0.06]">
+                    {/* Generic AI side */}
+                    <div className="p-6 md:p-8">
+                      <div className="flex items-center gap-2 mb-4">
+                        <Globe className="w-4 h-4 text-[#E8E4DC]/25" />
+                        <span className="text-[10px] font-medium uppercase tracking-[0.2em] text-[#E8E4DC]/25">
+                          {c.generic.label}
+                        </span>
+                      </div>
+                      <p className="text-sm text-[#E8E4DC]/35 font-light leading-relaxed mb-3">
+                        {c.generic.answer}
+                      </p>
+                      <p className="text-[10px] uppercase tracking-widest text-[#E8E4DC]/20">
+                        {c.generic.tone}
+                      </p>
+                    </div>
+
+                    {/* Stratix side */}
+                    <div className="p-6 md:p-8 bg-[#0F0E0D]">
+                      <div className="flex items-center gap-2 mb-4">
+                        <Database className="w-4 h-4 text-[#E8E4DC]/50" />
+                        <span className="text-[10px] font-medium uppercase tracking-[0.2em] text-[#E8E4DC]/50">
+                          {c.stratix.label}
+                        </span>
+                      </div>
+                      <p className="text-sm text-[#E8E4DC]/70 font-light leading-relaxed mb-3">
+                        {c.stratix.answer}
+                      </p>
+                      <p className="text-[10px] uppercase tracking-widest text-[#E8E4DC]/40">
+                        {c.stratix.tone}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </FadeIn>
+            ))}
+          </div>
+
+          {/* Closing line */}
+          <FadeIn delay={0.3} className="mt-12 text-center">
+            <p className="font-serif text-xl md:text-2xl font-light text-[#E8E4DC]/60 tracking-tight">
+              Same AI models. Your data.{" "}
+              <span className="text-[#E8E4DC]">Completely different answers.</span>
+            </p>
+          </FadeIn>
+        </div>
+      </section>
+
+      {/* ---- Integrations ---- */}
+      <section className="border-t border-white/[0.06] px-6 md:px-12 py-20 md:py-28">
+        <div className="max-w-5xl mx-auto">
+          <FadeIn className="mb-12 text-center">
+            <span className="text-[10px] font-medium uppercase tracking-[0.3em] text-[#E8E4DC]/30 border border-[#E8E4DC]/10 px-3 py-1 inline-block mb-6">
+              Integrations
+            </span>
+            <h2 className="font-serif text-3xl md:text-5xl font-light tracking-tight text-[#E8E4DC] leading-[1.1] mb-4">
+              Connects to the tools
+              <br />
+              <span className="text-[#E8E4DC]/40">you already use</span>
+            </h2>
+          </FadeIn>
+
+          <StaggerContainer className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-px bg-white/[0.06] mb-8">
+            {INTEGRATION_CATEGORIES.map((cat) => (
+              <motion.div
+                key={cat.label}
+                variants={staggerChild}
+                className="bg-[#0D0C0B] p-6 text-center group hover:bg-[#0F0E0D] transition-colors"
+              >
+                <Plug className="w-5 h-5 text-[#E8E4DC]/25 mx-auto mb-4 group-hover:text-[#E8E4DC]/40 transition-colors" />
+                <h3 className="text-xs font-medium text-[#E8E4DC]/60 uppercase tracking-wider mb-2">
+                  {cat.label}
+                </h3>
+                <p className="text-[10px] text-[#E8E4DC]/25 leading-relaxed font-light">
+                  {cat.examples}
+                </p>
+              </motion.div>
+            ))}
+          </StaggerContainer>
+
+          <FadeIn className="text-center">
+            <div className="inline-flex items-center gap-2 border border-[#E8E4DC]/10 px-5 py-2.5">
+              <Zap className="w-3.5 h-3.5 text-[#E8E4DC]/35" />
+              <span className="text-xs text-[#E8E4DC]/40 uppercase tracking-widest font-medium">
+                600+ integrations via Pipedream Connect
+              </span>
+            </div>
+          </FadeIn>
         </div>
       </section>
 

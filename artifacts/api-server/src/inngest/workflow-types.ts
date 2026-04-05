@@ -34,7 +34,31 @@ export interface ManualTrigger {
   type: "manual";
 }
 
-export type WorkflowTrigger = CronTrigger | WebhookTrigger | EventTrigger | ManualTrigger;
+export interface DataChangeTrigger {
+  type: "data_change";
+  /** The connector/source whose data sync should trigger this workflow */
+  connectorId?: string;
+  /** Optional: only trigger for a specific data type (e.g. "calls", "deals") */
+  dataType?: string;
+}
+
+export interface ThresholdTrigger {
+  type: "threshold";
+  /** The metric key to monitor (e.g. "deal_value", "open_rate") */
+  metric: string;
+  /** Condition: fire when the metric crosses this threshold */
+  condition: "above" | "below";
+  /** The threshold value */
+  value: number;
+}
+
+export type WorkflowTrigger =
+  | CronTrigger
+  | WebhookTrigger
+  | EventTrigger
+  | ManualTrigger
+  | DataChangeTrigger
+  | ThresholdTrigger;
 
 // ============================================================
 // Step Config Types

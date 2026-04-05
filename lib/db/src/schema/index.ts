@@ -19,3 +19,4 @@ export * from "./collaboration";
 export * from "./playbooks";
 export * from "./ads";
 export * from "./connectors";
+export * from "./boards";

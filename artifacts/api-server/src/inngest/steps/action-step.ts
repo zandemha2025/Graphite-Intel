@@ -76,8 +76,49 @@ export async function executeActionStep(
       };
     }
 
+    case "send_email": {
+      const to = (config.params.to as string | undefined) ?? "";
+      const subject = (config.params.subject as string | undefined) ?? "Workflow Notification";
+      const body = (config.params.body as string | undefined) ?? "";
+
+      // Interpolate {{key}} placeholders from context
+      const interpolate = (template: string): string => {
+        let result = template;
+        for (const [key, value] of Object.entries(context)) {
+          result = result.replace(
+            new RegExp(`\\{\\{${key}\\}\\}`, "g"),
+            typeof value === "string" ? value : JSON.stringify(value),
+          );
+        }
+        return result;
+      };
+
+      const resolvedTo = interpolate(to);
+      const resolvedSubject = interpolate(subject);
+      const resolvedBody = interpolate(body);
+
+      // Structured for easy integration with SendGrid/Resend later.
+      // When an email provider is configured, replace this block:
+      //   import { emailService } from "../../services/email";
+      //   await emailService.send({ to: resolvedTo, subject: resolvedSubject, html: resolvedBody });
+      console.log(
+        `[WorkflowEmail] to=${resolvedTo} subject=${resolvedSubject} body_length=${resolvedBody.length}`,
+      );
+
+      return {
+        action: "send_email",
+        success: true,
+        output: {
+          message: `Email would be sent to ${resolvedTo} with subject "${resolvedSubject}"`,
+          to: resolvedTo,
+          subject: resolvedSubject,
+          bodyPreview: resolvedBody.slice(0, 200),
+          provider: "none (dry-run)",
+        },
+      };
+    }
+
     case "create_document":
-    case "send_email":
     case "update_integration": {
       // Placeholder: these actions are accepted and recorded but require
       // integration with the respective platform services when available.

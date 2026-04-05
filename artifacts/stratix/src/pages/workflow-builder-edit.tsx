@@ -20,6 +20,7 @@ import {
 } from "lucide-react";
 import { StepConfigForm } from "@/components/workflow/step-config-forms";
 import { ExecutionTraceView } from "@/components/workflow/execution-trace-view";
+import { TriggerConfigSection } from "@/components/workflow/trigger-config-section";
 
 // ─── Types ─────────────────────────────────────────────────────
 
@@ -487,6 +488,14 @@ export function WorkflowBuilderEdit() {
         <ExecutionTraceView execution={execution} steps={workflow.steps} />
       ) : (
         <>
+          {/* Trigger Configuration */}
+          <div className="pb-6 border-b" style={{ borderColor: "var(--workspace-border)" }}>
+            <TriggerConfigSection
+              config={workflow.config}
+              onChange={(config) => setWorkflow({ ...workflow, config })}
+            />
+          </div>
+
           {/* Steps List */}
           <div className="space-y-6">
             <h2 className="text-[10px] uppercase tracking-[0.25em]" style={{ color: "var(--workspace-muted)" }}>
