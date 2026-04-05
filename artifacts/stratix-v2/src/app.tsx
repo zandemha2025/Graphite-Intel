@@ -138,23 +138,13 @@ function AuthenticatedApp() {
     );
   }
 
-  if (!user.onboardingComplete) {
-    return (
-      <Suspense fallback={<PageSkeleton />}>
-        <Switch>
-          <Route path="/onboarding" component={Onboarding} />
-          <Route>
-            <Redirect to="/onboarding" />
-          </Route>
-        </Switch>
-      </Suspense>
-    );
-  }
-
   return (
     <Shell user={user}>
       <Suspense fallback={<PageSkeleton />}>
         <Switch>
+          {/* ONBOARDING (accessible but not forced — backend has no onboardingComplete field) */}
+          <Route path="/onboarding" component={Onboarding} />
+
           {/* INTELLIGENCE */}
           <Route path="/explore" component={Explore} />
           <Route path="/notebooks/:id" component={NotebookEdit} />
