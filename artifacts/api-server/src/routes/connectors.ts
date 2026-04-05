@@ -135,6 +135,55 @@ router.post("/connectors/accounts", async (req: Request, res: Response) => {
 });
 
 // ---------------------------------------------------------------------------
+// Summary of connected accounts with record counts and health status
+// ---------------------------------------------------------------------------
+router.get("/connectors/accounts/summary", async (req: Request, res: Response) => {
+  if (!requireAuth(req, res)) return;
+  const orgId = req.user!.orgId!;
+
+  try {
+    const connectors = await db
+      .select()
+      .from(pipedreamConnectors)
+      .where(and(eq(pipedreamConnectors.orgId, orgId), eq(pipedreamConnectors.isActive, true)))
+      .orderBy(pipedreamConnectors.createdAt);
+
+    const accounts = await Promise.all(
+      connectors.map(async (connector) => {
+        const profile = getAppProfile(connector.appSlug);
+
+        // Count synced documents for this connector
+        let recordCount = 0;
+        try {
+          const data = await listSyncedData(connector.id, orgId, 0, 0);
+          recordCount = data.total;
+        } catch {
+          // non-blocking
+        }
+
+        return {
+          id: connector.id,
+          name: connector.name ?? profile.label,
+          appSlug: connector.appSlug,
+          dataSource: connector.dataSource,
+          category: profile.category,
+          status: "healthy" as const,
+          recordCount,
+          lastSyncAt: connector.lastUsedAt?.toISOString() ?? null,
+          lastUsedAt: connector.lastUsedAt?.toISOString() ?? null,
+          createdAt: connector.createdAt.toISOString(),
+        };
+      }),
+    );
+
+    res.json({ accounts });
+  } catch (err) {
+    req.log.error({ err }, "Failed to get connector summary");
+    res.status(500).json({ error: "Failed to get connector summary" });
+  }
+});
+
+// ---------------------------------------------------------------------------
 // List connected accounts for the org
 // ---------------------------------------------------------------------------
 router.get("/connectors/accounts", async (req: Request, res: Response) => {

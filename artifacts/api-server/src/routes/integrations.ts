@@ -142,7 +142,7 @@ router.get("/integrations/oauth/google/callback", async (req: Request, res: Resp
 
     // Redirect back to frontend integrations page
     const frontendUrl = process.env.FRONTEND_URL ?? "http://localhost:5173";
-    res.redirect(`${frontendUrl}/settings/integrations?connected=google_drive&id=${integration.id}`);
+    res.redirect(`${frontendUrl}/connections?connected=google_drive&id=${integration.id}`);
   } catch (err) {
     req.log.error({ err }, "Failed to handle OAuth callback");
     res.status(500).json({ error: "Failed to complete OAuth flow" });

@@ -11,7 +11,7 @@ import {
   BarChart3,
   Shield,
   Users,
-  Link2,
+  Plug,
   Plus,
   FileText,
   Upload,
@@ -67,7 +67,7 @@ const NAVIGATION_ITEMS: PaletteItem[] = [
   { id: "activity", label: "Activity Feed", description: "Recent activity", icon: Activity, route: "/activity", keywords: "feed recent" },
   { id: "shared", label: "Shared With Me", description: "Shared resources", icon: Share2, route: "/shared", keywords: "shared collaboration" },
   { id: "team", label: "Team", description: "Team management", icon: Users, route: "/settings/team", keywords: "members invite" },
-  { id: "integrations", label: "Integrations", description: "Connected services", icon: Link2, route: "/settings/integrations", keywords: "connect api services" },
+  { id: "connections", label: "Connections", description: "Connected apps & data sources", icon: Plug, route: "/connections", keywords: "connect api services integrations pipedream" },
   { id: "profile", label: "Profile", description: "Account settings", icon: Settings, route: "/profile", keywords: "account settings preferences" },
 ];
 

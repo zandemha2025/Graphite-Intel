@@ -18,6 +18,7 @@ import {
   BarChart3,
   Link2,
   ClipboardList,
+  Plug,
 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
@@ -30,6 +31,7 @@ const NAV_ITEMS = [
   { href: "/reports", label: "Report Library", icon: Library },
   { href: "/knowledge", label: "Knowledge", icon: BookOpen },
   { href: "/context", label: "Context", icon: Database },
+  { href: "/connections", label: "Connections", icon: Plug },
   { href: "/playbooks", label: "Playbooks", icon: ClipboardList },
 ];
 
@@ -54,6 +56,7 @@ const PAGE_BREADCRUMBS: Record<string, { section?: string; title: string }> = {
   "/workflow-builder": { title: "Workflow Builder" },
   "/audit": { section: "Admin", title: "Audit Log" },
   "/analytics": { section: "Admin", title: "Analytics" },
+  "/connections": { title: "Connections" },
   "/settings/integrations": { section: "Settings", title: "Integrations" },
   "/playbooks": { title: "Playbooks" },
   "/playbooks/new": { section: "Playbooks", title: "New Playbook" },
@@ -221,13 +224,13 @@ export function Layout({ children }: { children: React.ReactNode }) {
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>
                   <Link
-                    href="/settings/integrations"
+                    href="/connections"
                     className="flex items-center cursor-pointer text-xs w-full px-2 py-1.5"
                     style={{ color: "rgba(232,228,220,0.70)" }}
-                    data-testid="nav-link-integrations"
+                    data-testid="nav-link-connections"
                   >
-                    <Link2 className="mr-2 h-3.5 w-3.5" />
-                    <span>Integrations</span>
+                    <Plug className="mr-2 h-3.5 w-3.5" />
+                    <span>Connections</span>
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator className="bg-white/8" />

@@ -36,6 +36,7 @@ const VaultProject = lazy(() => import("@/pages/vault-project").then(m => ({ def
 const WorkflowBuilder = lazy(() => import("@/pages/workflow-builder").then(m => ({ default: m.WorkflowBuilder })));
 const WorkflowBuilderEdit = lazy(() => import("@/pages/workflow-builder-edit").then(m => ({ default: m.WorkflowBuilderEdit })));
 const Integrations = lazy(() => import("@/pages/integrations").then(m => ({ default: m.Integrations })));
+const Connections = lazy(() => import("@/pages/connections").then(m => ({ default: m.Connections })));
 const HumanReviews = lazy(() => import("@/pages/human-reviews").then(m => ({ default: m.HumanReviews })));
 const VaultSearch = lazy(() => import("@/pages/vault-search").then(m => ({ default: m.VaultSearch })));
 const VaultList = lazy(() => import("@/pages/vault").then(m => ({ default: m.Vault })));
@@ -209,6 +210,12 @@ function DashboardRedirect() {
   return null;
 }
 
+function IntegrationsRedirect() {
+  const [, setLocation] = useLocation();
+  useEffect(() => { setLocation("/connections"); }, [setLocation]);
+  return null;
+}
+
 function Router() {
   return (
     <Suspense fallback={<Spinner />}>
@@ -242,7 +249,8 @@ function Router() {
         <Route path="/workflow-builder" component={() => <ProtectedRoute component={WorkflowBuilder} />} />
         <Route path="/audit" component={() => <ProtectedRoute component={AuditLogs} />} />
         <Route path="/analytics" component={() => <ProtectedRoute component={Analytics} />} />
-        <Route path="/settings/integrations" component={() => <ProtectedRoute component={Integrations} />} />
+        <Route path="/connections" component={() => <ProtectedRoute component={Connections} />} />
+        <Route path="/settings/integrations" component={IntegrationsRedirect} />
         <Route path="/human-reviews" component={() => <ProtectedRoute component={HumanReviews} />} />
         <Route path="/shared" component={() => <ProtectedRoute component={SharedWithMe} />} />
         <Route path="/activity" component={() => <ProtectedRoute component={ActivityFeed} />} />
