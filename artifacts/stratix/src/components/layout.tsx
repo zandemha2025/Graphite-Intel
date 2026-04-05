@@ -19,12 +19,14 @@ import {
   Link2,
   ClipboardList,
   Plug,
+  BookText,
 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 
 const NAV_ITEMS = [
   { href: "/explore", label: "Explore", icon: Compass },
+  { href: "/notebooks", label: "Notebooks", icon: BookText },
   { href: "/boards", label: "Boards", icon: LayoutGrid },
   { href: "/workflows", label: "Workflows", icon: Zap },
   { href: "/workflow-builder", label: "Builder", icon: Blocks },
@@ -58,6 +60,7 @@ const PAGE_BREADCRUMBS: Record<string, { section?: string; title: string }> = {
   "/analytics": { section: "Admin", title: "Analytics" },
   "/connections": { title: "Connections" },
   "/settings/integrations": { section: "Settings", title: "Integrations" },
+  "/notebooks": { title: "Notebooks" },
   "/playbooks": { title: "Playbooks" },
   "/playbooks/new": { section: "Playbooks", title: "New Playbook" },
 };
@@ -93,6 +96,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
     location.startsWith("/context") ? { title: "Context" } :
     location.startsWith("/vault/") ? { section: "Vault", title: "Project" } :
     location.startsWith("/workflow-builder/") ? { section: "Builder", title: "Edit Workflow" } :
+    location.startsWith("/notebooks/") ? { section: "Notebooks", title: "Edit Notebook" } :
     location.startsWith("/playbooks/runs/") ? { section: "Playbooks", title: "Run" } :
     location.startsWith("/playbooks/") ? { section: "Playbooks", title: "Edit Playbook" } :
     { title: "Stratix" });

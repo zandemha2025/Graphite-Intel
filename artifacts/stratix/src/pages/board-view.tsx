@@ -1,13 +1,16 @@
 import { useState, useCallback, useEffect, useRef } from "react";
 import { useParams, useLocation } from "wouter";
-import GridLayout, { LayoutItem, Layout as GridLayoutType } from "react-grid-layout";
+import GridLayout, { LayoutItem } from "react-grid-layout";
 import "react-grid-layout/css/styles.css";
 import { ArrowLeft, Loader2 } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { BoardToolbar } from "@/components/boards/BoardToolbar";
-import { BoardCard } from "@/components/boards/BoardCard";
+import { LiveBoardCard } from "@/components/boards/LiveBoardCard";
 import { AddCardModal } from "@/components/boards/AddCardModal";
-import type { BoardCardData, BoardCardContent } from "@/components/boards/BoardCard";
+import { ApprovalBanner } from "@/components/boards/ApprovalBanner";
+import { ScheduleDialog } from "@/components/boards/ScheduleDialog";
+import type { BoardConfig, BoardCard, ApprovalStatus } from "@/components/boards/board-types";
+import type { BoardCardContent } from "@/components/boards/BoardCard";
 import type { BoardType } from "@/components/boards/BoardTypeSelector";
 import {
   useGetBoard,
@@ -16,92 +19,75 @@ import {
   getListBoardsQueryKey,
 } from "@workspace/api-client-react";
 
-// ── types for persisted config ─────────────────────────────────────────────
-
-interface BoardConfig {
-  cards: BoardCardData[];
-  layout: LayoutItem[];
-}
-
 // ── seed helpers (used only for brand-new boards with no config) ────────────
 
-function makeSeedCards(): BoardCardData[] {
+function makeSeedCards(): BoardCard[] {
   return [
     {
       id: "c1",
-      title: "Revenue by Quarter",
-      source: "CRM",
-      content: {
-        kind: "chart",
-        cell: {
-          type: "bar",
-          title: "Revenue by Quarter",
-          data: [
-            { name: "Q1", value: 42000 },
-            { name: "Q2", value: 68000 },
-            { name: "Q3", value: 55000 },
-            { name: "Q4", value: 81000 },
-          ],
-          xKey: "name",
-          yKey: "value",
-        },
-      },
+      type: "stat",
+      title: "Total Revenue",
+      data: { value: "$246K", label: "Total Revenue (YTD)", change: "+18% vs last year", positive: true },
+      refreshEnabled: false,
     },
     {
       id: "c2",
-      title: "Monthly Active Users",
-      source: "Analytics",
-      content: {
-        kind: "chart",
-        cell: {
-          type: "line",
-          title: "Monthly Active Users",
-          data: [
-            { name: "Jan", value: 1200 },
-            { name: "Feb", value: 1450 },
-            { name: "Mar", value: 1380 },
-            { name: "Apr", value: 1710 },
-            { name: "May", value: 1960 },
-          ],
-          xKey: "name",
-          yKey: "value",
-        },
+      type: "chart",
+      title: "Revenue by Quarter",
+      data: {
+        type: "bar",
+        title: "Revenue by Quarter",
+        data: [
+          { name: "Q1", value: 42000 },
+          { name: "Q2", value: 68000 },
+          { name: "Q3", value: 55000 },
+          { name: "Q4", value: 81000 },
+        ],
+        xKey: "name",
+        yKey: "value",
       },
+      refreshEnabled: false,
     },
     {
       id: "c3",
-      title: "Total Revenue",
-      source: "Finance",
-      content: { kind: "stat", label: "Total Revenue (YTD)", value: "$246K", change: "+18% vs last year", positive: true },
-    },
-    {
-      id: "c4",
-      title: "Segment Breakdown",
-      source: "CRM",
-      content: {
-        kind: "chart",
-        cell: {
-          type: "pie",
-          title: "Segment Breakdown",
-          data: [
-            { name: "Enterprise", value: 55 },
-            { name: "Mid-Market", value: 30 },
-            { name: "SMB", value: 15 },
-          ],
-          xKey: "name",
-          yKey: "value",
-        },
-      },
+      type: "text",
+      title: "Board Instructions",
+      content: "Pin insights from **Explore** using the *Save to Board* button, or add manual stat/chart/text cards.",
+      refreshEnabled: false,
     },
   ];
 }
 
 const SEED_LAYOUT: LayoutItem[] = [
-  { i: "c1", x: 0, y: 0, w: 6, h: 4 },
-  { i: "c2", x: 6, y: 0, w: 6, h: 4 },
-  { i: "c3", x: 0, y: 4, w: 3, h: 3 },
-  { i: "c4", x: 3, y: 4, w: 5, h: 3 },
+  { i: "c1", x: 0, y: 0, w: 4, h: 3 },
+  { i: "c2", x: 4, y: 0, w: 8, h: 4 },
+  { i: "c3", x: 0, y: 3, w: 4, h: 3 },
 ];
+
+// ── helpers to bridge legacy AddCardModal → BoardCard ───────────────────────
+
+function legacyContentToBoardCard(
+  id: string,
+  cardTitle: string,
+  content: BoardCardContent,
+): BoardCard {
+  switch (content.kind) {
+    case "chart":
+      return { id, type: "chart", title: cardTitle, data: content.cell, refreshEnabled: false };
+    case "stat":
+      return {
+        id,
+        type: "stat",
+        title: cardTitle,
+        data: { value: content.value, label: content.label, change: content.change, positive: content.positive },
+        refreshEnabled: false,
+      };
+    case "text":
+      return { id, type: "text", title: cardTitle, content: content.body, refreshEnabled: false };
+    case "table":
+      return { id, type: "text", title: cardTitle, content: `| ${content.headers.join(" | ")} |`, refreshEnabled: false };
+  }
+}
 
 // ── page ────────────────────────────────────────────────────────────────────
 
@@ -117,16 +103,25 @@ export default function BoardView() {
   const [title, setTitle] = useState("Untitled Board");
   const [boardType, setBoardType] = useState<BoardType>("live");
   const [viewMode, setViewMode] = useState<"layout" | "edit">("layout");
-  const [cards, setCards] = useState<BoardCardData[]>([]);
+  const [cards, setCards] = useState<BoardCard[]>([]);
   const [layout, setLayout] = useState<LayoutItem[]>([]);
   const [addOpen, setAddOpen] = useState(false);
+  const [scheduleOpen, setScheduleOpen] = useState(false);
   const [containerWidth, setContainerWidth] = useState(900);
   const [initialized, setInitialized] = useState(false);
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
-  // Debounce timer ref for auto-saving config
+  // Board config-level state
+  const [refreshSchedule, setRefreshSchedule] = useState<string | undefined>();
+  const [approvalStatus, setApprovalStatus] = useState<ApprovalStatus>("draft");
+  const [approvedByName, setApprovedByName] = useState<string>();
+  const [approvedAt, setApprovedAt] = useState<string>();
+  const [reviewedByName, setReviewedByName] = useState<string>();
+  const [reviewedAt, setReviewedAt] = useState<string>();
+
   const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // Initialize local state from fetched board data
+  // ── Initialize from fetched board ──────────────────────────────────────
   useEffect(() => {
     if (!board || initialized) return;
 
@@ -137,8 +132,13 @@ export default function BoardView() {
     if (config && Array.isArray(config.cards) && config.cards.length > 0) {
       setCards(config.cards);
       setLayout(config.layout ?? []);
+      setRefreshSchedule(config.refreshSchedule);
+      setApprovalStatus(config.approvalStatus ?? "draft");
+      setApprovedByName(config.approvedByName);
+      setApprovedAt(config.approvedAt);
+      setReviewedByName(config.reviewedByName);
+      setReviewedAt(config.reviewedAt);
     } else {
-      // Brand-new board with no config — use seed data
       setCards(makeSeedCards());
       setLayout(SEED_LAYOUT);
     }
@@ -146,15 +146,29 @@ export default function BoardView() {
     setInitialized(true);
   }, [board, initialized]);
 
-  // Auto-save config when cards or layout change (debounced)
-  const persistConfig = useCallback(
-    (newCards: BoardCardData[], newLayout: LayoutItem[]) => {
-      if (!initialized || !boardId) return;
+  // ── Persist config (debounced) ─────────────────────────────────────────
+  const buildConfig = useCallback(
+    (c: BoardCard[], l: LayoutItem[], overrides?: Partial<BoardConfig>): BoardConfig => ({
+      cards: c,
+      layout: l,
+      refreshSchedule,
+      approvalStatus,
+      approvedByName,
+      approvedAt,
+      reviewedByName,
+      reviewedAt,
+      ...overrides,
+    }),
+    [refreshSchedule, approvalStatus, approvedByName, approvedAt, reviewedByName, reviewedAt],
+  );
 
+  const persistConfig = useCallback(
+    (newCards: BoardCard[], newLayout: LayoutItem[], overrides?: Partial<BoardConfig>) => {
+      if (!initialized || !boardId) return;
       if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
 
       saveTimerRef.current = setTimeout(() => {
-        const config: BoardConfig = { cards: newCards, layout: newLayout };
+        const config = buildConfig(newCards, newLayout, overrides);
         updateBoardMutation.mutate(
           { id: boardId, data: { config } },
           {
@@ -166,21 +180,20 @@ export default function BoardView() {
         );
       }, 1000);
     },
-    [initialized, boardId, updateBoardMutation, queryClient],
+    [initialized, boardId, updateBoardMutation, queryClient, buildConfig],
   );
 
+  // ── Container width tracking ───────────────────────────────────────────
   const containerRef = useCallback((node: HTMLDivElement | null) => {
     if (!node) return;
-    const ro = new ResizeObserver(([entry]) => {
-      setContainerWidth(entry.contentRect.width);
-    });
+    const ro = new ResizeObserver(([entry]) => setContainerWidth(entry.contentRect.width));
     ro.observe(node);
   }, []);
 
+  // ── Handlers ───────────────────────────────────────────────────────────
   const handleTitleChange = (newTitle: string) => {
     setTitle(newTitle);
     if (!boardId) return;
-    // Save title immediately (no debounce)
     updateBoardMutation.mutate(
       { id: boardId, data: { title: newTitle } },
       {
@@ -208,7 +221,8 @@ export default function BoardView() {
 
   const handleAddCard = (cardTitle: string, content: BoardCardContent) => {
     const id = `c-${Date.now()}`;
-    const newCards = [...cards, { id, title: cardTitle, content }];
+    const newCard = legacyContentToBoardCard(id, cardTitle, content);
+    const newCards = [...cards, newCard];
     const newLayout = [...layout, { i: id, x: 0, y: Infinity, w: 6, h: 4 }];
     setCards(newCards);
     setLayout(newLayout);
@@ -235,12 +249,76 @@ export default function BoardView() {
     persistConfig(newCards, newLayout);
   };
 
-  const handleLayoutChange = (newLayout: GridLayoutType) => {
+  const handleLayoutChange = (newLayout: LayoutItem[]) => {
     const layoutArr = [...newLayout];
     setLayout(layoutArr);
     persistConfig(cards, layoutArr);
   };
 
+  // ── Refresh all cards ──────────────────────────────────────────────────
+  const handleRefreshAll = async () => {
+    if (!boardId || isRefreshing) return;
+    setIsRefreshing(true);
+    try {
+      await fetch(`/api/boards/${boardId}/refresh`, { method: "POST", credentials: "include" });
+      queryClient.invalidateQueries({ queryKey: getGetBoardQueryKey(boardId) });
+      // Update local lastRefreshedAt for all cards
+      const now = new Date().toISOString();
+      const refreshed = cards.map((c) => ({ ...c, lastRefreshedAt: now }));
+      setCards(refreshed);
+      persistConfig(refreshed, layout);
+    } catch {
+      // Refresh endpoint may not exist yet — still update timestamps locally
+      const now = new Date().toISOString();
+      const refreshed = cards.map((c) => ({ ...c, lastRefreshedAt: now }));
+      setCards(refreshed);
+      persistConfig(refreshed, layout);
+    } finally {
+      setIsRefreshing(false);
+    }
+  };
+
+  const handleRefreshCard = (cardId: string) => {
+    const now = new Date().toISOString();
+    const newCards = cards.map((c) =>
+      c.id === cardId ? { ...c, lastRefreshedAt: now } : c,
+    );
+    setCards(newCards);
+    persistConfig(newCards, layout);
+  };
+
+  // ── Schedule ───────────────────────────────────────────────────────────
+  const handleScheduleSave = (cron: string | undefined) => {
+    setRefreshSchedule(cron);
+    persistConfig(cards, layout, { refreshSchedule: cron });
+  };
+
+  // ── Approval ───────────────────────────────────────────────────────────
+  const handleMarkReviewed = () => {
+    const now = new Date().toISOString();
+    setApprovalStatus("reviewed");
+    setReviewedByName("You");
+    setReviewedAt(now);
+    persistConfig(cards, layout, {
+      approvalStatus: "reviewed",
+      reviewedByName: "You",
+      reviewedAt: now,
+    });
+  };
+
+  const handleApprove = () => {
+    const now = new Date().toISOString();
+    setApprovalStatus("approved");
+    setApprovedByName("You");
+    setApprovedAt(now);
+    persistConfig(cards, layout, {
+      approvalStatus: "approved",
+      approvedByName: "You",
+      approvedAt: now,
+    });
+  };
+
+  // ── Render: loading / error ────────────────────────────────────────────
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-full" style={{ background: "#F3F4F6" }}>
@@ -264,6 +342,13 @@ export default function BoardView() {
     );
   }
 
+  // ── Find the latest lastRefreshedAt across all cards ───────────────────
+  const latestRefresh = cards.reduce<string | undefined>((latest, c) => {
+    if (!c.lastRefreshedAt) return latest;
+    if (!latest) return c.lastRefreshedAt;
+    return c.lastRefreshedAt > latest ? c.lastRefreshedAt : latest;
+  }, undefined);
+
   return (
     <div className="flex flex-col h-full" style={{ background: "#F3F4F6" }}>
       {/* Back nav */}
@@ -281,6 +366,17 @@ export default function BoardView() {
         )}
       </div>
 
+      {/* Approval banner */}
+      <ApprovalBanner
+        status={approvalStatus}
+        approvedByName={approvedByName}
+        approvedAt={approvedAt}
+        reviewedByName={reviewedByName}
+        reviewedAt={reviewedAt}
+        onMarkReviewed={handleMarkReviewed}
+        onApprove={handleApprove}
+      />
+
       <BoardToolbar
         title={title}
         boardType={boardType}
@@ -289,13 +385,18 @@ export default function BoardView() {
         onBoardTypeChange={handleBoardTypeChange}
         onViewModeChange={setViewMode}
         onAddCard={() => setAddOpen(true)}
+        onRefresh={handleRefreshAll}
+        onScheduleOpen={() => setScheduleOpen(true)}
+        refreshSchedule={refreshSchedule}
+        lastRefreshedAt={latestRefresh}
+        isRefreshing={isRefreshing}
       />
 
       {/* Grid canvas */}
       <div className="flex-1 overflow-auto p-4" ref={containerRef}>
         <GridLayout
           className="layout"
-          layout={layout as GridLayoutType}
+          layout={layout as LayoutItem[]}
           width={containerWidth - 32}
           onLayoutChange={handleLayoutChange}
           cols={12}
@@ -315,11 +416,12 @@ export default function BoardView() {
                   style={{ background: "rgba(79,70,229,0.06)" }}
                 />
               )}
-              <BoardCard
+              <LiveBoardCard
                 card={card}
                 editMode={viewMode === "edit"}
                 onRemove={handleRemove}
                 onDuplicate={handleDuplicate}
+                onRefreshCard={handleRefreshCard}
               />
             </div>
           ))}
@@ -340,6 +442,12 @@ export default function BoardView() {
       </div>
 
       <AddCardModal open={addOpen} onClose={() => setAddOpen(false)} onAdd={handleAddCard} />
+      <ScheduleDialog
+        open={scheduleOpen}
+        currentCron={refreshSchedule}
+        onClose={() => setScheduleOpen(false)}
+        onSave={handleScheduleSave}
+      />
     </div>
   );
 }

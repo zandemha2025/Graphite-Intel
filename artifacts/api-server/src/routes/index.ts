@@ -29,6 +29,8 @@ import scrapeRouter from "./scrape";
 import seoRouter from "./seo";
 import pipedreamWorkflowsRouter from "./pipedream-workflows";
 import boardsRouter from "./boards";
+import notebooksRouter from "./notebooks";
+import contextHealthRouter from "./context-health";
 
 const router: IRouter = Router();
 
@@ -62,5 +64,7 @@ router.use(scrapeRouter);
 router.use(seoRouter);
 router.use(pipedreamWorkflowsRouter);
 router.use(boardsRouter);
+router.use(notebooksRouter);
+router.use(contextHealthRouter);
 
 export default router;

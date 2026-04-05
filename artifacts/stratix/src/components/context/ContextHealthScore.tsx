@@ -1,13 +1,98 @@
-import { AlertCircle, CheckCircle2 } from "lucide-react";
+import { useMemo } from "react";
+
+interface HealthBreakdown {
+  profile: number;
+  documents: number;
+  connections: number;
+  definitions: number;
+  freshness: number;
+}
 
 interface Props {
   profileComplete: boolean;
   companyName: string;
   docCount: number;
   definitionCount: number;
+  connectionCount: number;
+  profileFields: {
+    name: boolean;
+    industry: boolean;
+    stage: boolean;
+    revenue: boolean;
+    competitors: boolean;
+    priorities: boolean;
+    researchSummary: boolean;
+  };
+  lastSyncAt?: string | null;
 }
 
-function HealthSegment({
+function CircularProgress({
+  score,
+  size = 96,
+  strokeWidth = 6,
+}: {
+  score: number;
+  size?: number;
+  strokeWidth?: number;
+}) {
+  const radius = (size - strokeWidth) / 2;
+  const circumference = 2 * Math.PI * radius;
+  const offset = circumference - (score / 100) * circumference;
+  const color = score < 40 ? "#DC2626" : score <= 70 ? "#D97706" : "#16a34a";
+
+  return (
+    <div style={{ position: "relative", width: size, height: size }}>
+      <svg width={size} height={size} style={{ transform: "rotate(-90deg)" }}>
+        <circle
+          cx={size / 2}
+          cy={size / 2}
+          r={radius}
+          fill="none"
+          stroke="#E5E7EB"
+          strokeWidth={strokeWidth}
+        />
+        <circle
+          cx={size / 2}
+          cy={size / 2}
+          r={radius}
+          fill="none"
+          stroke={color}
+          strokeWidth={strokeWidth}
+          strokeDasharray={circumference}
+          strokeDashoffset={offset}
+          strokeLinecap="round"
+          style={{ transition: "stroke-dashoffset 0.8s ease" }}
+        />
+      </svg>
+      <div
+        style={{
+          position: "absolute",
+          inset: 0,
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          justifyContent: "center",
+        }}
+      >
+        <span
+          style={{
+            fontSize: "24px",
+            fontWeight: 700,
+            color: "#111827",
+            lineHeight: 1,
+          }}
+        >
+          {score}
+        </span>
+        <span style={{ fontSize: "10px", color: "#6B7280", marginTop: "2px" }}>
+          / 100
+        </span>
+      </div>
+    </div>
+  );
+}
+
+function BreakdownBar({
   label,
   value,
   max,
@@ -16,75 +101,116 @@ function HealthSegment({
   label: string;
   value: number;
   max: number;
-  detail?: string;
+  detail: string;
 }) {
-  const pct = Math.round((value / max) * 100);
-  const done = value >= max;
+  const pct = max > 0 ? Math.round((value / max) * 100) : 0;
+  const full = value >= max;
+
   return (
     <div style={{ flex: 1, minWidth: 0 }}>
       <div
         style={{
-          fontSize: "10px",
-          textTransform: "uppercase",
-          letterSpacing: "0.1em",
-          color: "#6B7280",
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "baseline",
           marginBottom: "4px",
-          whiteSpace: "nowrap",
-          overflow: "hidden",
-          textOverflow: "ellipsis",
         }}
       >
-        {label}
+        <span
+          style={{
+            fontSize: "10px",
+            textTransform: "uppercase",
+            letterSpacing: "0.1em",
+            color: "#6B7280",
+            whiteSpace: "nowrap",
+            overflow: "hidden",
+            textOverflow: "ellipsis",
+          }}
+        >
+          {label}
+        </span>
+        <span
+          style={{
+            fontSize: "10px",
+            color: full ? "#16a34a" : "#6B7280",
+            fontWeight: full ? 600 : 400,
+            flexShrink: 0,
+            marginLeft: "8px",
+          }}
+        >
+          {value}/{max}
+        </span>
       </div>
       <div
         style={{
           height: "3px",
           background: "#E5E7EB",
           borderRadius: "2px",
-          marginBottom: "4px",
+          marginBottom: "3px",
         }}
       >
         <div
           style={{
             height: "100%",
-            background: done ? "#16a34a" : "#4F46E5",
+            background: full ? "#16a34a" : "#4F46E5",
             borderRadius: "2px",
             width: `${pct}%`,
             transition: "width 0.5s ease",
           }}
         />
       </div>
-      <div style={{ fontSize: "10px", color: done ? "#16a34a" : "#6B7280" }}>
-        {detail ?? (done ? "Complete" : `${pct}%`)}
+      <div style={{ fontSize: "10px", color: full ? "#16a34a" : "#9CA3AF" }}>
+        {detail}
       </div>
     </div>
   );
 }
 
-export function ContextHealthScore({
-  profileComplete,
-  companyName,
-  docCount,
-  definitionCount,
-}: Props) {
-  const profileScore = profileComplete ? 40 : companyName.trim() ? 20 : 0;
-  const docScore = Math.min(30, Math.round((Math.min(docCount, 5) / 5) * 30));
-  const defScore = Math.min(
-    30,
-    Math.round((Math.min(definitionCount, 10) / 10) * 30),
-  );
-  const total = profileScore + docScore + defScore;
+function computeBreakdown(props: Props): HealthBreakdown {
+  const { profileFields, docCount, connectionCount, definitionCount, lastSyncAt } = props;
 
-  const suggestion =
-    definitionCount === 0
-      ? "Add competitor definitions to improve competitive analysis"
-      : definitionCount < 5
-        ? "Add more definitions (metrics, markets) to sharpen AI responses"
-        : docCount === 0
-          ? "Upload documents to ground AI answers in your data"
-          : !profileComplete
-            ? "Complete your company profile for best results"
-            : "Your context is well-configured. Keep definitions updated.";
+  // Profile: 0-30 points
+  const fieldCount = Object.values(profileFields).filter(Boolean).length;
+  const profile = Math.round((fieldCount / 7) * 30);
+
+  // Documents: 0-25 points
+  let documents = 0;
+  if (docCount >= 20) documents = 25;
+  else if (docCount >= 5) documents = 20;
+  else if (docCount >= 1) documents = 10;
+
+  // Connections: 0-20 points
+  let connections = 0;
+  if (connectionCount >= 4) connections = 20;
+  else if (connectionCount >= 2) connections = 15;
+  else if (connectionCount >= 1) connections = 10;
+
+  // Definitions: 0-15 points
+  let definitions = 0;
+  if (definitionCount >= 10) definitions = 15;
+  else if (definitionCount >= 5) definitions = 10;
+  else if (definitionCount >= 1) definitions = 5;
+
+  // Freshness: 0-10 points
+  let freshness = 0;
+  if (lastSyncAt) {
+    const diff = Date.now() - new Date(lastSyncAt).getTime();
+    const hours = diff / (1000 * 60 * 60);
+    if (hours < 24) freshness = 10;
+    else if (hours < 168) freshness = 5;
+  }
+
+  return { profile, documents, connections, definitions, freshness };
+}
+
+export function ContextHealthScore(props: Props) {
+  const breakdown = useMemo(() => computeBreakdown(props), [props]);
+  const total =
+    breakdown.profile +
+    breakdown.documents +
+    breakdown.connections +
+    breakdown.definitions +
+    breakdown.freshness;
 
   return (
     <div
@@ -98,13 +224,13 @@ export function ContextHealthScore({
       <div
         style={{
           display: "flex",
-          alignItems: "flex-start",
-          justifyContent: "space-between",
-          gap: "16px",
-          marginBottom: "14px",
+          alignItems: "center",
+          gap: "24px",
+          marginBottom: "16px",
         }}
       >
-        <div>
+        <CircularProgress score={total} />
+        <div style={{ flex: 1 }}>
           <div
             style={{
               fontSize: "10px",
@@ -116,104 +242,47 @@ export function ContextHealthScore({
           >
             Context Health
           </div>
-          <div style={{ display: "flex", alignItems: "baseline", gap: "6px" }}>
-            <span
-              style={{
-                fontSize: "32px",
-                fontWeight: 700,
-                color: "#111827",
-                lineHeight: 1,
-              }}
-            >
-              {total}%
-            </span>
-            <span style={{ fontSize: "13px", color: "#6B7280" }}>complete</span>
-          </div>
-        </div>
-        <div
-          style={{
-            display: "flex",
-            gap: "16px",
-            fontSize: "11px",
-            color: "#6B7280",
-            flexShrink: 0,
-          }}
-        >
-          <div style={{ display: "flex", alignItems: "center", gap: "4px" }}>
-            {profileComplete ? (
-              <CheckCircle2 size={12} style={{ color: "#16a34a" }} />
-            ) : (
-              <div
-                style={{
-                  width: 12,
-                  height: 12,
-                  borderRadius: "50%",
-                  border: "1.5px solid #E5E7EB",
-                }}
-              />
-            )}
-            Profile
-          </div>
-          <div>
-            {docCount} doc{docCount !== 1 ? "s" : ""}
-          </div>
-          <div>
-            {definitionCount} def{definitionCount !== 1 ? "s" : ""}
+          <div style={{ fontSize: "13px", color: "#374151", lineHeight: 1.6 }}>
+            {total < 40
+              ? "Your context is minimal. Add more data to get better AI responses."
+              : total <= 70
+                ? "Good progress. Fill in the gaps below to unlock full AI accuracy."
+                : "Strong context coverage. Keep your data fresh for best results."}
           </div>
         </div>
       </div>
 
-      <div
-        style={{
-          height: "5px",
-          background: "#E5E7EB",
-          borderRadius: "3px",
-          marginBottom: "16px",
-        }}
-      >
-        <div
-          style={{
-            height: "100%",
-            background: total >= 80 ? "#16a34a" : "#4F46E5",
-            borderRadius: "3px",
-            width: `${total}%`,
-            transition: "width 0.6s ease",
-          }}
-        />
-      </div>
-
-      <div style={{ display: "flex", gap: "20px", marginBottom: "14px" }}>
-        <HealthSegment
-          label="Company Profile"
-          value={profileScore}
-          max={40}
-          detail={profileComplete ? "Complete" : "Incomplete"}
-        />
-        <HealthSegment
-          label="Knowledge Base"
-          value={docScore}
+      <div style={{ display: "flex", gap: "16px" }}>
+        <BreakdownBar
+          label="Profile"
+          value={breakdown.profile}
           max={30}
-          detail={`${docCount} doc${docCount !== 1 ? "s" : ""}`}
+          detail={`${Object.values(props.profileFields).filter(Boolean).length}/7 fields`}
         />
-        <HealthSegment
+        <BreakdownBar
+          label="Documents"
+          value={breakdown.documents}
+          max={25}
+          detail={`${props.docCount} uploaded`}
+        />
+        <BreakdownBar
+          label="Sources"
+          value={breakdown.connections}
+          max={20}
+          detail={`${props.connectionCount} connected`}
+        />
+        <BreakdownBar
           label="Definitions"
-          value={defScore}
-          max={30}
-          detail={`${definitionCount} defined`}
+          value={breakdown.definitions}
+          max={15}
+          detail={`${props.definitionCount} defined`}
         />
-      </div>
-
-      <div
-        style={{
-          fontSize: "12px",
-          color: "#4F46E5",
-          display: "flex",
-          alignItems: "center",
-          gap: "6px",
-        }}
-      >
-        <AlertCircle size={12} />
-        {suggestion}
+        <BreakdownBar
+          label="Freshness"
+          value={breakdown.freshness}
+          max={10}
+          detail={props.lastSyncAt ? "Recent sync" : "No sync data"}
+        />
       </div>
     </div>
   );

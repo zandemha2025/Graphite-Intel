@@ -1,6 +1,7 @@
 import { useState } from "react";
-import { RefreshCw, Download, Share2, Edit3, Eye } from "lucide-react";
+import { RefreshCw, Download, Share2, Edit3, Eye, Clock, Loader2 } from "lucide-react";
 import { BoardTypeSelector, BoardType } from "./BoardTypeSelector";
+import { cronToLabel } from "./board-types";
 
 type ViewMode = "layout" | "edit";
 
@@ -13,6 +14,10 @@ type Props = {
   onViewModeChange: (m: ViewMode) => void;
   onRefresh?: () => void;
   onAddCard?: () => void;
+  onScheduleOpen?: () => void;
+  refreshSchedule?: string;
+  lastRefreshedAt?: string;
+  isRefreshing?: boolean;
 };
 
 export function BoardToolbar({
@@ -24,6 +29,10 @@ export function BoardToolbar({
   onViewModeChange,
   onRefresh,
   onAddCard,
+  onScheduleOpen,
+  refreshSchedule,
+  lastRefreshedAt,
+  isRefreshing,
 }: Props) {
   const [editingTitle, setEditingTitle] = useState(false);
   const [titleDraft, setTitleDraft] = useState(title);
@@ -102,12 +111,47 @@ export function BoardToolbar({
           </button>
         )}
 
+        {/* Schedule info / button */}
+        {(refreshSchedule || lastRefreshedAt) && (
+          <div className="flex items-center gap-1.5 mr-1">
+            {refreshSchedule && (
+              <span
+                className="flex items-center gap-1 text-[10px] px-2 py-1 rounded-full"
+                style={{ background: "#ECFDF5", color: "#059669" }}
+              >
+                <Clock className="h-3 w-3" />
+                {cronToLabel(refreshSchedule)}
+              </span>
+            )}
+            {lastRefreshedAt && (
+              <span className="text-[10px]" style={{ color: "#9CA3AF" }}>
+                Last: {formatRelativeTime(lastRefreshedAt)}
+              </span>
+            )}
+          </div>
+        )}
+
+        {onScheduleOpen && (
+          <button
+            onClick={onScheduleOpen}
+            className="p-1.5 rounded hover:bg-gray-100 transition-colors"
+            title="Schedule"
+          >
+            <Clock className="h-4 w-4" style={{ color: refreshSchedule ? "#059669" : "#6B7280" }} />
+          </button>
+        )}
+
         <button
           onClick={onRefresh}
-          className="p-1.5 rounded hover:bg-gray-100 transition-colors"
-          title="Refresh"
+          disabled={isRefreshing}
+          className="p-1.5 rounded hover:bg-gray-100 transition-colors disabled:opacity-50"
+          title="Refresh all cards"
         >
-          <RefreshCw className="h-4 w-4" style={{ color: "#6B7280" }} />
+          {isRefreshing ? (
+            <Loader2 className="h-4 w-4 animate-spin" style={{ color: "#4F46E5" }} />
+          ) : (
+            <RefreshCw className="h-4 w-4" style={{ color: "#6B7280" }} />
+          )}
         </button>
         <button
           className="p-1.5 rounded hover:bg-gray-100 transition-colors"
@@ -124,4 +168,19 @@ export function BoardToolbar({
       </div>
     </div>
   );
+}
+
+function formatRelativeTime(iso: string): string {
+  try {
+    const diff = Date.now() - new Date(iso).getTime();
+    const minutes = Math.floor(diff / 60000);
+    if (minutes < 1) return "just now";
+    if (minutes < 60) return `${minutes}m ago`;
+    const hours = Math.floor(minutes / 60);
+    if (hours < 24) return `${hours}h ago`;
+    const days = Math.floor(hours / 24);
+    return `${days}d ago`;
+  } catch {
+    return "";
+  }
 }

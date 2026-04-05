@@ -53,6 +53,8 @@ const AdsCampaignDetail = lazy(() => import("@/pages/ads-campaign-detail").then(
 const AdsCampaignNew = lazy(() => import("@/pages/ads-campaign-new").then(m => ({ default: m.AdsCampaignNew })));
 const AdsReports = lazy(() => import("@/pages/ads-reports").then(m => ({ default: m.AdsReports })));
 const Login = lazy(() => import("@/pages/login").then(m => ({ default: m.Login })));
+const NotebookList = lazy(() => import("@/pages/notebook").then(m => ({ default: m.NotebookList })));
+const NotebookEdit = lazy(() => import("@/pages/notebook-edit").then(m => ({ default: m.NotebookEdit })));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -228,6 +230,8 @@ function Router() {
         <Route path="/boards/new" component={() => <ProtectedRoute component={BoardView} />} />
         <Route path="/boards/:id" component={() => <ProtectedRoute component={BoardView} />} />
         <Route path="/boards" component={() => <ProtectedRoute component={BoardsList} />} />
+        <Route path="/notebooks/:id" component={() => <ProtectedRoute component={NotebookEdit} />} />
+        <Route path="/notebooks" component={() => <ProtectedRoute component={NotebookList} />} />
         <Route path="/explore" component={() => <ProtectedRoute component={Explore} />} />
         <Route path="/chat" component={ChatRedirect} />
         <Route path="/reports/new" component={() => <ProtectedRoute component={ReportNew} />} />

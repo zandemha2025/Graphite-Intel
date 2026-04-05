@@ -10,6 +10,7 @@ import {
   User,
 } from "lucide-react";
 import { CellCard } from "./CellCard";
+import { SaveToBoardDialog } from "@/components/save-to-board-dialog";
 import type { CellData } from "@/components/charts";
 
 type SourceChunk = {
@@ -27,6 +28,8 @@ type Props = {
   sources?: SourceChunk[] | null;
   isStreaming?: boolean;
   index: number;
+  conversationId?: number;
+  messageId?: number;
 };
 
 function SourcesCollapsible({ sources }: { sources: SourceChunk[] }) {
@@ -100,7 +103,10 @@ export function InsightCellFallback({
   sources,
   isStreaming,
   index,
+  conversationId,
+  messageId,
 }: Props) {
+  const [saveBoardOpen, setSaveBoardOpen] = useState(false);
   const hasCells = answerCells.length > 0;
   const hasMarkdownOnly =
     answerCells.length > 0 && answerCells.every((c) => c.type === "markdown");
@@ -208,8 +214,16 @@ export function InsightCellFallback({
             background: "var(--explore-surface, #F9FAFB)",
           }}
         >
+          <button
+            onClick={() => setSaveBoardOpen(true)}
+            className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-md text-xs transition-colors hover:bg-gray-100"
+            style={{ color: "var(--explore-muted, #9CA3AF)" }}
+            title="Save to Board"
+          >
+            <Bookmark className="w-3 h-3" />
+            <span>Save to Board</span>
+          </button>
           {[
-            { icon: Bookmark, label: "Save to Board" },
             { icon: Share2, label: "Share" },
             { icon: RefreshCw, label: "Refresh" },
           ].map(({ icon: Icon, label }) => (
@@ -225,6 +239,15 @@ export function InsightCellFallback({
           ))}
         </div>
       )}
+
+      <SaveToBoardDialog
+        open={saveBoardOpen}
+        onClose={() => setSaveBoardOpen(false)}
+        question={question}
+        answerContent={answerContent}
+        conversationId={conversationId}
+        messageId={messageId}
+      />
     </div>
   );
 }

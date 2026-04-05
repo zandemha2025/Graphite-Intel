@@ -180,6 +180,67 @@ router.patch("/boards/:id", async (req: Request, res: Response) => {
 });
 
 /**
+ * POST /boards/:id/refresh
+ * Trigger a refresh of all cards on the board.
+ * For now updates lastRefreshedAt timestamps; actual re-execution of
+ * insight/notebook_cell prompts can be wired to Inngest later.
+ */
+router.post("/boards/:id/refresh", async (req: Request, res: Response) => {
+  if (!requireAuth(req, res)) return;
+  const orgId = req.user!.orgId!;
+  const userId = Number(req.user!.id);
+  const id = parseInt(req.params.id as string);
+
+  if (isNaN(id)) {
+    res.status(400).json({ error: "Invalid board id" });
+    return;
+  }
+
+  try {
+    const [board] = await db
+      .select()
+      .from(boards)
+      .where(
+        and(
+          eq(boards.id, id),
+          eq(boards.orgId, orgId),
+          or(
+            eq(boards.createdByUserId, userId),
+            eq(boards.isShared, true),
+          ),
+        ),
+      );
+
+    if (!board) {
+      res.status(404).json({ error: "Board not found" });
+      return;
+    }
+
+    // Update lastRefreshedAt on every card in the config
+    const config = (board.config as { cards?: { lastRefreshedAt?: string }[]; [k: string]: unknown } | null) ?? {};
+    const now = new Date().toISOString();
+
+    if (Array.isArray(config.cards)) {
+      config.cards = config.cards.map((card: { lastRefreshedAt?: string; [k: string]: unknown }) => ({
+        ...card,
+        lastRefreshedAt: now,
+      }));
+    }
+
+    const [updated] = await db
+      .update(boards)
+      .set({ config })
+      .where(eq(boards.id, id))
+      .returning();
+
+    res.json(updated);
+  } catch (err) {
+    req.log.error({ err }, "Failed to refresh board");
+    res.status(500).json({ error: "Failed to refresh board" });
+  }
+});
+
+/**
  * DELETE /boards/:id
  * Delete a board.
  */

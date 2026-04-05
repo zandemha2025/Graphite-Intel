@@ -1,6 +1,11 @@
 export { BoardCard } from "./BoardCard";
 export type { BoardCardData, BoardCardContent } from "./BoardCard";
+export { LiveBoardCard } from "./LiveBoardCard";
 export { BoardToolbar } from "./BoardToolbar";
 export { BoardTypeSelector } from "./BoardTypeSelector";
 export type { BoardType } from "./BoardTypeSelector";
 export { AddCardModal } from "./AddCardModal";
+export { ApprovalBanner } from "./ApprovalBanner";
+export { ScheduleDialog } from "./ScheduleDialog";
+export type { BoardConfig, BoardCard as BoardCardType, ApprovalStatus } from "./board-types";
+export { SCHEDULE_PRESETS, cronToLabel } from "./board-types";

@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { X } from "lucide-react";
 
-export type DefinitionCategory = "competitor" | "metric" | "market" | "custom";
+export type DefinitionCategory = "competitor" | "metric" | "market" | "product" | "segment" | "custom";
 export type DefinitionConfidence = "high" | "medium" | "low";
 
 export interface Definition {
@@ -22,6 +22,8 @@ const CATEGORY_OPTIONS: { value: DefinitionCategory; label: string }[] = [
   { value: "competitor", label: "Competitor" },
   { value: "metric", label: "Metric" },
   { value: "market", label: "Market" },
+  { value: "product", label: "Product" },
+  { value: "segment", label: "Segment" },
   { value: "custom", label: "Custom" },
 ];
 

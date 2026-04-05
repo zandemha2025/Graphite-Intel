@@ -14,6 +14,7 @@ import {
   Plug,
   Plus,
   FileText,
+  BookText,
   Upload,
   Clock,
   Settings,
@@ -54,6 +55,7 @@ interface PaletteItem {
 
 const NAVIGATION_ITEMS: PaletteItem[] = [
   { id: "explore", label: "Explore", description: "AI chat & research", icon: Compass, route: "/explore", shortcut: "G E", keywords: "chat search ask" },
+  { id: "notebooks", label: "Notebooks", description: "Multi-cell analytical workspaces", icon: BookText, route: "/notebooks", shortcut: "G N", keywords: "notebook cell analysis workspace" },
   { id: "boards", label: "Boards", description: "Kanban & dashboards", icon: LayoutGrid, route: "/boards", shortcut: "G B", keywords: "kanban dashboard grid" },
   { id: "reports", label: "Reports", description: "Report library", icon: Library, route: "/reports", shortcut: "G R", keywords: "report library list" },
   { id: "workflows", label: "Workflows", description: "Automation workflows", icon: Zap, route: "/workflows", shortcut: "G W", keywords: "automation pipeline" },
@@ -73,6 +75,7 @@ const NAVIGATION_ITEMS: PaletteItem[] = [
 
 const ACTION_ITEMS: PaletteItem[] = [
   { id: "new-report", label: "New Report", description: "Create a new report", icon: Plus, route: "/reports/new", keywords: "create report" },
+  { id: "new-notebook", label: "New Notebook", description: "Create an analytical notebook", icon: Plus, route: "/notebooks", keywords: "create notebook analysis" },
   { id: "new-board", label: "New Board", description: "Create a new board", icon: Plus, route: "/boards/new", keywords: "create board" },
   { id: "new-workflow", label: "New Workflow", description: "Build a new workflow", icon: Plus, route: "/workflow-builder/new", keywords: "create workflow automation" },
   { id: "upload-doc", label: "Upload Document", description: "Add to knowledge base", icon: Upload, route: "/knowledge", keywords: "upload file document" },

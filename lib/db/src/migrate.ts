@@ -46,6 +46,43 @@ export async function runStartupMigrations(): Promise<void> {
     )
   `);
 
+  // Ensure notebooks tables exist (idempotent)
+  await db.execute(sql`
+    CREATE TABLE IF NOT EXISTS notebooks (
+      id SERIAL PRIMARY KEY,
+      org_id INTEGER NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,
+      created_by_user_id VARCHAR NOT NULL,
+      title VARCHAR NOT NULL,
+      description TEXT,
+      is_published BOOLEAN NOT NULL DEFAULT false,
+      refresh_schedule VARCHAR,
+      last_refreshed_at TIMESTAMPTZ,
+      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+      updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    )
+  `);
+
+  await db.execute(sql`
+    CREATE TABLE IF NOT EXISTS notebook_cells (
+      id SERIAL PRIMARY KEY,
+      notebook_id INTEGER NOT NULL REFERENCES notebooks(id) ON DELETE CASCADE,
+      cell_index INTEGER NOT NULL,
+      title VARCHAR NOT NULL,
+      prompt TEXT NOT NULL,
+      output TEXT,
+      status VARCHAR(20) NOT NULL DEFAULT 'pending',
+      data_source_hint VARCHAR,
+      last_executed_at TIMESTAMPTZ,
+      tokens_cost INTEGER,
+      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+      updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    )
+  `);
+
+  await db.execute(sql`CREATE INDEX IF NOT EXISTS idx_notebook_org ON notebooks (org_id)`);
+  await db.execute(sql`CREATE INDEX IF NOT EXISTS idx_notebook_cell_notebook ON notebook_cells (notebook_id)`);
+  await db.execute(sql`CREATE INDEX IF NOT EXISTS idx_notebook_cell_index ON notebook_cells (notebook_id, cell_index)`);
+
   // Phase 1: Backfill orgId on documents from org_members for existing rows
   try {
     await db.execute(sql`
