@@ -11,7 +11,7 @@ interface CompanyProfile {
   companyName: string;
   industry: string;
   stage: string;
-  revenue: string;
+  revenueRange: string;
   competitors: string;
   priorities: string;
 }
@@ -20,7 +20,7 @@ const emptyProfile: CompanyProfile = {
   companyName: "",
   industry: "",
   stage: "",
-  revenue: "",
+  revenueRange: "",
   competitors: "",
   priorities: "",
 };
@@ -29,7 +29,7 @@ const fieldLabels: Record<keyof CompanyProfile, string> = {
   companyName: "Company name",
   industry: "Industry",
   stage: "Stage",
-  revenue: "Revenue range",
+  revenueRange: "Revenue range",
   competitors: "Key competitors",
   priorities: "Strategic priorities",
 };
