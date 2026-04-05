@@ -256,33 +256,33 @@ const LOGO_SLOTS = [
 export function Landing() {
   const { data: auth, isLoading } = useGetCurrentAuthUser();
 
-  if (isLoading) return <div className="h-screen bg-[#0D0C0B]" />;
+  if (isLoading) return <div className="h-screen bg-[#F6F5F4]" />;
 
   return (
-    <div className="min-h-screen bg-[#0D0C0B] text-[#E8E4DC] flex flex-col overflow-x-hidden">
+    <div className="min-h-screen bg-[#F6F5F4] text-[#0A0A0A] flex flex-col overflow-x-hidden">
       {/* ---- Header ---- */}
-      <header className="fixed top-0 left-0 right-0 px-6 md:px-10 py-4 flex items-center justify-between border-b border-white/[0.06] z-50 bg-[#0D0C0B]/80 backdrop-blur-xl">
+      <header className="fixed top-0 left-0 right-0 px-6 md:px-10 py-4 flex items-center justify-between border-b border-[#E5E5E3] z-50 bg-[#F6F5F4]/80 backdrop-blur-xl">
         <div className="flex items-center gap-3">
-          <div className="h-7 w-7 border border-[#E8E4DC]/30 flex items-center justify-center">
-            <span className="font-sans font-semibold text-[#E8E4DC] text-sm leading-none">
+          <div className="h-7 w-7 border border-[#E5E5E3] flex items-center justify-center">
+            <span className="font-sans font-semibold text-[#0A0A0A] text-sm leading-none">
               S
             </span>
           </div>
-          <span className="font-sans font-semibold text-lg tracking-tight text-[#E8E4DC]">
+          <span className="font-sans font-semibold text-lg tracking-tight text-[#0A0A0A]">
             Stratix
           </span>
         </div>
         <nav className="flex items-center gap-5">
           <Link
             href="/security"
-            className="hidden md:inline text-xs font-medium text-[#E8E4DC]/40 hover:text-[#E8E4DC]/70 transition-colors font-medium"
+            className="hidden md:inline text-xs font-medium text-[#0A0A0A]/40 hover:text-[#0A0A0A]/70 transition-colors font-medium"
           >
             Security
           </Link>
           {auth?.user ? (
             <Link
               href="/dashboard"
-              className="text-sm font-medium text-[#E8E4DC]/70 hover:text-[#E8E4DC] transition-colors"
+              className="text-sm font-medium text-[#0A0A0A]/70 hover:text-[#0A0A0A] transition-colors"
               data-testid="link-dashboard"
             >
               Dashboard
@@ -290,7 +290,7 @@ export function Landing() {
           ) : (
             <Link
               href="/login"
-              className="text-sm font-medium bg-[#E8E4DC] text-[#0D0C0B] px-5 py-2 hover:bg-[#D4CEC5] transition-colors font-medium"
+              className="text-sm font-medium bg-[#0A0A0A] text-white px-5 py-2 hover:bg-[#1A1A1A] transition-colors font-medium"
               data-testid="button-signin-nav"
             >
               Sign In
@@ -307,13 +307,13 @@ export function Landing() {
             className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] blur-3xl"
             style={{ background: "radial-gradient(circle, rgba(232,228,220,0.03) 0%, transparent 70%)" }}
           />
-          <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[#E8E4DC]/[0.08] to-transparent" />
+          <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[#E5E5E3] to-transparent" />
           {/* Grid pattern */}
           <div
             className="absolute inset-0 opacity-[0.02]"
             style={{
               backgroundImage:
-                "linear-gradient(#E8E4DC 1px, transparent 1px), linear-gradient(90deg, #E8E4DC 1px, transparent 1px)",
+                "linear-gradient(#E5E5E3 1px, transparent 1px), linear-gradient(90deg, #E5E5E3 1px, transparent 1px)",
               backgroundSize: "64px 64px",
             }}
           />
@@ -325,7 +325,7 @@ export function Landing() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.7, delay: 0.1 }}
           >
-            <span className="inline-block text-xs font-medium text-[#E8E4DC]/35 border border-[#E8E4DC]/10 px-4 py-1.5 mb-8">
+            <span className="inline-block text-xs font-medium text-[#0A0A0A]/35 border border-[#E5E5E3] px-4 py-1.5 mb-8">
               Executive Intelligence Platform
             </span>
           </motion.div>
@@ -334,18 +334,18 @@ export function Landing() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.2 }}
-            className="font-sans text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-light tracking-tight text-[#E8E4DC] leading-[0.95] mb-8"
+            className="font-sans text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-light tracking-tight text-[#0A0A0A] leading-[0.95] mb-8"
           >
             Strategic Intelligence
             <br />
-            <span className="text-[#E8E4DC]/50">for the C-Suite</span>
+            <span className="text-[#0A0A0A]/50">for the C-Suite</span>
           </motion.h1>
 
           <motion.p
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.7, delay: 0.4 }}
-            className="text-base md:text-lg text-[#E8E4DC]/45 max-w-2xl mx-auto mb-12 font-light leading-relaxed"
+            className="text-base md:text-lg text-[#0A0A0A]/45 max-w-2xl mx-auto mb-12 font-light leading-relaxed"
           >
             The intelligence layer that connects your data sources, applies AI
             analysis, and delivers strategic insights no general-purpose AI
@@ -361,7 +361,7 @@ export function Landing() {
             {auth?.user ? (
               <Link
                 href="/dashboard"
-                className="inline-flex items-center gap-2 bg-[#E8E4DC] text-[#0D0C0B] px-8 py-3.5 font-medium hover:bg-[#D4CEC5] transition-colors text-sm font-medium"
+                className="inline-flex items-center gap-2 bg-[#0A0A0A] text-white px-8 py-3.5 font-medium hover:bg-[#1A1A1A] transition-colors text-sm font-medium"
                 data-testid="button-enter-app"
               >
                 Enter Dashboard
@@ -371,7 +371,7 @@ export function Landing() {
               <>
                 <Link
                   href="/login"
-                  className="inline-flex items-center gap-2 bg-[#E8E4DC] text-[#0D0C0B] px-8 py-3.5 font-medium hover:bg-[#D4CEC5] transition-all text-sm font-medium group"
+                  className="inline-flex items-center gap-2 bg-[#0A0A0A] text-white px-8 py-3.5 font-medium hover:bg-[#1A1A1A] transition-all text-sm font-medium group"
                   data-testid="button-signin-hero"
                 >
                   Get Started Free
@@ -379,7 +379,7 @@ export function Landing() {
                 </Link>
                 <a
                   href="mailto:hello@stratix.ai?subject=Demo%20Request"
-                  className="inline-flex items-center gap-2 border border-[#E8E4DC]/15 text-[#E8E4DC]/60 px-8 py-3.5 font-medium hover:border-[#E8E4DC]/30 hover:text-[#E8E4DC]/80 transition-all text-sm font-medium"
+                  className="inline-flex items-center gap-2 border border-[#E5E5E3] text-[#0A0A0A]/60 px-8 py-3.5 font-medium hover:border-[#E5E5E3] hover:text-[#0A0A0A]/80 transition-all text-sm font-medium"
                 >
                   Book a Demo
                 </a>
@@ -398,20 +398,20 @@ export function Landing() {
           <motion.div
             animate={{ y: [0, 6, 0] }}
             transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
-            className="w-px h-8 bg-gradient-to-b from-[#E8E4DC]/20 to-transparent"
+            className="w-px h-8 bg-gradient-to-b from-[#E5E5E3] to-transparent"
           />
         </motion.div>
       </section>
 
       {/* ---- Metrics strip ---- */}
-      <section className="border-t border-white/[0.06] bg-[#0A0908]">
+      <section className="border-t border-[#E5E5E3] bg-[#0A0908]">
         <div className="max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-3 divide-y md:divide-y-0 md:divide-x divide-white/[0.06]">
           {METRICS.map((m, i) => (
             <FadeIn key={m.label} delay={i * 0.1} className="px-8 md:px-10 py-8 text-center">
-              <p className="font-sans text-3xl md:text-4xl font-light text-[#E8E4DC] mb-2">
+              <p className="font-sans text-3xl md:text-4xl font-light text-[#0A0A0A] mb-2">
                 {m.value}
               </p>
-              <p className="text-xs text-[#E8E4DC]/35 font-medium">
+              <p className="text-xs text-[#0A0A0A]/35 font-medium">
                 {m.label}
               </p>
             </FadeIn>
@@ -420,9 +420,9 @@ export function Landing() {
       </section>
 
       {/* ---- Trusted By ---- */}
-      <section className="border-t border-white/[0.06] px-6 md:px-12 py-12">
+      <section className="border-t border-[#E5E5E3] px-6 md:px-12 py-12">
         <FadeIn>
-          <p className="text-xs font-medium text-[#E8E4DC]/25 text-center mb-8">
+          <p className="text-xs font-medium text-[#0A0A0A]/25 text-center mb-8">
             Trusted by leading firms
           </p>
         </FadeIn>
@@ -431,9 +431,9 @@ export function Landing() {
             <motion.div
               key={name}
               variants={staggerChild}
-              className="border border-white/[0.06] px-4 py-4 flex items-center justify-center opacity-30 hover:opacity-50 transition-opacity"
+              className="border border-[#E5E5E3] px-4 py-4 flex items-center justify-center opacity-30 hover:opacity-50 transition-opacity"
             >
-              <span className="text-xs font-medium text-[#E8E4DC]/70 text-center leading-tight">
+              <span className="text-xs font-medium text-[#0A0A0A]/70 text-center leading-tight">
                 {name}
               </span>
             </motion.div>
@@ -442,18 +442,18 @@ export function Landing() {
       </section>
 
       {/* ---- Features Grid ---- */}
-      <section className="border-t border-white/[0.06] px-6 md:px-12 py-20 md:py-28">
+      <section className="border-t border-[#E5E5E3] px-6 md:px-12 py-20 md:py-28">
         <div className="max-w-6xl mx-auto">
           <FadeIn className="mb-16 max-w-2xl">
-            <span className="text-xs font-medium text-[#E8E4DC]/30 border border-[#E8E4DC]/10 px-3 py-1 inline-block mb-6">
+            <span className="text-xs font-medium text-[#0A0A0A]/30 border border-[#E5E5E3] px-3 py-1 inline-block mb-6">
               Capabilities
             </span>
-            <h2 className="font-sans text-3xl md:text-5xl font-light tracking-tight text-[#E8E4DC] leading-[1.1] mb-4">
+            <h2 className="font-sans text-3xl md:text-5xl font-light tracking-tight text-[#0A0A0A] leading-[1.1] mb-4">
               Everything your team needs
               <br />
-              <span className="text-[#E8E4DC]/40">to move with conviction</span>
+              <span className="text-[#0A0A0A]/40">to move with conviction</span>
             </h2>
-            <p className="text-sm md:text-base text-[#E8E4DC]/35 font-light leading-relaxed">
+            <p className="text-sm md:text-base text-[#0A0A0A]/35 font-light leading-relaxed">
               Six integrated modules designed to replace the patchwork of tools,
               consultants, and spreadsheets that slow down strategic work.
             </p>
@@ -466,15 +466,15 @@ export function Landing() {
                 <motion.div
                   key={f.title}
                   variants={staggerChild}
-                  className="bg-[#0D0C0B] p-8 md:p-10 group hover:bg-[#0F0E0D] transition-colors"
+                  className="bg-[#F6F5F4] p-8 md:p-10 group hover:bg-[#F0EFED] transition-colors"
                 >
-                  <div className="w-10 h-10 border border-[#E8E4DC]/10 flex items-center justify-center mb-6 group-hover:border-[#E8E4DC]/20 transition-colors">
-                    <Icon className="w-5 h-5 text-[#E8E4DC]/40 group-hover:text-[#E8E4DC]/60 transition-colors" />
+                  <div className="w-10 h-10 border border-[#E5E5E3] flex items-center justify-center mb-6 group-hover:border-[#E5E5E3] transition-colors">
+                    <Icon className="w-5 h-5 text-[#0A0A0A]/40 group-hover:text-[#0A0A0A]/60 transition-colors" />
                   </div>
-                  <h3 className="font-sans text-lg font-normal text-[#E8E4DC]/85 mb-3">
+                  <h3 className="font-sans text-lg font-normal text-[#0A0A0A]/85 mb-3">
                     {f.title}
                   </h3>
-                  <p className="text-sm text-[#E8E4DC]/35 leading-relaxed font-light">
+                  <p className="text-sm text-[#0A0A0A]/35 leading-relaxed font-light">
                     {f.description}
                   </p>
                 </motion.div>
@@ -485,18 +485,18 @@ export function Landing() {
       </section>
 
       {/* ---- Why Stratix ---- */}
-      <section className="border-t border-white/[0.06] px-6 md:px-12 py-20 md:py-28 bg-[#0A0908]">
+      <section className="border-t border-[#E5E5E3] px-6 md:px-12 py-20 md:py-28 bg-[#0A0908]">
         <div className="max-w-6xl mx-auto">
           <FadeIn className="mb-16 text-center max-w-3xl mx-auto">
-            <span className="text-xs font-medium text-[#E8E4DC]/30 border border-[#E8E4DC]/10 px-3 py-1 inline-block mb-6">
+            <span className="text-xs font-medium text-[#0A0A0A]/30 border border-[#E5E5E3] px-3 py-1 inline-block mb-6">
               Why Stratix
             </span>
-            <h2 className="font-sans text-3xl md:text-5xl font-light tracking-tight text-[#E8E4DC] leading-[1.1] mb-4">
+            <h2 className="font-sans text-3xl md:text-5xl font-light tracking-tight text-[#0A0A0A] leading-[1.1] mb-4">
               AI tools answer questions.
               <br />
-              <span className="text-[#E8E4DC]/40">Stratix answers YOUR questions.</span>
+              <span className="text-[#0A0A0A]/40">Stratix answers YOUR questions.</span>
             </h2>
-            <p className="text-sm md:text-base text-[#E8E4DC]/35 font-light leading-relaxed">
+            <p className="text-sm md:text-base text-[#0A0A0A]/35 font-light leading-relaxed">
               ChatGPT, Claude, and Copilot know the internet. Stratix knows your
               business. Same AI models — your data, your context, completely
               different answers.
@@ -507,11 +507,11 @@ export function Landing() {
           <div className="space-y-6">
             {COMPARISONS.map((c, i) => (
               <FadeIn key={i} delay={i * 0.1}>
-                <div className="border border-white/[0.06]">
+                <div className="border border-[#E5E5E3]">
                   {/* Prompt bar */}
-                  <div className="px-6 md:px-8 py-4 border-b border-white/[0.06] flex items-center gap-3">
-                    <MessageSquare className="w-4 h-4 text-[#E8E4DC]/30 flex-shrink-0" />
-                    <p className="text-sm text-[#E8E4DC]/60 font-light italic">
+                  <div className="px-6 md:px-8 py-4 border-b border-[#E5E5E3] flex items-center gap-3">
+                    <MessageSquare className="w-4 h-4 text-[#0A0A0A]/30 flex-shrink-0" />
+                    <p className="text-sm text-[#0A0A0A]/60 font-light italic">
                       "{c.prompt}"
                     </p>
                   </div>
@@ -520,31 +520,31 @@ export function Landing() {
                     {/* Generic AI side */}
                     <div className="p-6 md:p-8">
                       <div className="flex items-center gap-2 mb-4">
-                        <Globe className="w-4 h-4 text-[#E8E4DC]/25" />
-                        <span className="text-xs font-medium text-[#E8E4DC]/25">
+                        <Globe className="w-4 h-4 text-[#0A0A0A]/25" />
+                        <span className="text-xs font-medium text-[#0A0A0A]/25">
                           {c.generic.label}
                         </span>
                       </div>
-                      <p className="text-sm text-[#E8E4DC]/35 font-light leading-relaxed mb-3">
+                      <p className="text-sm text-[#0A0A0A]/35 font-light leading-relaxed mb-3">
                         {c.generic.answer}
                       </p>
-                      <p className="text-xs font-medium text-[#E8E4DC]/20">
+                      <p className="text-xs font-medium text-[#0A0A0A]/20">
                         {c.generic.tone}
                       </p>
                     </div>
 
                     {/* Stratix side */}
-                    <div className="p-6 md:p-8 bg-[#0F0E0D]">
+                    <div className="p-6 md:p-8 bg-[#F0EFED]">
                       <div className="flex items-center gap-2 mb-4">
-                        <Database className="w-4 h-4 text-[#E8E4DC]/50" />
-                        <span className="text-xs font-medium text-[#E8E4DC]/50">
+                        <Database className="w-4 h-4 text-[#0A0A0A]/50" />
+                        <span className="text-xs font-medium text-[#0A0A0A]/50">
                           {c.stratix.label}
                         </span>
                       </div>
-                      <p className="text-sm text-[#E8E4DC]/70 font-light leading-relaxed mb-3">
+                      <p className="text-sm text-[#0A0A0A]/70 font-light leading-relaxed mb-3">
                         {c.stratix.answer}
                       </p>
-                      <p className="text-xs font-medium text-[#E8E4DC]/40">
+                      <p className="text-xs font-medium text-[#0A0A0A]/40">
                         {c.stratix.tone}
                       </p>
                     </div>
@@ -556,25 +556,25 @@ export function Landing() {
 
           {/* Closing line */}
           <FadeIn delay={0.3} className="mt-12 text-center">
-            <p className="font-sans text-xl md:text-2xl font-light text-[#E8E4DC]/60 tracking-tight">
+            <p className="font-sans text-xl md:text-2xl font-light text-[#0A0A0A]/60 tracking-tight">
               Same AI models. Your data.{" "}
-              <span className="text-[#E8E4DC]">Completely different answers.</span>
+              <span className="text-[#0A0A0A]">Completely different answers.</span>
             </p>
           </FadeIn>
         </div>
       </section>
 
       {/* ---- Integrations ---- */}
-      <section className="border-t border-white/[0.06] px-6 md:px-12 py-20 md:py-28">
+      <section className="border-t border-[#E5E5E3] px-6 md:px-12 py-20 md:py-28">
         <div className="max-w-5xl mx-auto">
           <FadeIn className="mb-12 text-center">
-            <span className="text-xs font-medium text-[#E8E4DC]/30 border border-[#E8E4DC]/10 px-3 py-1 inline-block mb-6">
+            <span className="text-xs font-medium text-[#0A0A0A]/30 border border-[#E5E5E3] px-3 py-1 inline-block mb-6">
               Integrations
             </span>
-            <h2 className="font-sans text-3xl md:text-5xl font-light tracking-tight text-[#E8E4DC] leading-[1.1] mb-4">
+            <h2 className="font-sans text-3xl md:text-5xl font-light tracking-tight text-[#0A0A0A] leading-[1.1] mb-4">
               Connects to the tools
               <br />
-              <span className="text-[#E8E4DC]/40">you already use</span>
+              <span className="text-[#0A0A0A]/40">you already use</span>
             </h2>
           </FadeIn>
 
@@ -583,13 +583,13 @@ export function Landing() {
               <motion.div
                 key={cat.label}
                 variants={staggerChild}
-                className="bg-[#0D0C0B] p-6 text-center group hover:bg-[#0F0E0D] transition-colors"
+                className="bg-[#F6F5F4] p-6 text-center group hover:bg-[#F0EFED] transition-colors"
               >
-                <Plug className="w-5 h-5 text-[#E8E4DC]/25 mx-auto mb-4 group-hover:text-[#E8E4DC]/40 transition-colors" />
-                <h3 className="text-xs font-medium text-[#E8E4DC]/60 mb-2">
+                <Plug className="w-5 h-5 text-[#0A0A0A]/25 mx-auto mb-4 group-hover:text-[#0A0A0A]/40 transition-colors" />
+                <h3 className="text-xs font-medium text-[#0A0A0A]/60 mb-2">
                   {cat.label}
                 </h3>
-                <p className="text-[10px] text-[#E8E4DC]/25 leading-relaxed font-light">
+                <p className="text-[10px] text-[#0A0A0A]/25 leading-relaxed font-light">
                   {cat.examples}
                 </p>
               </motion.div>
@@ -597,9 +597,9 @@ export function Landing() {
           </StaggerContainer>
 
           <FadeIn className="text-center">
-            <div className="inline-flex items-center gap-2 border border-[#E8E4DC]/10 px-5 py-2.5">
-              <Zap className="w-3.5 h-3.5 text-[#E8E4DC]/35" />
-              <span className="text-xs text-[#E8E4DC]/40 font-medium">
+            <div className="inline-flex items-center gap-2 border border-[#E5E5E3] px-5 py-2.5">
+              <Zap className="w-3.5 h-3.5 text-[#0A0A0A]/35" />
+              <span className="text-xs text-[#0A0A0A]/40 font-medium">
                 600+ integrations via Pipedream Connect
               </span>
             </div>
@@ -608,13 +608,13 @@ export function Landing() {
       </section>
 
       {/* ---- How It Works ---- */}
-      <section className="border-t border-white/[0.06] px-6 md:px-12 py-20 md:py-28 bg-[#0A0908]">
+      <section className="border-t border-[#E5E5E3] px-6 md:px-12 py-20 md:py-28 bg-[#0A0908]">
         <div className="max-w-5xl mx-auto">
           <FadeIn className="mb-16 text-center">
-            <span className="text-xs font-medium text-[#E8E4DC]/30 border border-[#E8E4DC]/10 px-3 py-1 inline-block mb-6">
+            <span className="text-xs font-medium text-[#0A0A0A]/30 border border-[#E5E5E3] px-3 py-1 inline-block mb-6">
               How It Works
             </span>
-            <h2 className="font-sans text-3xl md:text-5xl font-light tracking-tight text-[#E8E4DC] leading-[1.1]">
+            <h2 className="font-sans text-3xl md:text-5xl font-light tracking-tight text-[#0A0A0A] leading-[1.1]">
               Three steps to clarity
             </h2>
           </FadeIn>
@@ -630,20 +630,20 @@ export function Landing() {
                 >
                   {/* Connector line (desktop only) */}
                   {i < STEPS.length - 1 && (
-                    <div className="hidden md:block absolute top-8 right-0 w-full h-px bg-gradient-to-r from-transparent via-[#E8E4DC]/[0.08] to-transparent translate-x-1/2" />
+                    <div className="hidden md:block absolute top-8 right-0 w-full h-px bg-gradient-to-r from-transparent via-[#E5E5E3] to-transparent translate-x-1/2" />
                   )}
 
                   <div className="flex flex-col items-center md:items-start">
-                    <div className="w-14 h-14 border border-[#E8E4DC]/10 flex items-center justify-center mb-6 relative">
-                      <Icon className="w-6 h-6 text-[#E8E4DC]/40" />
-                      <span className="absolute -top-2 -right-2 text-[9px] font-medium text-[#E8E4DC]/25 tracking-normal">
+                    <div className="w-14 h-14 border border-[#E5E5E3] flex items-center justify-center mb-6 relative">
+                      <Icon className="w-6 h-6 text-[#0A0A0A]/40" />
+                      <span className="absolute -top-2 -right-2 text-[9px] font-medium text-[#0A0A0A]/25 tracking-normal">
                         {s.number}
                       </span>
                     </div>
-                    <h3 className="font-sans text-xl font-normal text-[#E8E4DC]/80 mb-3">
+                    <h3 className="font-sans text-xl font-normal text-[#0A0A0A]/80 mb-3">
                       {s.title}
                     </h3>
-                    <p className="text-sm text-[#E8E4DC]/35 leading-relaxed font-light max-w-xs">
+                    <p className="text-sm text-[#0A0A0A]/35 leading-relaxed font-light max-w-xs">
                       {s.description}
                     </p>
                   </div>
@@ -655,16 +655,16 @@ export function Landing() {
       </section>
 
       {/* ---- Trust & Security ---- */}
-      <section className="border-t border-white/[0.06] px-6 md:px-12 py-20 md:py-28">
+      <section className="border-t border-[#E5E5E3] px-6 md:px-12 py-20 md:py-28">
         <div className="max-w-5xl mx-auto">
           <FadeIn className="mb-16 text-center">
-            <span className="text-xs font-medium text-[#E8E4DC]/30 border border-[#E8E4DC]/10 px-3 py-1 inline-block mb-6">
+            <span className="text-xs font-medium text-[#0A0A0A]/30 border border-[#E5E5E3] px-3 py-1 inline-block mb-6">
               Trust & Security
             </span>
-            <h2 className="font-sans text-3xl md:text-5xl font-light tracking-tight text-[#E8E4DC] leading-[1.1] mb-4">
+            <h2 className="font-sans text-3xl md:text-5xl font-light tracking-tight text-[#0A0A0A] leading-[1.1] mb-4">
               Built for enterprise
             </h2>
-            <p className="text-sm md:text-base text-[#E8E4DC]/35 font-light leading-relaxed max-w-xl mx-auto">
+            <p className="text-sm md:text-base text-[#0A0A0A]/35 font-light leading-relaxed max-w-xl mx-auto">
               Your data never trains our models. Industry-leading security
               practices protect every document, conversation, and insight.
             </p>
@@ -677,15 +677,15 @@ export function Landing() {
                 <motion.div
                   key={b.title}
                   variants={staggerChild}
-                  className="bg-[#0D0C0B] p-8 text-center"
+                  className="bg-[#F6F5F4] p-8 text-center"
                 >
-                  <div className="w-12 h-12 border border-[#E8E4DC]/10 flex items-center justify-center mx-auto mb-5">
-                    <Icon className="w-5 h-5 text-[#E8E4DC]/35" />
+                  <div className="w-12 h-12 border border-[#E5E5E3] flex items-center justify-center mx-auto mb-5">
+                    <Icon className="w-5 h-5 text-[#0A0A0A]/35" />
                   </div>
-                  <h3 className="text-sm font-medium text-[#E8E4DC]/70 mb-2">
+                  <h3 className="text-sm font-medium text-[#0A0A0A]/70 mb-2">
                     {b.title}
                   </h3>
-                  <p className="text-xs text-[#E8E4DC]/30 leading-relaxed font-light">
+                  <p className="text-xs text-[#0A0A0A]/30 leading-relaxed font-light">
                     {b.description}
                   </p>
                 </motion.div>
@@ -696,7 +696,7 @@ export function Landing() {
       </section>
 
       {/* ---- Final CTA ---- */}
-      <section className="border-t border-white/[0.06] px-6 md:px-12 py-24 md:py-32 bg-[#0A0908] relative overflow-hidden">
+      <section className="border-t border-[#E5E5E3] px-6 md:px-12 py-24 md:py-32 bg-[#0A0908] relative overflow-hidden">
         {/* Background accent */}
         <div className="absolute inset-0">
           <div
@@ -706,10 +706,10 @@ export function Landing() {
         </div>
 
         <FadeIn className="relative z-10 max-w-3xl mx-auto text-center">
-          <h2 className="font-sans text-3xl md:text-5xl font-light tracking-tight text-[#E8E4DC] leading-[1.1] mb-6">
+          <h2 className="font-sans text-3xl md:text-5xl font-light tracking-tight text-[#0A0A0A] leading-[1.1] mb-6">
             Start making better decisions today
           </h2>
-          <p className="text-sm md:text-base text-[#E8E4DC]/35 font-light leading-relaxed max-w-lg mx-auto mb-10">
+          <p className="text-sm md:text-base text-[#0A0A0A]/35 font-light leading-relaxed max-w-lg mx-auto mb-10">
             Join the teams using Stratix to turn complexity into clarity. No
             credit card required.
           </p>
@@ -717,7 +717,7 @@ export function Landing() {
             {auth?.user ? (
               <Link
                 href="/dashboard"
-                className="inline-flex items-center gap-2 bg-[#E8E4DC] text-[#0D0C0B] px-8 py-3.5 font-medium hover:bg-[#D4CEC5] transition-colors text-sm font-medium"
+                className="inline-flex items-center gap-2 bg-[#0A0A0A] text-white px-8 py-3.5 font-medium hover:bg-[#1A1A1A] transition-colors text-sm font-medium"
               >
                 Go to Dashboard
                 <ChevronRight className="w-4 h-4" />
@@ -726,14 +726,14 @@ export function Landing() {
               <>
                 <Link
                   href="/login"
-                  className="inline-flex items-center gap-2 bg-[#E8E4DC] text-[#0D0C0B] px-8 py-3.5 font-medium hover:bg-[#D4CEC5] transition-all text-sm font-medium group"
+                  className="inline-flex items-center gap-2 bg-[#0A0A0A] text-white px-8 py-3.5 font-medium hover:bg-[#1A1A1A] transition-all text-sm font-medium group"
                 >
                   Get Started Free
                   <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
                 </Link>
                 <a
                   href="mailto:hello@stratix.ai?subject=Demo%20Request"
-                  className="inline-flex items-center gap-2 border border-[#E8E4DC]/15 text-[#E8E4DC]/60 px-8 py-3.5 font-medium hover:border-[#E8E4DC]/30 hover:text-[#E8E4DC]/80 transition-all text-sm font-medium"
+                  className="inline-flex items-center gap-2 border border-[#E5E5E3] text-[#0A0A0A]/60 px-8 py-3.5 font-medium hover:border-[#E5E5E3] hover:text-[#0A0A0A]/80 transition-all text-sm font-medium"
                 >
                   Book a Demo
                 </a>
@@ -744,20 +744,20 @@ export function Landing() {
       </section>
 
       {/* ---- Footer ---- */}
-      <footer className="border-t border-white/[0.06] px-6 md:px-12 py-10">
+      <footer className="border-t border-[#E5E5E3] px-6 md:px-12 py-10">
         <div className="max-w-5xl mx-auto flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
           <div>
             <div className="flex items-center gap-2.5 mb-2">
-              <div className="h-5 w-5 border border-[#E8E4DC]/25 flex items-center justify-center">
-                <span className="font-sans font-semibold text-[#E8E4DC] text-[10px] leading-none">
+              <div className="h-5 w-5 border border-[#E5E5E3] flex items-center justify-center">
+                <span className="font-sans font-semibold text-[#0A0A0A] text-[10px] leading-none">
                   S
                 </span>
               </div>
-              <span className="font-sans font-medium text-sm tracking-tight text-[#E8E4DC]/50">
+              <span className="font-sans font-medium text-sm tracking-tight text-[#0A0A0A]/50">
                 Stratix
               </span>
             </div>
-            <p className="text-[10px] text-[#E8E4DC]/20 font-light">
+            <p className="text-[10px] text-[#0A0A0A]/20 font-light">
               Executive Intelligence Platform &mdash; &copy;{" "}
               {new Date().getFullYear()}
             </p>
@@ -765,28 +765,28 @@ export function Landing() {
           <nav className="flex flex-wrap items-center gap-6">
             <Link
               href="/security"
-              className="text-xs text-[#E8E4DC]/35 hover:text-[#E8E4DC]/60 transition-colors"
+              className="text-xs text-[#0A0A0A]/35 hover:text-[#0A0A0A]/60 transition-colors"
               data-testid="footer-link-security"
             >
               Security
             </Link>
             <Link
               to="/security"
-              className="text-xs text-[#E8E4DC]/35 hover:text-[#E8E4DC]/60 transition-colors"
+              className="text-xs text-[#0A0A0A]/35 hover:text-[#0A0A0A]/60 transition-colors"
               data-testid="footer-link-privacy"
             >
               Privacy Policy
             </Link>
             <Link
               to="/security"
-              className="text-xs text-[#E8E4DC]/35 hover:text-[#E8E4DC]/60 transition-colors"
+              className="text-xs text-[#0A0A0A]/35 hover:text-[#0A0A0A]/60 transition-colors"
               data-testid="footer-link-terms"
             >
               Terms
             </Link>
             <Link
               to="/login"
-              className="text-xs text-[#E8E4DC]/35 hover:text-[#E8E4DC]/60 transition-colors"
+              className="text-xs text-[#0A0A0A]/35 hover:text-[#0A0A0A]/60 transition-colors"
             >
               Product
             </Link>
