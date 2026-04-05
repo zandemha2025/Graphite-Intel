@@ -1,8 +1,8 @@
 {
   "framework": "vite",
-  "outputDirectory": "dist/public",
+  "outputDirectory": "../stratix-v2/dist/public",
   "installCommand": "cd ../.. && pnpm install --no-frozen-lockfile",
-  "buildCommand": "cd ../.. && pnpm --filter @workspace/stratix run build",
+  "buildCommand": "cd ../.. && pnpm --filter @workspace/stratix-v2 run build",
   "rewrites": [
     {
       "source": "/api/:path*",
