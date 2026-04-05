@@ -63,15 +63,13 @@ export function apiDelete<T>(path: string): Promise<T> {
   return api(path, { method: "DELETE" });
 }
 
-const BASE = "/api";
-
 export function apiSSE(
   path: string,
   body: unknown,
   onEvent: (event: string, data: string) => void,
   signal?: AbortSignal,
 ): Promise<void> {
-  return fetch(`${BASE}${path}`, {
+  return fetch(`${BASE_URL}${path}`, {
     method: "POST",
     credentials: "include",
     headers: { "Content-Type": "application/json" },

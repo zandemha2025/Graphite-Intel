@@ -115,6 +115,65 @@ function BoardCardRenderer({
   );
 }
 
+function ScheduleForm({
+  boardId,
+  initialFrequency,
+  onClose,
+}: {
+  boardId: number;
+  initialFrequency: string;
+  onClose: () => void;
+}) {
+  const queryClient = useQueryClient();
+  const [frequency, setFrequency] = useState(initialFrequency);
+
+  const saveMut = useMutation({
+    mutationFn: (freq: string) =>
+      apiPatch(`/boards/${boardId}`, {
+        config: {
+          schedule: { frequency: freq, updatedAt: new Date().toISOString() },
+        },
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["board", boardId] });
+      toast.success("Schedule saved to board config");
+      onClose();
+    },
+    onError: () => toast.error("Failed to save schedule"),
+  });
+
+  return (
+    <div className="mt-4 space-y-3">
+      <div>
+        <label className="block text-sm font-medium text-[#404040] mb-1">
+          Frequency
+        </label>
+        <select
+          className="flex h-9 w-full appearance-none rounded-lg border border-[#E5E5E3] bg-white px-3 text-sm text-[#0A0A0A] focus:border-[#0A0A0A] focus:outline-none focus:ring-1 focus:ring-[#0A0A0A]"
+          value={frequency}
+          onChange={(e) => setFrequency(e.target.value)}
+        >
+          <option value="manual">Manual only</option>
+          <option value="hourly">Every hour</option>
+          <option value="daily">Daily</option>
+          <option value="weekly">Weekly</option>
+        </select>
+      </div>
+      <div className="flex justify-end gap-2 pt-2">
+        <Button variant="secondary" onClick={onClose}>
+          Cancel
+        </Button>
+        <Button
+          onClick={() => saveMut.mutate(frequency)}
+          loading={saveMut.isPending}
+        >
+          Save
+        </Button>
+      </div>
+    </div>
+  );
+}
+
 export default function BoardViewPage() {
   const { id } = useParams<{ id: string }>();
   const queryClient = useQueryClient();
@@ -328,37 +387,13 @@ export default function BoardViewPage() {
         <DialogContent>
           <DialogTitle>Schedule Refresh</DialogTitle>
           <DialogDescription>
-            Configure automatic refresh for this board.
+            Configure automatic refresh for this board. The schedule is saved as part of the board configuration.
           </DialogDescription>
-          <div className="mt-4 space-y-3">
-            <div>
-              <label className="block text-sm font-medium text-[#404040] mb-1">
-                Frequency
-              </label>
-              <select className="flex h-9 w-full appearance-none rounded-lg border border-[#E5E5E3] bg-white px-3 text-sm text-[#0A0A0A] focus:border-[#0A0A0A] focus:outline-none focus:ring-1 focus:ring-[#0A0A0A]">
-                <option value="manual">Manual only</option>
-                <option value="hourly">Every hour</option>
-                <option value="daily">Daily</option>
-                <option value="weekly">Weekly</option>
-              </select>
-            </div>
-            <div className="flex justify-end gap-2 pt-2">
-              <Button
-                variant="secondary"
-                onClick={() => setShowSchedule(false)}
-              >
-                Cancel
-              </Button>
-              <Button
-                onClick={() => {
-                  setShowSchedule(false);
-                  toast.success("Schedule saved");
-                }}
-              >
-                Save
-              </Button>
-            </div>
-          </div>
+          <ScheduleForm
+            boardId={boardId}
+            initialFrequency={(board?.config as { schedule?: { frequency?: string } } | null)?.schedule?.frequency ?? "manual"}
+            onClose={() => setShowSchedule(false)}
+          />
         </DialogContent>
       </Dialog>
     </Page>

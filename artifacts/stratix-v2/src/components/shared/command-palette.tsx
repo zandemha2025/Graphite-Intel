@@ -17,6 +17,11 @@ import {
   Plus,
   Clock,
   Search,
+  User,
+  Shield,
+  Users,
+  Activity,
+  Share2,
 } from "lucide-react";
 
 const NAVIGATION_ITEMS = [
@@ -31,6 +36,12 @@ const NAVIGATION_ITEMS = [
   { label: "Vault", path: "/vault", icon: Lock },
   { label: "Connections", path: "/connections", icon: Cable },
   { label: "Analytics", path: "/analytics", icon: BarChart3 },
+  { label: "Knowledge", path: "/knowledge", icon: BookOpen },
+  { label: "Profile", path: "/profile", icon: User },
+  { label: "Security", path: "/security", icon: Shield },
+  { label: "Team", path: "/settings/team", icon: Users },
+  { label: "Activity", path: "/activity", icon: Activity },
+  { label: "Shared", path: "/shared", icon: Share2 },
 ];
 
 const ACTION_ITEMS = [

@@ -22,6 +22,8 @@ import {
   Users,
   Settings,
   ChevronDown,
+  Activity,
+  Share2,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import type { User } from "@/hooks/use-auth";
@@ -56,11 +58,13 @@ const NAV_SECTIONS: NavSection[] = [
       { label: "Workflows", path: "/workflows", icon: Workflow },
       { label: "Playbooks", path: "/playbooks", icon: BookMarked },
       { label: "Ads", path: "/ads", icon: Megaphone },
+      { label: "Ad Reports", path: "/ads/reports", icon: FileText },
     ],
   },
   {
     title: "KNOWLEDGE",
     items: [
+      { label: "Knowledge", path: "/knowledge", icon: BookOpen },
       { label: "Context", path: "/context", icon: Brain },
       { label: "Vault", path: "/vault", icon: Lock },
       { label: "Connections", path: "/connections", icon: Cable },
@@ -73,9 +77,17 @@ const NAV_SECTIONS: NavSection[] = [
       { label: "Audit", path: "/audit", icon: ClipboardList, adminOnly: true },
     ],
   },
+  {
+    title: "MORE",
+    items: [
+      { label: "Activity", path: "/activity", icon: Activity },
+      { label: "Shared", path: "/shared", icon: Share2 },
+    ],
+  },
 ];
 
-function getInitials(name: string): string {
+function getInitials(name?: string): string {
+  if (!name) return "?";
   return name
     .split(" ")
     .map((p) => p[0])
@@ -86,27 +98,33 @@ function getInitials(name: string): string {
 
 interface SidebarProps {
   user: User;
+  onNavigate?: () => void;
+  forceExpanded?: boolean;
 }
 
-export function Sidebar({ user }: SidebarProps) {
+export function Sidebar({ user, onNavigate, forceExpanded }: SidebarProps) {
   const [location, setLocation] = useLocation();
   const [pinned, setPinned] = useState(false);
   const [hovered, setHovered] = useState(false);
   const logout = useLogout();
 
-  const expanded = pinned || hovered;
+  const expanded = forceExpanded || pinned || hovered;
   const isAdmin = user.role === "admin" || user.role === "owner";
 
   const handleNav = useCallback(
     (path: string) => {
       setLocation(path);
+      onNavigate?.();
     },
-    [setLocation],
+    [setLocation, onNavigate],
   );
 
   const isActive = (path: string) => {
     if (path === "/explore") return location === "/explore" || location === "/";
-    return location === path || location.startsWith(path + "/");
+    if (location === path) return true;
+    // For top-level nav items like /ads, don't match sub-paths that have their own nav item
+    if (path === "/ads" && location.startsWith("/ads/reports")) return false;
+    return location.startsWith(path + "/");
   };
 
   return (

@@ -221,26 +221,82 @@ interface Definition {
   category: string;
 }
 
+interface ProfileWithDefinitions {
+  id: number;
+  companyName: string;
+  industry: string;
+  stage: string;
+  revenueRange: string;
+  competitors: string;
+  strategicPriorities: string;
+  definitions?: Definition[];
+}
+
 function DefinitionsTab() {
+  const queryClient = useQueryClient();
+
+  const { data: profile } = useQuery<ProfileWithDefinitions>({
+    queryKey: ["company-profile"],
+    queryFn: () => api<ProfileWithDefinitions>("/company-profile"),
+  });
+
   const [definitions, setDefinitions] = useState<Definition[]>([]);
+  const [initialized, setInitialized] = useState(false);
   const [editing, setEditing] = useState<string | null>(null);
   const [newTerm, setNewTerm] = useState("");
   const [newValue, setNewValue] = useState("");
   const [newCategory, setNewCategory] = useState("General");
 
+  // Load definitions from profile on first load
+  useState(() => {
+    if (!initialized && profile?.definitions) {
+      setDefinitions(profile.definitions);
+      setInitialized(true);
+    }
+  });
+
+  // Sync when profile loads
+  if (!initialized && profile?.definitions && profile.definitions.length > 0) {
+    setDefinitions(profile.definitions);
+    setInitialized(true);
+  }
+
+  const persistMutation = useMutation({
+    mutationFn: (defs: Definition[]) =>
+      apiPut("/company-profile", {
+        ...(profile ?? {}),
+        companyName: profile?.companyName,
+        industry: profile?.industry,
+        stage: profile?.stage,
+        revenueRange: profile?.revenueRange,
+        competitors: profile?.competitors,
+        strategicPriorities: profile?.strategicPriorities,
+        definitions: defs,
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["company-profile"] });
+      queryClient.invalidateQueries({ queryKey: ["context-health"] });
+    },
+    onError: () => toast.error("Failed to save definitions"),
+  });
+
   const addDefinition = () => {
     if (!newTerm.trim() || !newValue.trim()) return;
-    setDefinitions((prev) => [
-      ...prev,
+    const updated = [
+      ...definitions,
       { id: crypto.randomUUID(), term: newTerm, value: newValue, category: newCategory },
-    ]);
+    ];
+    setDefinitions(updated);
+    persistMutation.mutate(updated);
     setNewTerm("");
     setNewValue("");
     toast.success("Definition added");
   };
 
   const removeDefinition = (id: string) => {
-    setDefinitions((prev) => prev.filter((d) => d.id !== id));
+    const updated = definitions.filter((d) => d.id !== id);
+    setDefinitions(updated);
+    persistMutation.mutate(updated);
     toast.success("Definition removed");
   };
 

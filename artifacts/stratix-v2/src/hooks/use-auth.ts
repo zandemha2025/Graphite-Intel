@@ -13,9 +13,12 @@ export interface User {
 }
 
 export function useAuth() {
-  const { data: user, isLoading, isError } = useQuery<User>({
+  const { data: user, isLoading, isError } = useQuery<User | undefined>({
     queryKey: ["auth", "user"],
-    queryFn: () => api<User>("/auth/user"),
+    queryFn: async () => {
+      const res = await api<{ user: User | null }>("/auth/user");
+      return res.user ?? undefined;
+    },
     retry: false,
     staleTime: 5 * 60 * 1000,
   });

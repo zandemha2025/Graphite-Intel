@@ -1,5 +1,6 @@
 import { useState, useRef } from "react";
 import { useLocation } from "wouter";
+import { useQueryClient } from "@tanstack/react-query";
 import { apiPost, ApiError } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -35,6 +36,7 @@ const fieldLabels: Record<keyof CompanyProfile, string> = {
 
 export default function OnboardingPage() {
   const [, navigate] = useLocation();
+  const queryClient = useQueryClient();
   const [url, setUrl] = useState("");
   const [profile, setProfile] = useState<CompanyProfile>(emptyProfile);
   const [researching, setResearching] = useState(false);
@@ -115,15 +117,27 @@ export default function OnboardingPage() {
     setProfile((prev) => ({ ...prev, [key]: value }));
   }
 
+  async function completeOnboarding() {
+    try {
+      await apiPost("/onboarding/complete", {});
+    } catch {
+      // best-effort — proceed even if this fails
+    }
+    await queryClient.invalidateQueries({ queryKey: ["auth"] });
+    navigate("/explore");
+  }
+
   async function handleSave() {
     setSaving(true);
     setError("");
     try {
       await apiPost("/company-profile", profile);
-      navigate("/explore");
+      await completeOnboarding();
     } catch (err) {
       if (err instanceof ApiError) {
-        setError(err.body || err.message);
+        let msg = err.body || err.message;
+        try { const p = JSON.parse(msg); msg = p.error || p.message || msg; } catch {}
+        setError(msg);
       } else {
         setError("Failed to save profile. Please try again.");
       }
@@ -196,7 +210,7 @@ export default function OnboardingPage() {
             <Button
               variant="secondary"
               className="flex-1"
-              onClick={() => navigate("/explore")}
+              onClick={() => completeOnboarding()}
             >
               Skip for now
             </Button>

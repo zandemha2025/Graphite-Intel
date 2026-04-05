@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useLocation } from "wouter";
+import { useQueryClient } from "@tanstack/react-query";
 import { apiPost, ApiError } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -7,9 +8,19 @@ import { Card } from "@/components/ui/card";
 
 export default function OrgSetupPage() {
   const [, navigate] = useLocation();
+  const queryClient = useQueryClient();
   const [orgName, setOrgName] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+
+  function parseErrorMessage(body: string): string {
+    try {
+      const parsed = JSON.parse(body);
+      return parsed.error || parsed.message || body;
+    } catch {
+      return body;
+    }
+  }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -23,10 +34,17 @@ export default function OrgSetupPage() {
     setLoading(true);
     try {
       await apiPost("/org", { name: orgName.trim() });
+      await queryClient.invalidateQueries({ queryKey: ["auth"] });
       navigate("/onboarding");
     } catch (err) {
       if (err instanceof ApiError) {
-        setError(err.body || err.message);
+        const msg = parseErrorMessage(err.body || err.message);
+        if (msg.includes("already a member")) {
+          await queryClient.invalidateQueries({ queryKey: ["auth"] });
+          navigate("/explore");
+          return;
+        }
+        setError(msg);
       } else {
         setError("Failed to create organization. Please try again.");
       }

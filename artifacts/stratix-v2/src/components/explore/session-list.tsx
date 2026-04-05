@@ -65,9 +65,9 @@ export function SessionList({
               {conv.title}
             </span>
             <span className="block text-[11px] text-stone-400 mt-0.5">
-              {formatDistanceToNow(new Date(conv.updatedAt), {
-                addSuffix: true,
-              })}
+              {conv.updatedAt && !isNaN(new Date(conv.updatedAt).getTime())
+                ? formatDistanceToNow(new Date(conv.updatedAt), { addSuffix: true })
+                : "just now"}
             </span>
             {activeId === conv.id && (
               <button

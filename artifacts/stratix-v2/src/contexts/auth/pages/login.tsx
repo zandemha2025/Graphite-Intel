@@ -55,7 +55,9 @@ export default function LoginPage() {
       }
     } catch (err) {
       if (err instanceof ApiError) {
-        setError(err.body || err.message);
+        let msg = err.body || err.message;
+        try { const p = JSON.parse(msg); msg = p.error || p.message || msg; } catch {}
+        setError(msg);
       } else {
         setError("Something went wrong. Please try again.");
       }
