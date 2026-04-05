@@ -12,6 +12,9 @@ const badgeVariants = cva(
         warning: "bg-[#FFFBEB] text-[#92400E]",
         error: "bg-[#FEF2F2] text-[#991B1B]",
         info: "bg-[#EFF6FF] text-[#1E40AF]",
+        gradient: "bg-gradient-to-r from-[#E9D8FD] to-[#FED7E2] text-[#553C9A] font-semibold",
+        active: "bg-gradient-to-r from-[#C6F6D5] to-[#9AE6B4] text-[#22543D] font-semibold",
+        live: "bg-gradient-to-r from-[#FED7D7] to-[#FEB2B2] text-[#9B2C2C] font-semibold",
       },
     },
     defaultVariants: {

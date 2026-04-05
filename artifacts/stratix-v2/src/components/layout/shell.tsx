@@ -23,7 +23,7 @@ export function Shell({ user, children }: ShellProps) {
   }, []);
 
   return (
-    <div className="flex h-screen bg-[#F6F5F4]">
+    <div className="flex h-screen bg-[#FAFAF9]">
       {/* Desktop sidebar */}
       <div className="hidden md:flex">
         <Sidebar user={user} />
@@ -47,12 +47,12 @@ export function Shell({ user, children }: ShellProps) {
       </div>
 
       {/* Main content area */}
-      <main className="flex-1 overflow-y-auto">
+      <main className="flex-1 overflow-y-auto bg-[#FAFAF9]">
         {/* Mobile header with hamburger */}
-        <div className="sticky top-0 z-30 flex items-center h-[52px] px-3 border-b border-[#E5E5E3] bg-[#FAFAF9] md:hidden">
+        <div className="sticky top-0 z-30 flex items-center h-[52px] px-3 border-b border-[#E5E5E3]/60 bg-[#FAFAF9] md:hidden">
           <button
             onClick={() => setMobileOpen(true)}
-            className="p-1.5 rounded-md hover:bg-[#F0EFED] text-[#404040] transition-colors"
+            className="p-1.5 rounded-md hover:bg-[#F5F5F4] text-[#525252] transition-colors"
             aria-label="Open navigation"
           >
             <Menu size={20} />

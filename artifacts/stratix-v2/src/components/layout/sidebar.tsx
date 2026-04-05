@@ -133,12 +133,12 @@ export function Sidebar({ user, onNavigate, forceExpanded }: SidebarProps) {
         onMouseEnter={() => setHovered(true)}
         onMouseLeave={() => setHovered(false)}
         className={cn(
-          "flex flex-col h-full bg-[#FAFAF9] border-r border-[#E5E5E3] transition-all duration-200 ease-in-out flex-shrink-0 select-none",
+          "flex flex-col h-full bg-white border-r border-[#E5E5E3]/60 transition-all duration-200 ease-in-out flex-shrink-0 select-none",
           expanded ? "w-[220px]" : "w-[56px]",
         )}
       >
         {/* Header */}
-        <div className="flex items-center h-[52px] px-3 border-b border-[#E5E5E3]">
+        <div className="flex items-center h-[52px] px-3 border-b border-[#E5E5E3]/60">
           <div className="w-8 h-8 rounded-lg bg-[#0A0A0A] flex items-center justify-center flex-shrink-0">
             <span className="text-white text-xs font-bold">S</span>
           </div>
@@ -150,7 +150,7 @@ export function Sidebar({ user, onNavigate, forceExpanded }: SidebarProps) {
           {expanded && (
             <button
               onClick={() => setPinned(!pinned)}
-              className="ml-auto p-1 rounded hover:bg-[#F0EFED] text-[#9CA3AF] hover:text-[#404040] transition-colors"
+              className="ml-auto p-1 rounded hover:bg-[#F5F5F4] text-[#A3A3A3] hover:text-[#525252] transition-colors"
               title={pinned ? "Unpin sidebar" : "Pin sidebar"}
             >
               {pinned ? <PinOff size={14} /> : <Pin size={14} />}
@@ -160,20 +160,21 @@ export function Sidebar({ user, onNavigate, forceExpanded }: SidebarProps) {
 
         {/* Navigation */}
         <nav className="flex-1 overflow-y-auto py-2 px-2">
-          {NAV_SECTIONS.map((section) => {
+          {NAV_SECTIONS.map((section, sectionIndex) => {
             const visibleItems = section.items.filter(
               (item) => !item.adminOnly || isAdmin,
             );
             if (visibleItems.length === 0) return null;
 
             return (
-              <div key={section.title} className="mb-3">
-                {expanded && (
-                  <div className="px-2 py-1.5 text-[10px] font-semibold tracking-wider text-[#9CA3AF] uppercase">
+              <div key={section.title} className={sectionIndex > 0 ? "mt-1" : ""}>
+                {expanded ? (
+                  <div className="px-2 mt-4 mb-1 text-[10px] font-semibold tracking-[0.08em] text-[#A3A3A3] uppercase">
                     {section.title}
                   </div>
+                ) : (
+                  sectionIndex > 0 && <div className="h-2" />
                 )}
-                {!expanded && <div className="h-px bg-[#E5E5E3] mx-1 my-1.5" />}
                 {visibleItems.map((item) => {
                   const active = isActive(item.path);
                   const Icon = item.icon;
@@ -183,22 +184,19 @@ export function Sidebar({ user, onNavigate, forceExpanded }: SidebarProps) {
                       key={item.path}
                       onClick={() => handleNav(item.path)}
                       className={cn(
-                        "flex items-center w-full rounded-md transition-colors relative group",
+                        "flex items-center w-full rounded-lg transition-colors",
                         expanded ? "px-2 py-1.5 gap-2.5" : "justify-center py-2",
                         active
-                          ? "bg-[#F0EFED] text-[#0A0A0A]"
-                          : "text-[#404040] hover:bg-[#F0EFED] hover:text-[#0A0A0A]",
+                          ? "bg-[#F0EFED] text-[#1A1A1A]"
+                          : "text-[#737373]/80 hover:bg-[#F5F5F4] hover:text-[#525252]",
                       )}
                     >
-                      {active && (
-                        <div className="absolute left-0 top-1/2 -translate-y-1/2 w-[2px] h-4 bg-[#0A0A0A] rounded-r" />
-                      )}
-                      <Icon size={20} />
+                      <Icon size={20} strokeWidth={active ? 2 : 1.75} />
                       {expanded && (
                         <span
                           className={cn(
                             "text-[13px] truncate",
-                            active ? "font-semibold" : "font-medium",
+                            active ? "font-medium text-[#1A1A1A]" : "",
                           )}
                         >
                           {item.label}
@@ -233,12 +231,12 @@ export function Sidebar({ user, onNavigate, forceExpanded }: SidebarProps) {
         </nav>
 
         {/* User section */}
-        <div className="border-t border-[#E5E5E3] p-2">
+        <div className="border-t border-[#E5E5E3]/60 p-2">
           <DropdownMenu.Root>
             <DropdownMenu.Trigger asChild>
               <button
                 className={cn(
-                  "flex items-center w-full rounded-md hover:bg-[#F0EFED] transition-colors",
+                  "flex items-center w-full rounded-lg hover:bg-[#F5F5F4] transition-colors",
                   expanded ? "px-2 py-1.5 gap-2.5" : "justify-center py-2",
                 )}
               >
@@ -249,21 +247,21 @@ export function Sidebar({ user, onNavigate, forceExpanded }: SidebarProps) {
                     className="w-7 h-7 rounded-full flex-shrink-0"
                   />
                 ) : (
-                  <div className="w-7 h-7 rounded-full bg-[#E5E5E3] flex items-center justify-center text-[10px] font-semibold text-[#404040] flex-shrink-0">
+                  <div className="w-7 h-7 rounded-full bg-[#E5E5E3] flex items-center justify-center text-[10px] font-semibold text-[#525252] flex-shrink-0">
                     {getInitials(user.fullName)}
                   </div>
                 )}
                 {expanded && (
                   <>
                     <div className="flex-1 text-left min-w-0">
-                      <div className="text-[13px] font-medium text-[#0A0A0A] truncate">
+                      <div className="text-[13px] font-medium text-[#1A1A1A] truncate">
                         {user.fullName}
                       </div>
-                      <div className="text-[11px] text-[#9CA3AF] capitalize">
-                        {user.role}
+                      <div className="text-[11px] text-[#A3A3A3] truncate">
+                        {user.email}
                       </div>
                     </div>
-                    <ChevronDown size={14} className="text-[#9CA3AF] flex-shrink-0" />
+                    <ChevronDown size={14} className="text-[#A3A3A3] flex-shrink-0" />
                   </>
                 )}
               </button>
@@ -277,19 +275,19 @@ export function Sidebar({ user, onNavigate, forceExpanded }: SidebarProps) {
                 className="min-w-[180px] bg-white rounded-lg shadow-lg border border-[#E5E5E3] py-1 z-50"
               >
                 <DropdownMenu.Item
-                  className="flex items-center gap-2 px-3 py-2 text-sm text-[#404040] hover:bg-[#F0EFED] cursor-pointer outline-none"
+                  className="flex items-center gap-2 px-3 py-2 text-sm text-[#404040] hover:bg-[#F5F5F4] cursor-pointer outline-none"
                   onClick={() => handleNav("/profile")}
                 >
                   <UserIcon size={16} /> Profile
                 </DropdownMenu.Item>
                 <DropdownMenu.Item
-                  className="flex items-center gap-2 px-3 py-2 text-sm text-[#404040] hover:bg-[#F0EFED] cursor-pointer outline-none"
+                  className="flex items-center gap-2 px-3 py-2 text-sm text-[#404040] hover:bg-[#F5F5F4] cursor-pointer outline-none"
                   onClick={() => handleNav("/settings/team")}
                 >
                   <Users size={16} /> Team
                 </DropdownMenu.Item>
                 <DropdownMenu.Item
-                  className="flex items-center gap-2 px-3 py-2 text-sm text-[#404040] hover:bg-[#F0EFED] cursor-pointer outline-none"
+                  className="flex items-center gap-2 px-3 py-2 text-sm text-[#404040] hover:bg-[#F5F5F4] cursor-pointer outline-none"
                   onClick={() => handleNav("/security")}
                 >
                   <Settings size={16} /> Settings
