@@ -90,18 +90,25 @@ export function ReportsList() {
         </div>
       ) : filteredReports?.length === 0 ? (
         <div className="py-16 text-center border-dashed" style={{ border: "1px dashed var(--workspace-border)" }}>
-          <FileText className="h-6 w-6 mx-auto mb-4" style={{ color: "var(--workspace-muted)" }} />
-          <h3 className="font-serif text-xl font-light mb-2" style={{ color: "var(--workspace-muted)" }}>No intelligence found</h3>
-          <p className="text-sm mb-6" style={{ color: "var(--workspace-muted)" }}>
-            {searchTerm ? "No reports match your search." : "You haven't generated any reports yet."}
+          <div className="w-14 h-14 mx-auto mb-5 flex items-center justify-center" style={{ background: "var(--workspace-muted-bg)", border: "1px solid var(--workspace-border)" }}>
+            <FileText className="h-6 w-6" style={{ color: "var(--workspace-muted)" }} />
+          </div>
+          <h3 className="font-serif text-xl font-light mb-2" style={{ color: "var(--workspace-fg)" }}>
+            {searchTerm ? "No reports match your search" : "No reports yet"}
+          </h3>
+          <p className="text-sm mb-6 max-w-sm mx-auto" style={{ color: "var(--workspace-muted)" }}>
+            {searchTerm
+              ? "Try adjusting your search terms."
+              : "Generate competitive intelligence, market analyses, and strategic audits powered by AI."}
           </p>
           {!searchTerm && (
             <Link
               href="/reports/new"
-              className="inline-block text-xs uppercase tracking-widest pb-0.5 transition-colors"
-              style={{ color: "var(--workspace-fg)", borderBottom: "1px solid var(--workspace-border)" }}
+              className="inline-flex items-center gap-2 px-5 py-2.5 text-xs uppercase tracking-widest font-medium transition-colors"
+              style={{ background: "var(--workspace-fg)", color: "#FFFFFF" }}
             >
-              Commission First Report
+              <Plus className="h-3.5 w-3.5" />
+              Create Your First Report
             </Link>
           )}
         </div>

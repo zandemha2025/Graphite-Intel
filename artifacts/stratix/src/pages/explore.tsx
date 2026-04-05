@@ -25,7 +25,7 @@ import { ResultsPanel } from "@/components/explore/ResultsPanel";
 import { ConversationPanel } from "@/components/explore/ConversationPanel";
 import type { CellData } from "@/components/charts";
 import type { ResearchDepth } from "@/components/explore/DepthToggle";
-import { X, FileText } from "lucide-react";
+import { X, FileText, Compass, Sparkles, TrendingUp, BarChart3, Target } from "lucide-react";
 
 type SourceChunk = {
   documentId: number;
@@ -221,6 +221,7 @@ export function Explore() {
   const [streamingSources, setStreamingSources] = useState<SourceChunk[] | null>(null);
   const [showDocPicker, setShowDocPicker] = useState(false);
   const [cells, setCells] = useState<CellData[]>([]);
+  const [pendingMessage, setPendingMessage] = useState<string | null>(null);
 
   const { data: conversations = [] } = useListOpenaiConversations({
     query: { queryKey: getListOpenaiConversationsQueryKey() },
@@ -266,7 +267,10 @@ export function Explore() {
     setCells(allCells);
   }, [activeConversation?.messages]);
 
-  const handleCreate = useCallback(() => {
+  const handleCreate = useCallback((initialMessage?: string) => {
+    if (initialMessage) {
+      setPendingMessage(initialMessage);
+    }
     createConversation.mutate(
       { data: { title: "New Session" } },
       {
@@ -305,7 +309,7 @@ export function Explore() {
 
   const handleSend = useCallback(
     async (content: string, depth: ResearchDepth) => {
-      if (!content.trim() || !activeConversationId || isStreaming) return;
+      if (!content || typeof content !== "string" || !content.trim() || !activeConversationId || isStreaming) return;
 
       setInputValue("");
       setIsStreaming(true);
@@ -381,6 +385,15 @@ export function Explore() {
     [activeConversationId, isStreaming, queryClient, toast]
   );
 
+  // Auto-send pending suggestion message after conversation is created
+  useEffect(() => {
+    if (pendingMessage && activeConversationId && !isStreaming) {
+      const msg = pendingMessage;
+      setPendingMessage(null);
+      handleSend(msg, "standard" as ResearchDepth);
+    }
+  }, [pendingMessage, activeConversationId, isStreaming, handleSend]);
+
   return (
     <div
       className="h-full flex overflow-hidden"
@@ -431,20 +444,45 @@ export function Explore() {
       ) : (
         <div className="flex-1 flex flex-col items-center justify-center p-10 text-center">
           <div
-            className="w-16 h-16 rounded-2xl flex items-center justify-center mb-4"
+            className="w-16 h-16 rounded-2xl flex items-center justify-center mb-5"
             style={{ background: "#EEF2FF" }}
           >
-            <span className="text-3xl" style={{ color: "#4F46E5" }}>✦</span>
+            <Compass className="w-7 h-7" style={{ color: "#4F46E5" }} />
           </div>
           <h3 className="text-2xl font-semibold mb-2" style={{ color: "#111827" }}>
-            Explore
+            {conversations.length === 0 ? "Welcome to Explore" : "Explore"}
           </h3>
-          <p className="text-sm max-w-sm mb-6" style={{ color: "#6B7280" }}>
-            Start a new session to ask questions and see structured insights rendered in
-            the Results Notebook.
+          <p className="text-sm max-w-sm mb-8" style={{ color: "#6B7280" }}>
+            {conversations.length === 0
+              ? "Ask strategic questions and get structured insights with charts, tables, and analysis."
+              : "Start a new session to ask questions and see structured insights rendered in the Results Notebook."}
           </p>
+
+          {conversations.length === 0 && (
+            <div className="grid grid-cols-2 gap-2.5 max-w-md mb-8 w-full">
+              {[
+                { icon: TrendingUp, text: "Who are my top competitors and how do they position?" },
+                { icon: BarChart3, text: "What does the market landscape look like for my industry?" },
+                { icon: Target, text: "What strategic moves should I prioritize this quarter?" },
+                { icon: Sparkles, text: "Summarize recent trends affecting my business" },
+              ].map((suggestion, i) => (
+                <button
+                  key={i}
+                  onClick={() => {
+                    handleCreate(suggestion.text);
+                  }}
+                  className="flex items-start gap-2.5 text-left p-3 rounded-lg transition-colors hover:bg-gray-50"
+                  style={{ border: "1px solid #E5E7EB" }}
+                >
+                  <suggestion.icon className="w-4 h-4 mt-0.5 shrink-0" style={{ color: "#4F46E5" }} />
+                  <span className="text-xs leading-relaxed" style={{ color: "#6B7280" }}>{suggestion.text}</span>
+                </button>
+              ))}
+            </div>
+          )}
+
           <button
-            onClick={handleCreate}
+            onClick={() => handleCreate()}
             disabled={createConversation.isPending}
             className="flex items-center gap-2 px-6 py-2.5 rounded-lg text-sm font-medium transition-colors disabled:opacity-40"
             style={{ background: "#4F46E5", color: "#FFFFFF" }}

@@ -31,10 +31,11 @@ export const playbookGenerateFunction = inngest.createFunction(
   { id: "playbook-generate", retries: 2 },
   { event: "playbook/generate" },
   async ({ event, step }) => {
-    const { playbookId, orgId, sourceDocumentIds } = event.data;
+    const { playbookId, orgId, sourceDocumentIds, prompt } = event.data;
 
-    // Step 1: Load source documents
+    // Step 1: Load source documents (if any)
     const documentTexts = await step.run("load-documents", async () => {
+      if (!sourceDocumentIds || sourceDocumentIds.length === 0) return [];
       const docs = await db
         .select({
           id: documents.id,
@@ -55,16 +56,28 @@ export const playbookGenerateFunction = inngest.createFunction(
 
     // Step 2: Generate playbook steps using GPT-4o
     const generatedSteps = await step.run("generate-steps", async () => {
-      const documentSummaries = documentTexts
-        .map((d) => `## Document: ${d.title} (${d.fileType})\n\n${d.text}`)
-        .join("\n\n---\n\n");
+      const hasDocuments = documentTexts.length > 0;
+      const documentSummaries = hasDocuments
+        ? documentTexts
+            .map((d) => `## Document: ${d.title} (${d.fileType})\n\n${d.text}`)
+            .join("\n\n---\n\n")
+        : "";
+
+      let userContent: string;
+      if (prompt && hasDocuments) {
+        userContent = `User instruction: ${prompt}\n\nSource documents (${documentTexts.length}):\n\n${documentSummaries}`;
+      } else if (prompt) {
+        userContent = `Generate a review playbook based on this description:\n\n${prompt}`;
+      } else {
+        userContent = `Generate a review playbook for these ${documentTexts.length} documents:\n\n${documentSummaries}`;
+      }
 
       const response = await getOpenAIClient().chat.completions.create({
         model: "gpt-4o",
         messages: [
           {
             role: "system",
-            content: `You are a review playbook generator for a business intelligence platform. Given source documents, create a step-by-step review playbook with actionable checklist items.
+            content: `You are a review playbook generator for a business intelligence platform. Given a description or source documents, create a step-by-step review playbook with actionable checklist items.
 
 Each step must be one of these types:
 - "checklist": A manual verification item the reviewer checks off
@@ -73,26 +86,30 @@ Each step must be one of these types:
 - "compare": Cross-document comparison
 - "flag": Automated condition-based flagging
 
-Output valid JSON: an array of PlaybookStep objects with this structure:
+Output valid JSON with a "steps" key: an array of PlaybookStep objects with this structure:
 {
-  "index": number,
-  "title": string (short, actionable),
-  "description": string (detailed instruction),
-  "type": "checklist" | "review" | "extract" | "compare" | "flag",
-  "config": {
-    "extractionFields"?: string[] (for extract type),
-    "comparisonDocTypes"?: string[] (for compare type),
-    "flagConditions"?: string[] (for flag type),
-    "aiPrompt"?: string (for review type - the prompt to analyze the content)
-  },
-  "isRequired": boolean
+  "steps": [
+    {
+      "index": number,
+      "title": string (short, actionable),
+      "description": string (detailed instruction),
+      "type": "checklist" | "review" | "extract" | "compare" | "flag",
+      "config": {
+        "extractionFields"?: string[] (for extract type),
+        "comparisonDocTypes"?: string[] (for compare type),
+        "flagConditions"?: string[] (for flag type),
+        "aiPrompt"?: string (for review type - the prompt to analyze the content)
+      },
+      "isRequired": boolean
+    }
+  ]
 }
 
-Generate 5-15 steps that comprehensively review the provided documents. Focus on the document types and content to create relevant, specific steps.`,
+Generate 5-15 steps that comprehensively cover the review process. Focus on creating relevant, specific steps.`,
           },
           {
             role: "user",
-            content: `Generate a review playbook for these ${documentTexts.length} documents:\n\n${documentSummaries}`,
+            content: userContent,
           },
         ],
         response_format: { type: "json_object" },

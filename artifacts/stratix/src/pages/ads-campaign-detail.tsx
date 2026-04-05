@@ -245,14 +245,14 @@ export function AdsCampaignDetail() {
               <h3 className="text-xs font-medium text-[#E8E4DC]/40 uppercase mb-3">Targeting</h3>
               {campaign.targeting ? (
                 <div className="space-y-1 text-sm text-[#E8E4DC]/70">
-                  {(campaign.targeting as any).locations && (
-                    <div>Locations: {((campaign.targeting as any).locations as string[]).join(", ")}</div>
+                  {Array.isArray(campaign.targeting.locations) && (
+                    <div>Locations: {(campaign.targeting.locations as string[]).join(", ")}</div>
                   )}
-                  {(campaign.targeting as any).keywords && (
-                    <div>Keywords: {((campaign.targeting as any).keywords as string[]).join(", ")}</div>
+                  {Array.isArray(campaign.targeting.keywords) && (
+                    <div>Keywords: {(campaign.targeting.keywords as string[]).join(", ")}</div>
                   )}
-                  {(campaign.targeting as any).interests && (
-                    <div>Interests: {((campaign.targeting as any).interests as string[]).join(", ")}</div>
+                  {Array.isArray(campaign.targeting.interests) && (
+                    <div>Interests: {(campaign.targeting.interests as string[]).join(", ")}</div>
                   )}
                 </div>
               ) : (

@@ -356,10 +356,23 @@ export function Knowledge() {
           <Loader2 className="w-5 h-5 animate-spin" style={{ color: "var(--workspace-muted)" }} />
         </div>
       ) : docs.length === 0 ? (
-        <div className="p-12 flex flex-col items-center justify-center text-center" style={{ border: "1px solid var(--workspace-border)", background: "#FFFFFF" }}>
-          <FileText className="w-8 h-8 mb-4" style={{ color: "var(--workspace-muted)", opacity: 0.4 }} />
-          <p className="text-sm mb-2" style={{ color: "var(--workspace-muted)" }}>No documents yet</p>
-          <p className="text-xs" style={{ color: "var(--workspace-muted)", opacity: 0.6 }}>Upload a PDF or DOCX to get started</p>
+        <div
+          className="p-12 flex flex-col items-center justify-center text-center cursor-pointer transition-colors group"
+          style={{ border: "2px dashed var(--workspace-border)", background: "#FFFFFF" }}
+          onClick={() => fileInputRef.current?.click()}
+          onMouseEnter={(e) => { e.currentTarget.style.borderColor = "var(--workspace-fg)"; e.currentTarget.style.background = "var(--workspace-muted-bg)"; }}
+          onMouseLeave={(e) => { e.currentTarget.style.borderColor = "var(--workspace-border)"; e.currentTarget.style.background = "#FFFFFF"; }}
+        >
+          <div className="w-14 h-14 mx-auto mb-5 flex items-center justify-center" style={{ background: "var(--workspace-muted-bg)", border: "1px solid var(--workspace-border)" }}>
+            <Upload className="w-6 h-6" style={{ color: "var(--workspace-muted)" }} />
+          </div>
+          <h3 className="text-sm font-medium mb-1" style={{ color: "var(--workspace-fg)" }}>Upload your first document</h3>
+          <p className="text-xs max-w-xs mb-4" style={{ color: "var(--workspace-muted)" }}>
+            Drag and drop or click to upload board decks, financial models, research reports, and contracts.
+          </p>
+          <p className="text-[10px] uppercase tracking-widest" style={{ color: "var(--workspace-muted)", opacity: 0.6 }}>
+            Supports PDF and DOCX
+          </p>
         </div>
       ) : (
         <div style={{ border: "1px solid var(--workspace-border)" }}>

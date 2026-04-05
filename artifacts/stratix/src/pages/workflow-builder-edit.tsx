@@ -10,138 +10,184 @@ import {
   ChevronDown,
   ChevronUp,
   GripVertical,
-  AlertCircle,
-  CheckCircle2,
-  Clock,
-  XCircle,
-  Settings,
+  MessageSquare,
+  Wrench,
+  Database,
+  Zap,
+  GitBranch,
+  Repeat,
+  UserCheck,
 } from "lucide-react";
+import { StepConfigForm } from "@/components/workflow/step-config-forms";
+import { ExecutionTraceView } from "@/components/workflow/execution-trace-view";
+
+// ─── Types ─────────────────────────────────────────────────────
 
 interface WorkflowStep {
-  id: string;
-  type: "ai_prompt" | "data_lookup" | "document_analysis" | "conditional" | "transform" | "notify" | "human_review" | "api_call";
+  id?: number;
+  /** Client-only key for React list rendering */
+  _key: string;
+  type: string;
   name: string;
   description?: string;
   config: Record<string, any>;
-  order: number;
+  stepIndex: number;
 }
 
 interface WorkflowDefinition {
-  id: string;
+  id: number;
   name: string;
   description: string;
+  icon?: string;
+  config: Record<string, any>;
   steps: WorkflowStep[];
-  status: "draft" | "published";
+  status: string;
+  isPublished: boolean;
   version: number;
   createdAt: string;
   updatedAt: string;
 }
 
-interface WorkflowExecution {
-  id: string;
-  workflowId: string;
-  status: "pending" | "running" | "completed" | "failed";
-  stepTraces: StepTrace[];
-  createdAt: string;
-  completedAt?: string;
-}
-
-interface StepTrace {
-  stepId: string;
-  status: "pending" | "running" | "completed" | "failed";
+interface ExecutionStep {
+  id: number;
+  stepIndex: number;
+  stepType: string;
+  stepName: string;
+  status: string;
   input?: any;
   output?: any;
-  error?: string;
+  errorMessage?: string;
   startedAt?: string;
   completedAt?: string;
 }
 
+interface WorkflowExecution {
+  id: number;
+  status: string;
+  title: string;
+  inputs: Record<string, any>;
+  outputs: Record<string, any>;
+  steps: ExecutionStep[];
+  createdAt: string;
+  completedAt?: string;
+}
+
+// ─── Constants ─────────────────────────────────────────────────
+
 const STEP_TYPES = [
-  { value: "ai_prompt", label: "AI Prompt" },
-  { value: "data_lookup", label: "Data Lookup" },
-  { value: "document_analysis", label: "Document Analysis" },
-  { value: "conditional", label: "Conditional" },
-  { value: "transform", label: "Transform" },
-  { value: "notify", label: "Notify" },
-  { value: "human_review", label: "Human Review" },
-  { value: "api_call", label: "API Call" },
+  { value: "prompt", label: "AI Prompt", icon: MessageSquare, description: "Call an LLM with a prompt" },
+  { value: "tool", label: "Tool Call", icon: Wrench, description: "Execute a function or tool" },
+  { value: "data_pull", label: "Data Pull", icon: Database, description: "Fetch data from a source" },
+  { value: "action", label: "Action", icon: Zap, description: "Perform an external action" },
+  { value: "branch", label: "Branch", icon: GitBranch, description: "Conditional logic" },
+  { value: "loop", label: "Loop", icon: Repeat, description: "Iterate over items" },
+  { value: "human_review", label: "Human Review", icon: UserCheck, description: "Require human approval" },
 ] as const;
 
 const STATUS_COLORS: Record<string, string> = {
   draft: "var(--workspace-muted)",
   published: "#16a34a",
   pending: "#ca8a04",
-  running: "#3b82f6",
+  "in-progress": "#3b82f6",
   completed: "#16a34a",
   failed: "#dc2626",
+  cancelled: "var(--workspace-muted)",
 };
 
 const STATUS_LABELS: Record<string, string> = {
   draft: "Draft",
   published: "Published",
   pending: "Pending",
-  running: "Running",
+  "in-progress": "Running",
   completed: "Completed",
   failed: "Failed",
+  cancelled: "Cancelled",
 };
+
+function getDefaultConfig(type: string): Record<string, any> {
+  switch (type) {
+    case "prompt":
+      return { systemPrompt: "", analysisPrompt: "", model: "gpt-4o", temperature: 0.7, maxTokens: 4096, outputFormat: "markdown" };
+    case "tool":
+      return { toolName: "", inputMapping: "", timeout: 30 };
+    case "data_pull":
+      return { source: "vault", query: "", limit: 10 };
+    case "action":
+      return { action: "notify", params: {} };
+    case "branch":
+      return { expression: "", trueStepIndex: 0, falseStepIndex: -1 };
+    case "loop":
+      return { itemsSource: "", maxIterations: 10, bodyDescription: "" };
+    case "human_review":
+      return { reviewerPrompt: "", timeoutHours: 24, onTimeout: "escalate" };
+    default:
+      return {};
+  }
+}
+
+// ─── Main Component ────────────────────────────────────────────
 
 export function WorkflowBuilderEdit() {
   const [location, navigate] = useLocation();
-  const workflowId = location.split("/").pop();
-  const [executionId, setExecutionId] = useState<string | null>(null);
+  const pathParts = location.split("?")[0].split("/").filter(Boolean);
+  const workflowId = pathParts[pathParts.length - 1];
   const isNew = workflowId === "new";
 
   const [workflow, setWorkflow] = useState<WorkflowDefinition | null>(null);
   const [execution, setExecution] = useState<WorkflowExecution | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [editingStep, setEditingStep] = useState<string | null>(null);
   const [expandedSteps, setExpandedSteps] = useState<Set<string>>(new Set());
+  const [showStepPicker, setShowStepPicker] = useState(false);
 
-  // Get execution ID from query params
-  useEffect(() => {
+  // Parse execution ID from query params
+  const executionId = (() => {
     const params = new URLSearchParams(location.split("?")[1] || "");
-    setExecutionId(params.get("execution"));
-  }, [location]);
+    return params.get("execution");
+  })();
 
-  // Fetch workflow definition and execution if applicable
+  // Fetch workflow and execution data
   useEffect(() => {
     if (!workflowId) return;
 
     const fetchData = async () => {
       setLoading(true);
       try {
-        // If creating a new workflow, initialize with blank template
         if (isNew) {
-          const blankWorkflow: WorkflowDefinition = {
-            id: "new",
+          setWorkflow({
+            id: 0,
             name: "Untitled Workflow",
             description: "",
+            config: { trigger: { type: "manual" } },
             steps: [],
             status: "draft",
+            isPublished: false,
             version: 1,
             createdAt: new Date().toISOString(),
             updatedAt: new Date().toISOString(),
-          };
-          setWorkflow(blankWorkflow);
+          });
         } else {
-          // Fetch workflow definition
-          const workflowResponse = await fetch(`/api/workflow-definitions/${workflowId}`, {
+          const resp = await fetch(`/api/workflow-definitions/${workflowId}`, {
             credentials: "include",
           });
-          if (workflowResponse.ok) {
-            const workflowData = await workflowResponse.json();
-            setWorkflow(workflowData);
+          if (resp.ok) {
+            const data = await resp.json();
+            // Normalize steps with _key for React rendering
+            const steps = (data.steps || []).map((s: any) => ({
+              ...s,
+              _key: `step-${s.id || Date.now()}-${s.stepIndex}`,
+              name: s.name || `Step ${s.stepIndex + 1}`,
+              config: s.config || {},
+            }));
+            setWorkflow({ ...data, steps });
           }
 
-          // Fetch execution if provided
           if (executionId) {
-            const executionResponse = await fetch(`/api/workflow-executions/${executionId}`, {
+            const execResp = await fetch(`/api/workflow-executions/${executionId}`, {
               credentials: "include",
             });
-            if (executionResponse.ok) {
-              const executionData = await executionResponse.json();
-              setExecution(executionData);
+            if (execResp.ok) {
+              setExecution(await execResp.json());
             }
           }
         }
@@ -155,53 +201,56 @@ export function WorkflowBuilderEdit() {
     fetchData();
   }, [workflowId, executionId, isNew]);
 
+  // ─── Handlers ──────────────────────────────────────────────
+
   const handleSave = async () => {
     if (!workflow) return;
-
     setSaving(true);
-    try {
-      if (isNew) {
-        // Create new workflow
-        const response = await fetch("/api/workflow-definitions", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          credentials: "include",
-          body: JSON.stringify({
-            name: workflow.name,
-            description: workflow.description,
-            steps: workflow.steps,
-          }),
-        });
 
-        if (response.ok) {
-          const created = await response.json();
-          setWorkflow(created);
-          // Navigate to the newly created workflow
-          navigate(`/workflow-builder/${created.id}`);
-        } else {
-          alert("Failed to create workflow");
+    const payload = {
+      name: workflow.name,
+      description: workflow.description || "",
+      icon: workflow.icon || null,
+      config: workflow.config || { trigger: { type: "manual" } },
+      steps: workflow.steps.map((step, index) => ({
+        type: step.type,
+        name: step.name,
+        description: step.description || null,
+        config: step.config,
+      })),
+    };
+
+    try {
+      const url = isNew
+        ? "/api/workflow-definitions"
+        : `/api/workflow-definitions/${workflowId}`;
+      const method = isNew ? "POST" : "PUT";
+
+      const resp = await fetch(url, {
+        method,
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify(payload),
+      });
+
+      if (resp.ok) {
+        const saved = await resp.json();
+        const steps = (saved.steps || []).map((s: any) => ({
+          ...s,
+          _key: `step-${s.id || Date.now()}-${s.stepIndex}`,
+          name: s.name || `Step ${s.stepIndex + 1}`,
+          config: s.config || {},
+        }));
+        setWorkflow({ ...saved, steps });
+
+        if (isNew) {
+          navigate(`/workflow-builder/${saved.id}`);
         }
       } else {
-        // Update existing workflow
-        const response = await fetch(`/api/workflow-definitions/${workflowId}`, {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          credentials: "include",
-          body: JSON.stringify({
-            name: workflow.name,
-            description: workflow.description,
-            steps: workflow.steps,
-          }),
-        });
-
-        if (response.ok) {
-          const updated = await response.json();
-          setWorkflow(updated);
-        } else {
-          alert("Failed to save workflow");
-        }
+        const err = await resp.json().catch(() => ({}));
+        alert(err.error || "Failed to save workflow");
       }
-    } catch (error) {
+    } catch {
       alert("Error saving workflow");
     } finally {
       setSaving(false);
@@ -209,158 +258,117 @@ export function WorkflowBuilderEdit() {
   };
 
   const handlePublish = async () => {
-    if (!workflow) return;
-
-    // Cannot publish a new unsaved workflow
-    if (isNew) {
-      alert("Please save the workflow first before publishing");
+    if (!workflow || isNew) {
+      alert("Save the workflow before publishing.");
       return;
     }
-
     try {
-      const response = await fetch(`/api/workflow-definitions/${workflowId}/publish`, {
+      const resp = await fetch(`/api/workflow-definitions/${workflowId}/publish`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
         body: JSON.stringify({ publish: workflow.status === "draft" }),
       });
-
-      if (response.ok) {
-        const updated = await response.json();
-        setWorkflow(updated);
-      } else {
-        alert("Failed to publish workflow");
+      if (resp.ok) {
+        const updated = await resp.json();
+        const steps = (updated.steps || []).map((s: any) => ({
+          ...s,
+          _key: `step-${s.id}-${s.stepIndex}`,
+          name: s.name || `Step ${s.stepIndex + 1}`,
+          config: s.config || {},
+        }));
+        setWorkflow({ ...updated, steps });
       }
-    } catch (error) {
+    } catch {
       alert("Error publishing workflow");
     }
   };
 
   const handleExecute = async () => {
-    if (!workflow) return;
-
-    // Cannot execute a new unsaved workflow
-    if (isNew) {
-      alert("Please save the workflow first before executing");
+    if (!workflow || isNew) {
+      alert("Save the workflow before executing.");
       return;
     }
-
     try {
-      const response = await fetch("/api/workflow-executions", {
+      const resp = await fetch(`/api/workflow-definitions/${workflowId}/trigger`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
-        body: JSON.stringify({
-          workflowId: workflow.id,
-          inputs: {},
-        }),
+        body: JSON.stringify({ inputs: {}, title: `Manual run: ${workflow.name}` }),
       });
-
-      if (response.ok) {
-        const newExecution = await response.json();
-        setExecution(newExecution);
-        setExecutionId(newExecution.id);
+      if (resp.ok) {
+        const exec = await resp.json();
+        navigate(`/workflow-builder/${workflowId}?execution=${exec.id}`);
       } else {
-        alert("Failed to execute workflow");
+        const err = await resp.json().catch(() => ({}));
+        alert(err.error || "Failed to execute workflow");
       }
-    } catch (error) {
+    } catch {
       alert("Error executing workflow");
     }
   };
 
-  const updateStep = (stepId: string, updates: Partial<WorkflowStep>) => {
+  const addStep = (type: string) => {
     if (!workflow) return;
-
-    const updatedSteps = workflow.steps.map((step) =>
-      step.id === stepId ? { ...step, ...updates } : step
-    );
-
-    setWorkflow({ ...workflow, steps: updatedSteps });
+    const stepInfo = STEP_TYPES.find((t) => t.value === type);
+    const newStep: WorkflowStep = {
+      _key: `step-new-${Date.now()}`,
+      type,
+      name: stepInfo?.label || "New Step",
+      description: "",
+      config: getDefaultConfig(type),
+      stepIndex: workflow.steps.length,
+    };
+    setWorkflow({ ...workflow, steps: [...workflow.steps, newStep] });
+    setExpandedSteps(new Set([...expandedSteps, newStep._key]));
+    setShowStepPicker(false);
   };
 
-  const addStep = () => {
+  const removeStep = (key: string) => {
     if (!workflow) return;
+    const updated = workflow.steps
+      .filter((s) => s._key !== key)
+      .map((s, i) => ({ ...s, stepIndex: i }));
+    setWorkflow({ ...workflow, steps: updated });
+  };
 
-    const newStep: WorkflowStep = {
-      id: `step-${Date.now()}`,
-      type: "ai_prompt",
-      name: "New Step",
-      description: "",
-      config: {},
-      order: workflow.steps.length,
-    };
+  const updateStep = (key: string, updates: Partial<WorkflowStep>) => {
+    if (!workflow) return;
+    const steps = workflow.steps.map((s) =>
+      s._key === key ? { ...s, ...updates } : s
+    );
+    setWorkflow({ ...workflow, steps });
+  };
 
+  const moveStep = (key: string, direction: "up" | "down") => {
+    if (!workflow) return;
+    const idx = workflow.steps.findIndex((s) => s._key === key);
+    if ((direction === "up" && idx === 0) || (direction === "down" && idx === workflow.steps.length - 1)) return;
+
+    const newSteps = [...workflow.steps];
+    const target = direction === "up" ? idx - 1 : idx + 1;
+    [newSteps[idx], newSteps[target]] = [newSteps[target], newSteps[idx]];
     setWorkflow({
       ...workflow,
-      steps: [...workflow.steps, newStep],
+      steps: newSteps.map((s, i) => ({ ...s, stepIndex: i })),
     });
   };
 
-  const removeStep = (stepId: string) => {
-    if (!workflow) return;
-
-    const updatedSteps = workflow.steps
-      .filter((step) => step.id !== stepId)
-      .map((step, index) => ({ ...step, order: index }));
-
-    setWorkflow({ ...workflow, steps: updatedSteps });
-    setEditingStep(null);
+  const toggleExpanded = (key: string) => {
+    const next = new Set(expandedSteps);
+    next.has(key) ? next.delete(key) : next.add(key);
+    setExpandedSteps(next);
   };
 
-  const moveStep = (stepId: string, direction: "up" | "down") => {
-    if (!workflow) return;
-
-    const index = workflow.steps.findIndex((step) => step.id === stepId);
-    if (
-      (direction === "up" && index === 0) ||
-      (direction === "down" && index === workflow.steps.length - 1)
-    ) {
-      return;
-    }
-
-    const newSteps = [...workflow.steps];
-    const targetIndex = direction === "up" ? index - 1 : index + 1;
-    [newSteps[index], newSteps[targetIndex]] = [newSteps[targetIndex], newSteps[index]];
-
-    const updatedSteps = newSteps.map((step, i) => ({ ...step, order: i }));
-    setWorkflow({ ...workflow, steps: updatedSteps });
-  };
-
-  const toggleStepExpanded = (stepId: string) => {
-    const newExpanded = new Set(expandedSteps);
-    if (newExpanded.has(stepId)) {
-      newExpanded.delete(stepId);
-    } else {
-      newExpanded.add(stepId);
-    }
-    setExpandedSteps(newExpanded);
-  };
-
-  const getStepTypeLabel = (type: string) => {
-    return STEP_TYPES.find((t) => t.value === type)?.label || type;
-  };
-
-  const getStepIcon = (type: string) => {
-    const iconMap: Record<string, React.ReactNode> = {
-      ai_prompt: "✨",
-      data_lookup: "🔍",
-      document_analysis: "📄",
-      conditional: "⚡",
-      transform: "🔄",
-      notify: "📢",
-      human_review: "👤",
-      api_call: "🔗",
-    };
-    return iconMap[type] || "⚙️";
-  };
+  // ─── Render ────────────────────────────────────────────────
 
   if (loading) {
     return (
       <div className="animate-in fade-in duration-500 space-y-6">
         <div className="h-16 animate-pulse" style={{ background: "var(--workspace-muted-bg)" }} />
         <div className="space-y-3">
-          {Array.from({ length: 5 }).map((_, i) => (
-            <div key={i} className="h-12 animate-pulse" style={{ background: "var(--workspace-muted-bg)" }} />
+          {Array.from({ length: 4 }).map((_, i) => (
+            <div key={i} className="h-14 animate-pulse" style={{ background: "var(--workspace-muted-bg)" }} />
           ))}
         </div>
       </div>
@@ -377,19 +385,17 @@ export function WorkflowBuilderEdit() {
 
   return (
     <div className="animate-in fade-in duration-500 space-y-8">
-      {/* Header with Back Link */}
-      <div className="flex items-center gap-3 mb-6">
-        <button
-          onClick={() => navigate("/workflow-builder")}
-          className="flex items-center gap-1 text-xs uppercase tracking-widest transition-colors"
-          style={{ color: "var(--workspace-muted)" }}
-        >
-          <ArrowLeft className="h-3.5 w-3.5" />
-          Back
-        </button>
-      </div>
+      {/* Back Link */}
+      <button
+        onClick={() => navigate("/workflow-builder")}
+        className="flex items-center gap-1 text-xs uppercase tracking-widest transition-colors"
+        style={{ color: "var(--workspace-muted)" }}
+      >
+        <ArrowLeft className="h-3.5 w-3.5" />
+        Back
+      </button>
 
-      {/* Title Section */}
+      {/* Header */}
       <div className="pb-6 border-b space-y-6" style={{ borderColor: "var(--workspace-border)" }}>
         <div>
           <label className="text-[10px] uppercase tracking-[0.2em] mb-2 block" style={{ color: "var(--workspace-muted)" }}>
@@ -400,12 +406,7 @@ export function WorkflowBuilderEdit() {
             value={workflow.name}
             onChange={(e) => setWorkflow({ ...workflow, name: e.target.value })}
             className="w-full text-3xl font-light font-serif mb-2 focus:outline-none"
-            style={{
-              color: "var(--workspace-fg)",
-              background: "transparent",
-              borderBottom: "1px solid transparent",
-              transition: "border-color 0.2s",
-            }}
+            style={{ color: "var(--workspace-fg)", background: "transparent", borderBottom: "1px solid transparent", transition: "border-color 0.2s" }}
             onFocus={(e) => (e.currentTarget.style.borderBottomColor = "var(--workspace-border)")}
             onBlur={(e) => (e.currentTarget.style.borderBottomColor = "transparent")}
           />
@@ -416,39 +417,34 @@ export function WorkflowBuilderEdit() {
             Description
           </label>
           <textarea
-            value={workflow.description}
+            value={workflow.description || ""}
             onChange={(e) => setWorkflow({ ...workflow, description: e.target.value })}
             className="w-full text-sm focus:outline-none resize-none"
-            rows={3}
-            style={{
-              color: "var(--workspace-fg)",
-              background: "transparent",
-              borderBottom: "1px solid transparent",
-              transition: "border-color 0.2s",
-            }}
+            rows={2}
+            placeholder="Describe what this workflow does..."
+            style={{ color: "var(--workspace-fg)", background: "transparent", borderBottom: "1px solid transparent", transition: "border-color 0.2s" }}
             onFocus={(e) => (e.currentTarget.style.borderBottomColor = "var(--workspace-border)")}
             onBlur={(e) => (e.currentTarget.style.borderBottomColor = "transparent")}
           />
         </div>
 
-        {/* Status and Actions */}
+        {/* Status Bar & Actions */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <span
               className="text-[10px] uppercase tracking-wide px-2 py-0.5"
-              style={{
-                border: "1px solid var(--workspace-border)",
-                color: STATUS_COLORS[workflow.status],
-              }}
+              style={{ border: "1px solid var(--workspace-border)", color: STATUS_COLORS[workflow.status] || "var(--workspace-muted)" }}
             >
-              {STATUS_LABELS[workflow.status]}
+              {STATUS_LABELS[workflow.status] || workflow.status}
             </span>
             <span className="text-[10px]" style={{ color: "var(--workspace-muted)" }}>
-              v{workflow.version}
+              v{workflow.version || 1}
             </span>
-            <span className="text-[10px]" style={{ color: "var(--workspace-muted)" }}>
-              Last updated {format(new Date(workflow.updatedAt), "MMM d, yyyy")}
-            </span>
+            {!isNew && (
+              <span className="text-[10px]" style={{ color: "var(--workspace-muted)" }}>
+                Updated {format(new Date(workflow.updatedAt), "MMM d, yyyy")}
+              </span>
+            )}
           </div>
 
           <div className="flex items-center gap-3">
@@ -456,455 +452,266 @@ export function WorkflowBuilderEdit() {
               onClick={handleSave}
               disabled={saving}
               className="flex items-center gap-2 px-4 py-2 text-xs uppercase tracking-widest font-medium transition-colors"
-              style={{
-                background: "var(--workspace-fg)",
-                color: "#FFFFFF",
-                opacity: saving ? 0.6 : 1,
-              }}
+              style={{ background: "var(--workspace-fg)", color: "#FFFFFF", opacity: saving ? 0.6 : 1 }}
             >
               <Save className="h-3.5 w-3.5" />
               {saving ? "Saving..." : "Save"}
             </button>
 
-            <button
-              onClick={handlePublish}
-              className="flex items-center gap-2 px-4 py-2 text-xs uppercase tracking-widest transition-colors"
-              style={{
-                border: "1px solid var(--workspace-border)",
-                color: workflow.status === "draft" ? "var(--workspace-fg)" : "var(--workspace-muted)",
-                background: "#FFFFFF",
-              }}
-            >
-              {workflow.status === "draft" ? "Publish" : "Published"}
-            </button>
+            {!isNew && (
+              <button
+                onClick={handlePublish}
+                className="flex items-center gap-2 px-4 py-2 text-xs uppercase tracking-widest transition-colors"
+                style={{ border: "1px solid var(--workspace-border)", color: "var(--workspace-fg)", background: "#FFFFFF" }}
+              >
+                {workflow.status === "draft" ? "Publish" : "Published"}
+              </button>
+            )}
 
-            {workflow.status === "published" && (
+            {!isNew && workflow.isPublished && (
               <button
                 onClick={handleExecute}
                 className="flex items-center gap-2 px-4 py-2 text-xs uppercase tracking-widest font-medium transition-colors"
-                style={{
-                  background: "#16a34a",
-                  color: "#FFFFFF",
-                }}
+                style={{ background: "#16a34a", color: "#FFFFFF" }}
               >
                 <Play className="h-3.5 w-3.5" />
-                Execute
+                Run
               </button>
             )}
           </div>
         </div>
       </div>
 
-      {/* Step Editor or Execution Trace */}
+      {/* Execution Trace or Step Editor */}
       {execution && executionId ? (
-        <ExecutionTrace execution={execution} workflow={workflow} />
+        <ExecutionTraceView execution={execution} steps={workflow.steps} />
       ) : (
-        <StepEditor
-          workflow={workflow}
-          editingStep={editingStep}
-          expandedSteps={expandedSteps}
-          onAddStep={addStep}
-          onRemoveStep={removeStep}
-          onUpdateStep={updateStep}
-          onMoveStep={moveStep}
-          onToggleExpanded={toggleStepExpanded}
-          onSetEditingStep={setEditingStep}
-          getStepTypeLabel={getStepTypeLabel}
-          getStepIcon={getStepIcon}
-        />
-      )}
-    </div>
-  );
-}
+        <>
+          {/* Steps List */}
+          <div className="space-y-6">
+            <h2 className="text-[10px] uppercase tracking-[0.25em]" style={{ color: "var(--workspace-muted)" }}>
+              Workflow Steps ({workflow.steps.length})
+            </h2>
 
-interface StepEditorProps {
-  workflow: WorkflowDefinition;
-  editingStep: string | null;
-  expandedSteps: Set<string>;
-  onAddStep: () => void;
-  onRemoveStep: (stepId: string) => void;
-  onUpdateStep: (stepId: string, updates: Partial<WorkflowStep>) => void;
-  onMoveStep: (stepId: string, direction: "up" | "down") => void;
-  onToggleExpanded: (stepId: string) => void;
-  onSetEditingStep: (stepId: string | null) => void;
-  getStepTypeLabel: (type: string) => string;
-  getStepIcon: (type: string) => React.ReactNode;
-}
-
-function StepEditor({
-  workflow,
-  editingStep,
-  expandedSteps,
-  onAddStep,
-  onRemoveStep,
-  onUpdateStep,
-  onMoveStep,
-  onToggleExpanded,
-  onSetEditingStep,
-  getStepTypeLabel,
-  getStepIcon,
-}: StepEditorProps) {
-  return (
-    <div className="space-y-6">
-      <h2 className="text-[10px] uppercase tracking-[0.25em]" style={{ color: "var(--workspace-muted)" }}>
-        Workflow Steps
-      </h2>
-
-      <div className="space-y-3">
-        {workflow.steps.length === 0 ? (
-          <div className="py-12 text-center border-dashed" style={{ border: "1px dashed var(--workspace-border)" }}>
-            <Settings className="h-8 w-8 mx-auto mb-4" style={{ color: "var(--workspace-muted)" }} />
-            <p className="text-sm mb-6" style={{ color: "var(--workspace-muted)" }}>
-              No steps yet. Add your first step to get started.
-            </p>
-          </div>
-        ) : (
-          workflow.steps.map((step, index) => (
-            <div
-              key={step.id}
-              className="group transition-colors"
-              style={{ border: "1px solid var(--workspace-border)", background: "#FFFFFF" }}
-              onMouseEnter={(e) => (e.currentTarget.style.borderColor = "var(--workspace-fg)")}
-              onMouseLeave={(e) => (e.currentTarget.style.borderColor = "var(--workspace-border)")}
-            >
-              {/* Step Header */}
-              <div className="flex items-center gap-3 px-4 py-3.5 cursor-pointer" onClick={() => onToggleExpanded(step.id)}>
-                <GripVertical className="h-4 w-4" style={{ color: "var(--workspace-muted)" }} />
-
-                <div className="flex items-center gap-2">
-                  <span className="text-sm font-medium" style={{ color: "var(--workspace-muted)" }}>
-                    Step {index + 1}
-                  </span>
-                  <span
-                    className="text-[10px] uppercase tracking-wide px-2 py-0.5"
-                    style={{
-                      border: "1px solid var(--workspace-border)",
-                      color: "var(--workspace-muted)",
-                    }}
-                  >
-                    {getStepTypeLabel(step.type)}
-                  </span>
-                </div>
-
-                <span className="font-medium" style={{ color: "var(--workspace-fg)" }}>
-                  {step.name}
-                </span>
-
-                {step.description && (
-                  <span className="text-xs flex-1 line-clamp-1" style={{ color: "var(--workspace-muted)" }}>
-                    {step.description}
-                  </span>
-                )}
-
-                <div className="flex items-center gap-2 ml-auto opacity-0 group-hover:opacity-100 transition-opacity">
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      onMoveStep(step.id, "up");
-                    }}
-                    disabled={index === 0}
-                    className="h-6 w-6 flex items-center justify-center transition-colors"
-                    style={{
-                      color: index === 0 ? "var(--workspace-border)" : "var(--workspace-muted)",
-                    }}
-                  >
-                    <ChevronUp className="h-3.5 w-3.5" />
-                  </button>
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      onMoveStep(step.id, "down");
-                    }}
-                    disabled={index === workflow.steps.length - 1}
-                    className="h-6 w-6 flex items-center justify-center transition-colors"
-                    style={{
-                      color:
-                        index === workflow.steps.length - 1
-                          ? "var(--workspace-border)"
-                          : "var(--workspace-muted)",
-                    }}
-                  >
-                    <ChevronDown className="h-3.5 w-3.5" />
-                  </button>
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      onRemoveStep(step.id);
-                    }}
-                    className="h-6 w-6 flex items-center justify-center transition-colors"
-                    style={{ color: "#dc2626" }}
-                  >
-                    <Trash2 className="h-3.5 w-3.5" />
-                  </button>
-                </div>
-
-                {expandedSteps.has(step.id) ? (
-                  <ChevronUp className="h-4 w-4" style={{ color: "var(--workspace-muted)" }} />
-                ) : (
-                  <ChevronDown className="h-4 w-4" style={{ color: "var(--workspace-muted)" }} />
-                )}
+            {workflow.steps.length === 0 ? (
+              <div className="py-12 text-center" style={{ border: "1px dashed var(--workspace-border)" }}>
+                <MessageSquare className="h-8 w-8 mx-auto mb-4" style={{ color: "var(--workspace-muted)" }} />
+                <p className="text-sm mb-2" style={{ color: "var(--workspace-muted)" }}>
+                  No steps yet. Add your first step to build your workflow.
+                </p>
               </div>
+            ) : (
+              <div className="space-y-2">
+                {workflow.steps.map((step, index) => {
+                  const typeInfo = STEP_TYPES.find((t) => t.value === step.type);
+                  const Icon = typeInfo?.icon || Zap;
+                  const isExpanded = expandedSteps.has(step._key);
 
-              {/* Step Details */}
-              {expandedSteps.has(step.id) && (
-                <div className="px-4 py-4 border-t" style={{ borderColor: "var(--workspace-border)", background: "var(--workspace-muted-bg)" }}>
-                  <div className="space-y-4">
-                    <div>
-                      <label className="text-xs uppercase tracking-widest mb-2 block" style={{ color: "var(--workspace-muted)" }}>
-                        Step Type
-                      </label>
-                      <select
-                        value={step.type}
-                        onChange={(e) =>
-                          onUpdateStep(step.id, {
-                            type: e.target.value as WorkflowStep["type"],
-                          })
-                        }
-                        className="w-full px-3 py-2 text-xs focus:outline-none"
-                        style={{
-                          background: "#FFFFFF",
-                          border: "1px solid var(--workspace-border)",
-                          color: "var(--workspace-fg)",
-                        }}
-                      >
-                        {STEP_TYPES.map((t) => (
-                          <option key={t.value} value={t.value}>
-                            {t.label}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-
-                    <div>
-                      <label className="text-xs uppercase tracking-widest mb-2 block" style={{ color: "var(--workspace-muted)" }}>
-                        Step Name
-                      </label>
-                      <input
-                        type="text"
-                        value={step.name}
-                        onChange={(e) => onUpdateStep(step.id, { name: e.target.value })}
-                        className="w-full px-3 py-2 text-xs focus:outline-none"
-                        style={{
-                          background: "#FFFFFF",
-                          border: "1px solid var(--workspace-border)",
-                          color: "var(--workspace-fg)",
-                        }}
-                      />
-                    </div>
-
-                    <div>
-                      <label className="text-xs uppercase tracking-widest mb-2 block" style={{ color: "var(--workspace-muted)" }}>
-                        Description
-                      </label>
-                      <textarea
-                        value={step.description || ""}
-                        onChange={(e) => onUpdateStep(step.id, { description: e.target.value })}
-                        rows={2}
-                        className="w-full px-3 py-2 text-xs focus:outline-none resize-none"
-                        style={{
-                          background: "#FFFFFF",
-                          border: "1px solid var(--workspace-border)",
-                          color: "var(--workspace-fg)",
-                        }}
-                      />
-                    </div>
-
-                    <div>
-                      <label className="text-xs uppercase tracking-widest mb-2 block" style={{ color: "var(--workspace-muted)" }}>
-                        Configuration (JSON)
-                      </label>
-                      <textarea
-                        value={JSON.stringify(step.config, null, 2)}
-                        onChange={(e) => {
-                          try {
-                            const config = JSON.parse(e.target.value);
-                            onUpdateStep(step.id, { config });
-                          } catch (error) {
-                            // Invalid JSON, ignore
-                          }
-                        }}
-                        rows={4}
-                        className="w-full px-3 py-2 text-xs font-mono focus:outline-none resize-none"
-                        style={{
-                          background: "#FFFFFF",
-                          border: "1px solid var(--workspace-border)",
-                          color: "var(--workspace-fg)",
-                        }}
-                      />
-                    </div>
-                  </div>
-                </div>
-              )}
-            </div>
-          ))
-        )}
-      </div>
-
-      {/* Add Step Button */}
-      <button
-        onClick={onAddStep}
-        className="flex items-center justify-center gap-2 w-full py-4 transition-colors"
-        style={{
-          border: "2px dashed var(--workspace-border)",
-          color: "var(--workspace-muted)",
-        }}
-        onMouseEnter={(e) => (e.currentTarget.style.borderColor = "var(--workspace-fg)")}
-        onMouseLeave={(e) => (e.currentTarget.style.borderColor = "var(--workspace-border)")}
-      >
-        <Plus className="h-4 w-4" />
-        <span className="text-xs uppercase tracking-widest">Add Step</span>
-      </button>
-    </div>
-  );
-}
-
-interface ExecutionTraceProps {
-  execution: WorkflowExecution;
-  workflow: WorkflowDefinition;
-}
-
-function ExecutionTrace({ execution, workflow }: ExecutionTraceProps) {
-  return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between pb-6 border-b" style={{ borderColor: "var(--workspace-border)" }}>
-        <h2 className="text-[10px] uppercase tracking-[0.25em]" style={{ color: "var(--workspace-muted)" }}>
-          Execution Trace
-        </h2>
-        <span
-          className="text-[10px] uppercase tracking-wide px-2 py-0.5"
-          style={{
-            border: "1px solid var(--workspace-border)",
-            color: STATUS_COLORS[execution.status] || "var(--workspace-muted)",
-          }}
-        >
-          {STATUS_LABELS[execution.status]}
-        </span>
-      </div>
-
-      <div className="space-y-3">
-        {workflow.steps.map((step, index) => {
-          const trace = execution.stepTraces?.find((t) => t.stepId === step.id);
-          const isRunning = execution.status === "running" && trace?.status === "running";
-
-          return (
-            <div
-              key={step.id}
-              className="p-4 space-y-3 transition-colors"
-              style={{ border: "1px solid var(--workspace-border)", background: "#FFFFFF" }}
-            >
-              <div className="flex items-center gap-3">
-                <div className="flex items-center gap-2 flex-1">
-                  {trace?.status === "completed" && (
-                    <CheckCircle2 className="h-4 w-4" style={{ color: "#16a34a" }} />
-                  )}
-                  {trace?.status === "failed" && (
-                    <XCircle className="h-4 w-4" style={{ color: "#dc2626" }} />
-                  )}
-                  {trace?.status === "running" && (
-                    <Clock className="h-4 w-4 animate-spin" style={{ color: "#3b82f6" }} />
-                  )}
-                  {(trace?.status === "pending" || !trace) && (
-                    <Clock className="h-4 w-4" style={{ color: "var(--workspace-muted)" }} />
-                  )}
-
-                  <div className="min-w-0">
-                    <span className="text-sm font-medium" style={{ color: "var(--workspace-fg)" }}>
-                      Step {index + 1}: {step.name}
-                    </span>
-                    <span className="text-xs ml-2" style={{ color: "var(--workspace-muted)" }}>
-                      {getStepTypeLabel(step.type)}
-                    </span>
-                  </div>
-                </div>
-
-                {trace?.status && (
-                  <span
-                    className={`text-[10px] uppercase tracking-wide px-2 py-0.5 shrink-0 ${
-                      isRunning ? "animate-pulse" : ""
-                    }`}
-                    style={{
-                      border: "1px solid var(--workspace-border)",
-                      color: STATUS_COLORS[trace.status],
-                    }}
-                  >
-                    {STATUS_LABELS[trace.status]}
-                  </span>
-                )}
-              </div>
-
-              {/* Timing */}
-              {trace?.startedAt && (
-                <div className="text-[10px]" style={{ color: "var(--workspace-muted)" }}>
-                  <span>Started: {format(new Date(trace.startedAt), "HH:mm:ss")}</span>
-                  {trace.completedAt && (
-                    <span>
-                      {" · "}
-                      Completed: {format(new Date(trace.completedAt), "HH:mm:ss")}
-                    </span>
-                  )}
-                </div>
-              )}
-
-              {/* Input/Output Data */}
-              {(trace?.input || trace?.output || trace?.error) && (
-                <div className="space-y-2 text-xs">
-                  {trace.input && (
-                    <details className="group cursor-pointer">
-                      <summary className="font-medium transition-colors" style={{ color: "var(--workspace-muted)" }}>
-                        Input Data
-                      </summary>
-                      <pre className="mt-2 p-2 text-[10px] overflow-auto" style={{ background: "var(--workspace-muted-bg)", color: "var(--workspace-fg)" }}>
-                        {JSON.stringify(trace.input, null, 2)}
-                      </pre>
-                    </details>
-                  )}
-
-                  {trace.output && (
-                    <details className="group cursor-pointer">
-                      <summary className="font-medium transition-colors" style={{ color: "var(--workspace-muted)" }}>
-                        Output Data
-                      </summary>
-                      <pre className="mt-2 p-2 text-[10px] overflow-auto" style={{ background: "var(--workspace-muted-bg)", color: "var(--workspace-fg)" }}>
-                        {JSON.stringify(trace.output, null, 2)}
-                      </pre>
-                    </details>
-                  )}
-
-                  {trace.error && (
+                  return (
                     <div
-                      className="p-2 rounded"
-                      style={{ background: "#fecaca", color: "#991b1b" }}
+                      key={step._key}
+                      className="group transition-colors"
+                      style={{ border: "1px solid var(--workspace-border)", background: "#FFFFFF" }}
+                      onMouseEnter={(e) => (e.currentTarget.style.borderColor = "var(--workspace-fg)")}
+                      onMouseLeave={(e) => (e.currentTarget.style.borderColor = "var(--workspace-border)")}
                     >
-                      <div className="font-medium flex items-center gap-2">
-                        <AlertCircle className="h-3 w-3" />
-                        Error
-                      </div>
-                      <pre className="mt-1 text-[10px] overflow-auto">
-                        {trace.error}
-                      </pre>
-                    </div>
-                  )}
-                </div>
-              )}
-            </div>
-          );
-        })}
-      </div>
+                      {/* Step Header */}
+                      <div
+                        className="flex items-center gap-3 px-4 py-3.5 cursor-pointer"
+                        onClick={() => toggleExpanded(step._key)}
+                      >
+                        <GripVertical className="h-4 w-4 shrink-0" style={{ color: "var(--workspace-muted)" }} />
 
-      {execution.completedAt && (
-        <div
-          className="p-4 text-center text-xs"
-          style={{ background: "var(--workspace-muted-bg)", color: "var(--workspace-muted)" }}
-        >
-          Execution completed at {format(new Date(execution.completedAt), "MMM d, yyyy HH:mm:ss")}
-        </div>
+                        <span className="text-xs font-medium shrink-0" style={{ color: "var(--workspace-muted)" }}>
+                          {index + 1}
+                        </span>
+
+                        <Icon className="h-4 w-4 shrink-0" style={{ color: "var(--workspace-muted)" }} />
+
+                        <span
+                          className="text-[10px] uppercase tracking-wide px-2 py-0.5 shrink-0"
+                          style={{ border: "1px solid var(--workspace-border)", color: "var(--workspace-muted)" }}
+                        >
+                          {typeInfo?.label || step.type}
+                        </span>
+
+                        <span className="font-medium truncate" style={{ color: "var(--workspace-fg)" }}>
+                          {step.name}
+                        </span>
+
+                        {/* Reorder & Delete */}
+                        <div className="flex items-center gap-1 ml-auto opacity-0 group-hover:opacity-100 transition-opacity">
+                          <button
+                            onClick={(e) => { e.stopPropagation(); moveStep(step._key, "up"); }}
+                            disabled={index === 0}
+                            className="h-6 w-6 flex items-center justify-center"
+                            style={{ color: index === 0 ? "var(--workspace-border)" : "var(--workspace-muted)" }}
+                          >
+                            <ChevronUp className="h-3.5 w-3.5" />
+                          </button>
+                          <button
+                            onClick={(e) => { e.stopPropagation(); moveStep(step._key, "down"); }}
+                            disabled={index === workflow.steps.length - 1}
+                            className="h-6 w-6 flex items-center justify-center"
+                            style={{ color: index === workflow.steps.length - 1 ? "var(--workspace-border)" : "var(--workspace-muted)" }}
+                          >
+                            <ChevronDown className="h-3.5 w-3.5" />
+                          </button>
+                          <button
+                            onClick={(e) => { e.stopPropagation(); removeStep(step._key); }}
+                            className="h-6 w-6 flex items-center justify-center"
+                            style={{ color: "#dc2626" }}
+                          >
+                            <Trash2 className="h-3.5 w-3.5" />
+                          </button>
+                        </div>
+
+                        {isExpanded ? (
+                          <ChevronUp className="h-4 w-4 shrink-0" style={{ color: "var(--workspace-muted)" }} />
+                        ) : (
+                          <ChevronDown className="h-4 w-4 shrink-0" style={{ color: "var(--workspace-muted)" }} />
+                        )}
+                      </div>
+
+                      {/* Expanded Config */}
+                      {isExpanded && (
+                        <div
+                          className="px-4 py-4 border-t space-y-4"
+                          style={{ borderColor: "var(--workspace-border)", background: "var(--workspace-muted-bg)" }}
+                        >
+                          {/* Step Type Selector */}
+                          <div>
+                            <label className="text-xs uppercase tracking-widest mb-1.5 block" style={{ color: "var(--workspace-muted)" }}>
+                              Step Type
+                            </label>
+                            <select
+                              value={step.type}
+                              onChange={(e) => {
+                                const newType = e.target.value;
+                                updateStep(step._key, {
+                                  type: newType,
+                                  config: getDefaultConfig(newType),
+                                });
+                              }}
+                              className="w-full px-3 py-2 text-xs focus:outline-none"
+                              style={{ background: "#FFFFFF", border: "1px solid var(--workspace-border)", color: "var(--workspace-fg)" }}
+                            >
+                              {STEP_TYPES.map((t) => (
+                                <option key={t.value} value={t.value}>
+                                  {t.label}
+                                </option>
+                              ))}
+                            </select>
+                          </div>
+
+                          {/* Step Name */}
+                          <div>
+                            <label className="text-xs uppercase tracking-widest mb-1.5 block" style={{ color: "var(--workspace-muted)" }}>
+                              Step Name
+                            </label>
+                            <input
+                              type="text"
+                              value={step.name}
+                              onChange={(e) => updateStep(step._key, { name: e.target.value })}
+                              className="w-full px-3 py-2 text-xs focus:outline-none"
+                              style={{ background: "#FFFFFF", border: "1px solid var(--workspace-border)", color: "var(--workspace-fg)" }}
+                            />
+                          </div>
+
+                          {/* Step Description */}
+                          <div>
+                            <label className="text-xs uppercase tracking-widest mb-1.5 block" style={{ color: "var(--workspace-muted)" }}>
+                              Description
+                            </label>
+                            <textarea
+                              value={step.description || ""}
+                              onChange={(e) => updateStep(step._key, { description: e.target.value })}
+                              rows={2}
+                              placeholder="Optional description..."
+                              className="w-full px-3 py-2 text-xs focus:outline-none resize-none"
+                              style={{ background: "#FFFFFF", border: "1px solid var(--workspace-border)", color: "var(--workspace-fg)" }}
+                            />
+                          </div>
+
+                          {/* Type-Specific Config Form */}
+                          <div className="pt-2 border-t" style={{ borderColor: "var(--workspace-border)" }}>
+                            <h3
+                              className="text-[10px] uppercase tracking-[0.2em] mb-3"
+                              style={{ color: "var(--workspace-muted)" }}
+                            >
+                              {typeInfo?.label || step.type} Configuration
+                            </h3>
+                            <StepConfigForm
+                              stepType={step.type}
+                              config={step.config}
+                              onChange={(config) => updateStep(step._key, { config })}
+                            />
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+
+            {/* Add Step */}
+            {showStepPicker ? (
+              <div style={{ border: "1px solid var(--workspace-border)", background: "#FFFFFF" }}>
+                <div className="px-4 py-3 border-b flex items-center justify-between" style={{ borderColor: "var(--workspace-border)" }}>
+                  <span className="text-[10px] uppercase tracking-[0.2em]" style={{ color: "var(--workspace-muted)" }}>
+                    Choose Step Type
+                  </span>
+                  <button
+                    onClick={() => setShowStepPicker(false)}
+                    className="text-xs"
+                    style={{ color: "var(--workspace-muted)" }}
+                  >
+                    Cancel
+                  </button>
+                </div>
+                <div className="grid grid-cols-2 gap-2 p-3">
+                  {STEP_TYPES.map((t) => {
+                    const Icon = t.icon;
+                    return (
+                      <button
+                        key={t.value}
+                        onClick={() => addStep(t.value)}
+                        className="flex items-start gap-3 p-3 text-left transition-colors"
+                        style={{ border: "1px solid var(--workspace-border)" }}
+                        onMouseEnter={(e) => (e.currentTarget.style.borderColor = "var(--workspace-fg)")}
+                        onMouseLeave={(e) => (e.currentTarget.style.borderColor = "var(--workspace-border)")}
+                      >
+                        <Icon className="h-4 w-4 shrink-0 mt-0.5" style={{ color: "var(--workspace-muted)" }} />
+                        <div>
+                          <span className="text-xs font-medium block" style={{ color: "var(--workspace-fg)" }}>
+                            {t.label}
+                          </span>
+                          <span className="text-[10px] block mt-0.5" style={{ color: "var(--workspace-muted)" }}>
+                            {t.description}
+                          </span>
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            ) : (
+              <button
+                onClick={() => setShowStepPicker(true)}
+                className="flex items-center justify-center gap-2 w-full py-4 transition-colors"
+                style={{ border: "2px dashed var(--workspace-border)", color: "var(--workspace-muted)" }}
+                onMouseEnter={(e) => (e.currentTarget.style.borderColor = "var(--workspace-fg)")}
+                onMouseLeave={(e) => (e.currentTarget.style.borderColor = "var(--workspace-border)")}
+              >
+                <Plus className="h-4 w-4" />
+                <span className="text-xs uppercase tracking-widest">Add Step</span>
+              </button>
+            )}
+          </div>
+        </>
       )}
     </div>
   );
 }
 
-// Helper function
-function getStepTypeLabel(type: string): string {
-  const types = STEP_TYPES.find((t) => t.value === type);
-  return types?.label || type;
-}

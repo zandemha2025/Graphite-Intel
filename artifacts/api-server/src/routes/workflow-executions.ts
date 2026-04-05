@@ -126,7 +126,9 @@ router.get(
  * - legacyTemplateKey: key of a legacy workflow template + inputs
  *
  * Creates execution record and returns it with status "pending".
- * TODO: Trigger Inngest function here when Inngest is integrated
+ * For workflowDefinitionId-based executions, dispatches the
+ * "workflow/execute" Inngest event to run the workflow asynchronously.
+ * Legacy template executions are created but not yet async-executed.
  */
 router.post("/workflow-executions", async (req: Request, res: Response) => {
   if (!requireAuth(req, res)) return;
@@ -206,7 +208,10 @@ router.post("/workflow-executions", async (req: Request, res: Response) => {
       })
       .returning();
 
-    // Trigger Inngest workflow execution
+    // Trigger Inngest workflow execution for definition-based workflows.
+    // Legacy template executions remain in "pending" until a legacy executor
+    // is implemented — the workflow-execute Inngest function requires a
+    // workflowDefinitionId to load steps.
     if (workflowDefinitionId) {
       await inngest.send({
         name: "workflow/execute",
@@ -215,6 +220,15 @@ router.post("/workflow-executions", async (req: Request, res: Response) => {
           orgId,
         },
       });
+      req.log.info(
+        { executionId: execution.id, workflowDefinitionId },
+        "Dispatched workflow/execute event",
+      );
+    } else {
+      req.log.warn(
+        { executionId: execution.id, legacyTemplateKey },
+        "Legacy template execution created — no async executor available yet",
+      );
     }
 
     res.status(201).json(execution);

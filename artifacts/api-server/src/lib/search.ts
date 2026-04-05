@@ -49,6 +49,13 @@ function buildFilterClauses(options: SearchOptions) {
   if (options.filters?.fileTypes?.length) {
     clauses.push(sql`AND d.file_type = ANY(${options.filters.fileTypes})`);
   }
+  if (options.filters?.tags?.length) {
+    // Tags stored as comma-separated string; match any of the provided tags
+    const tagConditions = options.filters.tags.map(
+      (tag) => sql`d.tags ILIKE ${"%" + tag + "%"}`,
+    );
+    clauses.push(sql`AND (${sql.join(tagConditions, sql` OR `)})`);
+  }
 
   return clauses.length > 0
     ? sql.join(clauses, sql` `)

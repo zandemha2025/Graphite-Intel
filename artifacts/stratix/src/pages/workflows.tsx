@@ -145,9 +145,14 @@ export function Workflows() {
             ))}
           </div>
         ) : runs.length === 0 ? (
-          <div className="p-10 text-center" style={{ border: "1px solid var(--workspace-border)", background: "#FFFFFF" }}>
-            <Clock className="h-8 w-8 mx-auto mb-3" style={{ color: "var(--workspace-muted)", opacity: 0.3 }} />
-            <p className="text-sm" style={{ color: "var(--workspace-muted)" }}>No workflow runs yet. Launch a template above to get started.</p>
+          <div className="p-10 text-center" style={{ border: "1px dashed var(--workspace-border)", background: "#FFFFFF" }}>
+            <div className="w-12 h-12 mx-auto mb-4 flex items-center justify-center" style={{ background: "var(--workspace-muted-bg)", border: "1px solid var(--workspace-border)" }}>
+              <Clock className="h-5 w-5" style={{ color: "var(--workspace-muted)" }} />
+            </div>
+            <h3 className="text-sm font-medium mb-1" style={{ color: "var(--workspace-fg)" }}>No workflow runs yet</h3>
+            <p className="text-xs max-w-xs mx-auto" style={{ color: "var(--workspace-muted)" }}>
+              Select a template above to launch your first AI workflow agent.
+            </p>
           </div>
         ) : (
           <div style={{ border: "1px solid var(--workspace-border)" }}>

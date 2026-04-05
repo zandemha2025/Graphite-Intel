@@ -257,7 +257,8 @@ router.delete("/playbooks/:id", async (req: Request, res: Response) => {
 
 /**
  * POST /playbooks/:id/generate
- * Trigger AI generation of playbook steps from source documents.
+ * Trigger AI generation of playbook steps.
+ * Accepts either sourceDocumentIds (doc-based) or prompt (text-based).
  */
 router.post("/playbooks/:id/generate", async (req: Request, res: Response) => {
   if (!requireAuth(req, res)) return;
@@ -280,29 +281,130 @@ router.post("/playbooks/:id/generate", async (req: Request, res: Response) => {
       return;
     }
 
+    const prompt = req.body.prompt as string | undefined;
     const sourceDocumentIds = (req.body.sourceDocumentIds as number[]) ?? (playbook.sourceDocumentIds as number[]) ?? [];
 
-    if (sourceDocumentIds.length === 0) {
-      res.status(400).json({ error: "No source documents specified" });
+    if (!prompt && sourceDocumentIds.length === 0) {
+      res.status(400).json({ error: "Either prompt or sourceDocumentIds is required" });
       return;
     }
 
-    // Update source docs on playbook
-    await db
-      .update(playbooks)
-      .set({ sourceDocumentIds })
-      .where(eq(playbooks.id, id));
+    // Update source docs on playbook if provided
+    if (sourceDocumentIds.length > 0) {
+      await db
+        .update(playbooks)
+        .set({ sourceDocumentIds })
+        .where(eq(playbooks.id, id));
+    }
 
     // Trigger Inngest generation
     await inngest.send({
       name: "playbook/generate",
-      data: { playbookId: id, orgId, sourceDocumentIds },
+      data: { playbookId: id, orgId, sourceDocumentIds, prompt },
     });
 
     res.status(202).json({ message: "Playbook generation started", playbookId: id });
   } catch (err) {
     req.log.error({ err }, "Failed to trigger playbook generation");
     res.status(500).json({ error: "Failed to generate playbook" });
+  }
+});
+
+/**
+ * POST /playbooks/:id/execute
+ * Start a playbook run (convenience endpoint — creates a playbook-run).
+ */
+router.post("/playbooks/:id/execute", async (req: Request, res: Response) => {
+  if (!requireAuth(req, res)) return;
+  const orgId = req.user!.orgId!;
+  const userId = req.user!.id;
+  const id = parseInt(req.params.id as string);
+
+  if (isNaN(id)) {
+    res.status(400).json({ error: "Invalid playbook id" });
+    return;
+  }
+
+  try {
+    const [playbook] = await db
+      .select()
+      .from(playbooks)
+      .where(
+        and(eq(playbooks.id, id), or(eq(playbooks.orgId, orgId), eq(playbooks.orgId, 0))),
+      );
+
+    if (!playbook) {
+      res.status(404).json({ error: "Playbook not found" });
+      return;
+    }
+
+    const { title, targetDocumentIds } = req.body;
+    const docIds = targetDocumentIds ?? [];
+    const steps = (playbook.steps as unknown[]) ?? [];
+    const initialStepResults = steps.map((_: unknown, i: number) => ({
+      stepIndex: i,
+      status: "pending" as const,
+    }));
+
+    const [run] = await db
+      .insert(playbookRuns)
+      .values({
+        orgId,
+        playbookId: id,
+        triggeredByUserId: userId,
+        title: title ?? `${playbook.name} Run`,
+        targetDocumentIds: docIds,
+        status: "running",
+        stepResults: initialStepResults,
+        completedSteps: 0,
+        totalSteps: steps.length,
+        startedAt: new Date(),
+      })
+      .returning();
+
+    // Log activity
+    await db.insert(activityFeed).values({
+      orgId,
+      userId,
+      action: "created",
+      resourceType: "playbook_run",
+      resourceId: run.id,
+      resourceTitle: run.title,
+    });
+
+    res.status(201).json(run);
+  } catch (err) {
+    req.log.error({ err }, "Failed to execute playbook");
+    res.status(500).json({ error: "Failed to execute playbook" });
+  }
+});
+
+/**
+ * GET /playbooks/:id/runs
+ * List runs for a specific playbook.
+ */
+router.get("/playbooks/:id/runs", async (req: Request, res: Response) => {
+  if (!requireAuth(req, res)) return;
+  const orgId = req.user!.orgId!;
+  const id = parseInt(req.params.id as string);
+
+  if (isNaN(id)) {
+    res.status(400).json({ error: "Invalid playbook id" });
+    return;
+  }
+
+  try {
+    const runs = await db
+      .select()
+      .from(playbookRuns)
+      .where(and(eq(playbookRuns.orgId, orgId), eq(playbookRuns.playbookId, id)))
+      .orderBy(desc(playbookRuns.createdAt))
+      .limit(50);
+
+    res.json(runs);
+  } catch (err) {
+    req.log.error({ err }, "Failed to list playbook runs");
+    res.status(500).json({ error: "Failed to list runs" });
   }
 });
 
@@ -604,7 +706,7 @@ router.patch("/playbook-runs/:id/steps/:stepIndex", async (req: Request, res: Re
       completedAt: status === "completed" ? new Date().toISOString() : stepResults[stepIndex].completedAt,
     };
 
-    const completedCount = stepResults.filter((s) => s.status === "completed").length;
+    const completedCount = stepResults.filter((s) => s.status === "completed" || s.status === "skipped").length;
     const allDone = completedCount === stepResults.length;
 
     const [updated] = await db

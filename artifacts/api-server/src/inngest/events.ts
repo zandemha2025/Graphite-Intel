@@ -55,6 +55,7 @@ export type GrphintelEvents = {
       playbookId: number;
       orgId: number;
       sourceDocumentIds: number[];
+      prompt?: string;
     };
   };
   "playbook/execute": {
@@ -75,6 +76,11 @@ export type GrphintelEvents = {
       orgId: number;
       payload: unknown;
     };
+  };
+
+  // Vault extraction events
+  "vault/extraction.requested": {
+    data: { extractionId: number };
   };
 
   // Ads events

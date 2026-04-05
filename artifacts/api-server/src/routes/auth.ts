@@ -65,6 +65,10 @@ router.post("/signup", async (req: Request, res: Response) => {
   }
 
   const { email, password } = creds;
+  const rawName = typeof req.body.name === "string" ? req.body.name.trim() : "";
+  const nameParts = rawName.split(/\s+/);
+  const firstName = nameParts[0] || null;
+  const lastName = nameParts.length > 1 ? nameParts.slice(1).join(" ") : null;
 
   const [existing] = await db
     .select({ id: usersTable.id })
@@ -80,7 +84,7 @@ router.post("/signup", async (req: Request, res: Response) => {
 
   const [user] = await db
     .insert(usersTable)
-    .values({ email, passwordHash })
+    .values({ email, passwordHash, firstName, lastName })
     .returning();
 
   const sessionData: SessionData = {

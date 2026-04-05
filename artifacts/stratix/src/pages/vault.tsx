@@ -277,33 +277,33 @@ export function Vault() {
           className="py-16 text-center border-dashed"
           style={{ border: "1px dashed var(--workspace-border)" }}
         >
-          <FolderOpen
-            className="h-6 w-6 mx-auto mb-4"
-            style={{ color: "var(--workspace-muted)" }}
-          />
+          <div className="w-14 h-14 mx-auto mb-5 flex items-center justify-center" style={{ background: "var(--workspace-muted-bg)", border: "1px solid var(--workspace-border)" }}>
+            <FolderOpen
+              className="h-6 w-6"
+              style={{ color: "var(--workspace-muted)" }}
+            />
+          </div>
           <h3
             className="font-serif text-xl font-light mb-2"
-            style={{ color: "var(--workspace-muted)" }}
+            style={{ color: "var(--workspace-fg)" }}
           >
-            No projects yet
+            {searchTerm ? "No projects found" : "Create a project to organize your documents"}
           </h3>
           <p
-            className="text-sm mb-6"
+            className="text-sm mb-6 max-w-sm mx-auto"
             style={{ color: "var(--workspace-muted)" }}
           >
             {searchTerm
-              ? "No projects match your search."
-              : "Create a project to start bulk document analysis."}
+              ? "No projects match your search. Try different terms."
+              : "Projects let you group documents for bulk analysis, extraction, and review across financial, legal, and research matters."}
           </p>
           {!searchTerm && (
             <button
               onClick={() => setShowCreateForm(true)}
-              className="inline-block text-xs uppercase tracking-widest pb-0.5 transition-colors"
-              style={{
-                color: "var(--workspace-fg)",
-                borderBottom: "1px solid var(--workspace-border)",
-              }}
+              className="inline-flex items-center gap-2 px-5 py-2.5 text-xs uppercase tracking-widest font-medium transition-colors"
+              style={{ background: "var(--workspace-fg)", color: "#FFFFFF" }}
             >
+              <Plus className="h-3.5 w-3.5" />
               Create First Project
             </button>
           )}

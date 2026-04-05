@@ -17,8 +17,8 @@ function requireAuth(req: Request, res: Response): boolean {
 
 /**
  * GET /activity
- * Get org activity feed (paginated, filterable by user/resource type).
- * Query params: ?userId=... &resourceType=... &limit=50 &offset=0
+ * Get org activity feed (paginated, filterable by user/resource type/action/date).
+ * Query params: ?userId=... &resourceType=... &action=... &startDate=... &endDate=... &limit=50 &offset=0
  */
 router.get("/activity", async (req: Request, res: Response) => {
   if (!requireAuth(req, res)) return;
@@ -27,12 +27,18 @@ router.get("/activity", async (req: Request, res: Response) => {
   try {
     const userId = req.query.userId as string | undefined;
     const resourceType = req.query.resourceType as string | undefined;
+    const action = req.query.action as string | undefined;
+    const startDate = req.query.startDate as string | undefined;
+    const endDate = req.query.endDate as string | undefined;
     const limit = Math.min(parseInt((req.query.limit as string) ?? "50"), 100);
     const offset = parseInt((req.query.offset as string) ?? "0");
 
     const conditions = [eq(activityFeed.orgId, orgId)];
     if (userId) conditions.push(eq(activityFeed.userId, userId));
     if (resourceType) conditions.push(eq(activityFeed.resourceType, resourceType));
+    if (action) conditions.push(eq(activityFeed.action, action));
+    if (startDate) conditions.push(sql`${activityFeed.createdAt} >= ${new Date(startDate)}`);
+    if (endDate) conditions.push(sql`${activityFeed.createdAt} <= ${new Date(endDate)}`);
 
     const items = await db
       .select()

@@ -16,6 +16,8 @@ export { adsReportGenerateFunction } from "./functions/ads-report-generate";
 export { workflowCronTriggerFunction } from "./functions/workflow-cron-trigger";
 export { workflowWebhookTriggerFunction } from "./functions/workflow-webhook-trigger";
 
+export { documentExtractionFunction } from "./functions/document-extraction";
+
 // Future functions (uncomment as implemented):
 // export { documentIndexFunction } from "./functions/document-index";
 // export { webhookProcessFunction } from "./functions/webhook-process";

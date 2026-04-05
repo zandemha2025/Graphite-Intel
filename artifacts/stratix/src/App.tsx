@@ -1,48 +1,57 @@
-import { useEffect } from "react";
+import { lazy, Suspense, useEffect } from "react";
 import { Switch, Route, Router as WouterRouter, useLocation } from "wouter";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { useGetCurrentAuthUser, useGetCompanyProfile, getGetCompanyProfileQueryKey } from "@workspace/api-client-react";
+import { ErrorBoundary } from "@/components/error-boundary";
+import type { AuthUserWithOrg } from "@/lib/types";
+import { CommandPalette } from "@/components/command-palette";
 import NotFound from "@/pages/not-found";
 
 import { Layout } from "@/components/layout";
-import { Landing } from "@/pages/landing";
-import { Dashboard } from "@/pages/dashboard";
-import { Explore } from "@/pages/explore";
-import { ReportsList } from "@/pages/reports-list";
-import { ReportNew } from "@/pages/report-new";
-import { ReportView } from "@/pages/report-view";
-import { Onboarding } from "@/pages/onboarding";
-import { OrgSetup } from "@/pages/org-setup";
-import { Profile } from "@/pages/profile";
-import { Security } from "@/pages/security";
-import { Workflows } from "@/pages/workflows";
-import { WorkflowRunner } from "@/pages/workflow-runner";
-import { WorkflowView } from "@/pages/workflow-view";
-import { Knowledge } from "@/pages/knowledge";
-import { Team } from "@/pages/team";
-import { AuditLogs } from "@/pages/audit-logs";
-import { Analytics } from "@/pages/analytics";
-import { Vault } from "@/pages/vault";
-import { VaultProject } from "@/pages/vault-project";
-import { WorkflowBuilder } from "@/pages/workflow-builder";
-import { WorkflowBuilderEdit } from "@/pages/workflow-builder-edit";
-import { Integrations } from "@/pages/integrations";
-import { HumanReviews } from "@/pages/human-reviews";
-import { VaultSearch } from "@/pages/vault-search";
-import { ContextPage } from "@/pages/context";
-import { SharedWithMe } from "@/pages/shared-with-me";
-import { BoardsList } from "@/pages/boards";
-import BoardView from "@/pages/board-view";
-import { ActivityFeed } from "@/pages/activity";
-import { Playbooks } from "@/pages/playbooks";
-import { PlaybookRun } from "@/pages/playbook-run";
-import { AdsDashboard } from "@/pages/ads-dashboard";
-import { AdsCampaignDetail } from "@/pages/ads-campaign-detail";
-import { AdsCampaignNew } from "@/pages/ads-campaign-new";
-import { AdsReports } from "@/pages/ads-reports";
-import { Login } from "@/pages/login";
+
+// ---------------------------------------------------------------------------
+// Lazy-loaded page components (code splitting)
+// Named exports use the .then(m => ({ default: m.X })) pattern.
+// ---------------------------------------------------------------------------
+const Landing = lazy(() => import("@/pages/landing").then(m => ({ default: m.Landing })));
+const Dashboard = lazy(() => import("@/pages/dashboard").then(m => ({ default: m.Dashboard })));
+const Explore = lazy(() => import("@/pages/explore").then(m => ({ default: m.Explore })));
+const ReportsList = lazy(() => import("@/pages/reports-list").then(m => ({ default: m.ReportsList })));
+const ReportNew = lazy(() => import("@/pages/report-new").then(m => ({ default: m.ReportNew })));
+const ReportView = lazy(() => import("@/pages/report-view").then(m => ({ default: m.ReportView })));
+const Onboarding = lazy(() => import("@/pages/onboarding").then(m => ({ default: m.Onboarding })));
+const OrgSetup = lazy(() => import("@/pages/org-setup").then(m => ({ default: m.OrgSetup })));
+const Profile = lazy(() => import("@/pages/profile").then(m => ({ default: m.Profile })));
+const Security = lazy(() => import("@/pages/security").then(m => ({ default: m.Security })));
+const Workflows = lazy(() => import("@/pages/workflows").then(m => ({ default: m.Workflows })));
+const WorkflowRunner = lazy(() => import("@/pages/workflow-runner").then(m => ({ default: m.WorkflowRunner })));
+const WorkflowView = lazy(() => import("@/pages/workflow-view").then(m => ({ default: m.WorkflowView })));
+const Knowledge = lazy(() => import("@/pages/knowledge").then(m => ({ default: m.Knowledge })));
+const Team = lazy(() => import("@/pages/team").then(m => ({ default: m.Team })));
+const AuditLogs = lazy(() => import("@/pages/audit-logs").then(m => ({ default: m.AuditLogs })));
+const Analytics = lazy(() => import("@/pages/analytics").then(m => ({ default: m.Analytics })));
+const VaultProject = lazy(() => import("@/pages/vault-project").then(m => ({ default: m.VaultProject })));
+const WorkflowBuilder = lazy(() => import("@/pages/workflow-builder").then(m => ({ default: m.WorkflowBuilder })));
+const WorkflowBuilderEdit = lazy(() => import("@/pages/workflow-builder-edit").then(m => ({ default: m.WorkflowBuilderEdit })));
+const Integrations = lazy(() => import("@/pages/integrations").then(m => ({ default: m.Integrations })));
+const HumanReviews = lazy(() => import("@/pages/human-reviews").then(m => ({ default: m.HumanReviews })));
+const VaultSearch = lazy(() => import("@/pages/vault-search").then(m => ({ default: m.VaultSearch })));
+const VaultList = lazy(() => import("@/pages/vault").then(m => ({ default: m.Vault })));
+const ContextPage = lazy(() => import("@/pages/context").then(m => ({ default: m.ContextPage })));
+const SharedWithMe = lazy(() => import("@/pages/shared-with-me").then(m => ({ default: m.SharedWithMe })));
+const BoardsList = lazy(() => import("@/pages/boards").then(m => ({ default: m.BoardsList })));
+const BoardView = lazy(() => import("@/pages/board-view"));
+const ActivityFeed = lazy(() => import("@/pages/activity").then(m => ({ default: m.ActivityFeed })));
+const Playbooks = lazy(() => import("@/pages/playbooks").then(m => ({ default: m.Playbooks })));
+const PlaybookEdit = lazy(() => import("@/pages/playbook-edit").then(m => ({ default: m.PlaybookEdit })));
+const PlaybookRun = lazy(() => import("@/pages/playbook-run").then(m => ({ default: m.PlaybookRun })));
+const AdsDashboard = lazy(() => import("@/pages/ads-dashboard").then(m => ({ default: m.AdsDashboard })));
+const AdsCampaignDetail = lazy(() => import("@/pages/ads-campaign-detail").then(m => ({ default: m.AdsCampaignDetail })));
+const AdsCampaignNew = lazy(() => import("@/pages/ads-campaign-new").then(m => ({ default: m.AdsCampaignNew })));
+const AdsReports = lazy(() => import("@/pages/ads-reports").then(m => ({ default: m.AdsReports })));
+const Login = lazy(() => import("@/pages/login").then(m => ({ default: m.Login })));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -65,7 +74,7 @@ function Spinner() {
 
 function useAuthAndOrg() {
   const { data: auth, isLoading: authLoading } = useGetCurrentAuthUser();
-  const user = auth?.user as (typeof auth extends { user: infer U } ? U : never) & { orgId?: number; orgRole?: string } | null | undefined;
+  const user = auth?.user as AuthUserWithOrg | null | undefined;
   return { user, authLoading };
 }
 
@@ -80,7 +89,7 @@ function ProtectedRoute({ component: Component }: { component: React.ComponentTy
   } = useGetCompanyProfile({ query: { enabled: !!auth?.user, queryKey: getGetCompanyProfileQueryKey() } });
   const [, setLocation] = useLocation();
 
-  const user = auth?.user as any;
+  const user = auth?.user as AuthUserWithOrg | null;
 
   useEffect(() => {
     if (!authLoading && !auth?.user) {
@@ -97,18 +106,8 @@ function ProtectedRoute({ component: Component }: { component: React.ComponentTy
     }
   }, [authLoading, auth, user, setLocation]);
 
-  useEffect(() => {
-    if (!authLoading && !profileLoading && !profileFetching && auth?.user && user?.orgId && profileStatus === "error") {
-      const is404 =
-        profileError != null &&
-        typeof (profileError as { status?: unknown }).status === "number" &&
-        (profileError as { status: number }).status === 404;
-      const isOnboarding = window.location.pathname.endsWith("/onboarding");
-      if (is404 && !isOnboarding) {
-        setLocation("/onboarding");
-      }
-    }
-  }, [authLoading, profileLoading, profileFetching, profileStatus, auth, profile, profileError, setLocation, user]);
+  // Company profile is optional — do not redirect to onboarding if missing.
+  // The onboarding flow is entered explicitly, not forced by a 404 profile.
 
   if (authLoading || (auth?.user && profileLoading)) {
     return <Spinner />;
@@ -129,7 +128,7 @@ function HomeRedirect() {
 
   useEffect(() => {
     if (!isLoading && auth?.user) {
-      const user = auth.user as any;
+      const user = auth.user as AuthUserWithOrg;
       if (!user?.orgId) {
         setLocation("/org-setup");
       } else {
@@ -154,7 +153,7 @@ function OrgSetupRoute() {
   }, [authLoading, auth, setLocation]);
 
   useEffect(() => {
-    const user = auth?.user as any;
+    const user = auth?.user as AuthUserWithOrg | null;
     if (!authLoading && auth?.user && user?.orgId) {
       setLocation("/dashboard");
     }
@@ -180,7 +179,7 @@ function OnboardingRoute() {
   }, [authLoading, auth, setLocation]);
 
   useEffect(() => {
-    const user = auth?.user as any;
+    const user = auth?.user as AuthUserWithOrg | null;
     if (!authLoading && auth?.user && !user?.orgId) {
       setLocation("/org-setup");
     }
@@ -212,48 +211,52 @@ function DashboardRedirect() {
 
 function Router() {
   return (
-    <Switch>
-      <Route path="/" component={HomeRedirect} />
-      <Route path="/login" component={Login} />
-      <Route path="/org-setup" component={OrgSetupRoute} />
-      <Route path="/onboarding" component={OnboardingRoute} />
-      <Route path="/dashboard" component={DashboardRedirect} />
-      <Route path="/boards/new" component={() => <ProtectedRoute component={BoardView} />} />
-      <Route path="/boards/:id" component={() => <ProtectedRoute component={BoardView} />} />
-      <Route path="/boards" component={() => <ProtectedRoute component={BoardsList} />} />
-      <Route path="/explore" component={() => <ProtectedRoute component={Explore} />} />
-      <Route path="/chat" component={ChatRedirect} />
-      <Route path="/reports/new" component={() => <ProtectedRoute component={ReportNew} />} />
-      <Route path="/reports/:id" component={() => <ProtectedRoute component={ReportView} />} />
-      <Route path="/reports" component={() => <ProtectedRoute component={ReportsList} />} />
-      <Route path="/workflows/new/:templateKey" component={() => <ProtectedRoute component={WorkflowRunner} />} />
-      <Route path="/workflows/:id" component={() => <ProtectedRoute component={WorkflowView} />} />
-      <Route path="/workflows" component={() => <ProtectedRoute component={Workflows} />} />
-      <Route path="/profile" component={() => <ProtectedRoute component={Profile} />} />
-      <Route path="/settings/team" component={() => <ProtectedRoute component={Team} />} />
-      <Route path="/security" component={Security} />
-      <Route path="/knowledge" component={() => <ProtectedRoute component={Knowledge} />} />
-      <Route path="/context" component={() => <ProtectedRoute component={ContextPage} />} />
-      <Route path="/vault/:id" component={() => <ProtectedRoute component={VaultProject} />} />
-      <Route path="/vault" component={() => <ProtectedRoute component={ContextPage} />} />
-      <Route path="/workflow-builder/new" component={() => <ProtectedRoute component={WorkflowBuilderEdit} />} />
-      <Route path="/workflow-builder/:id" component={() => <ProtectedRoute component={WorkflowBuilderEdit} />} />
-      <Route path="/workflow-builder" component={() => <ProtectedRoute component={WorkflowBuilder} />} />
-      <Route path="/audit" component={() => <ProtectedRoute component={AuditLogs} />} />
-      <Route path="/analytics" component={() => <ProtectedRoute component={Analytics} />} />
-      <Route path="/settings/integrations" component={() => <ProtectedRoute component={Integrations} />} />
-      <Route path="/human-reviews" component={() => <ProtectedRoute component={HumanReviews} />} />
-      <Route path="/vault/search" component={() => <ProtectedRoute component={VaultSearch} />} />
-      <Route path="/shared" component={() => <ProtectedRoute component={SharedWithMe} />} />
-      <Route path="/activity" component={() => <ProtectedRoute component={ActivityFeed} />} />
-      <Route path="/playbooks/runs/:id" component={() => <ProtectedRoute component={PlaybookRun} />} />
-      <Route path="/playbooks" component={() => <ProtectedRoute component={Playbooks} />} />
-      <Route path="/ads/campaigns/new" component={() => <ProtectedRoute component={AdsCampaignNew} />} />
-      <Route path="/ads/campaigns/:id" component={() => <ProtectedRoute component={AdsCampaignDetail} />} />
-      <Route path="/ads/reports" component={() => <ProtectedRoute component={AdsReports} />} />
-      <Route path="/ads" component={() => <ProtectedRoute component={AdsDashboard} />} />
-      <Route component={NotFound} />
-    </Switch>
+    <Suspense fallback={<Spinner />}>
+      <Switch>
+        <Route path="/" component={HomeRedirect} />
+        <Route path="/login" component={Login} />
+        <Route path="/org-setup" component={OrgSetupRoute} />
+        <Route path="/onboarding" component={OnboardingRoute} />
+        <Route path="/dashboard" component={DashboardRedirect} />
+        <Route path="/boards/new" component={() => <ProtectedRoute component={BoardView} />} />
+        <Route path="/boards/:id" component={() => <ProtectedRoute component={BoardView} />} />
+        <Route path="/boards" component={() => <ProtectedRoute component={BoardsList} />} />
+        <Route path="/explore" component={() => <ProtectedRoute component={Explore} />} />
+        <Route path="/chat" component={ChatRedirect} />
+        <Route path="/reports/new" component={() => <ProtectedRoute component={ReportNew} />} />
+        <Route path="/reports/:id" component={() => <ProtectedRoute component={ReportView} />} />
+        <Route path="/reports" component={() => <ProtectedRoute component={ReportsList} />} />
+        <Route path="/workflows/new/:templateKey" component={() => <ProtectedRoute component={WorkflowRunner} />} />
+        <Route path="/workflows/:id" component={() => <ProtectedRoute component={WorkflowView} />} />
+        <Route path="/workflows" component={() => <ProtectedRoute component={Workflows} />} />
+        <Route path="/profile" component={() => <ProtectedRoute component={Profile} />} />
+        <Route path="/settings/team" component={() => <ProtectedRoute component={Team} />} />
+        <Route path="/security" component={Security} />
+        <Route path="/knowledge" component={() => <ProtectedRoute component={Knowledge} />} />
+        <Route path="/context" component={() => <ProtectedRoute component={ContextPage} />} />
+        <Route path="/vault/search" component={() => <ProtectedRoute component={VaultSearch} />} />
+        <Route path="/vault/:id" component={() => <ProtectedRoute component={VaultProject} />} />
+        <Route path="/vault" component={() => <ProtectedRoute component={VaultList} />} />
+        <Route path="/workflow-builder/new" component={() => <ProtectedRoute component={WorkflowBuilderEdit} />} />
+        <Route path="/workflow-builder/:id" component={() => <ProtectedRoute component={WorkflowBuilderEdit} />} />
+        <Route path="/workflow-builder" component={() => <ProtectedRoute component={WorkflowBuilder} />} />
+        <Route path="/audit" component={() => <ProtectedRoute component={AuditLogs} />} />
+        <Route path="/analytics" component={() => <ProtectedRoute component={Analytics} />} />
+        <Route path="/settings/integrations" component={() => <ProtectedRoute component={Integrations} />} />
+        <Route path="/human-reviews" component={() => <ProtectedRoute component={HumanReviews} />} />
+        <Route path="/shared" component={() => <ProtectedRoute component={SharedWithMe} />} />
+        <Route path="/activity" component={() => <ProtectedRoute component={ActivityFeed} />} />
+        <Route path="/playbooks/runs/:id" component={() => <ProtectedRoute component={PlaybookRun} />} />
+        <Route path="/playbooks/new" component={() => <ProtectedRoute component={PlaybookEdit} />} />
+        <Route path="/playbooks/:id" component={() => <ProtectedRoute component={PlaybookEdit} />} />
+        <Route path="/playbooks" component={() => <ProtectedRoute component={Playbooks} />} />
+        <Route path="/ads/campaigns/new" component={() => <ProtectedRoute component={AdsCampaignNew} />} />
+        <Route path="/ads/campaigns/:id" component={() => <ProtectedRoute component={AdsCampaignDetail} />} />
+        <Route path="/ads/reports" component={() => <ProtectedRoute component={AdsReports} />} />
+        <Route path="/ads" component={() => <ProtectedRoute component={AdsDashboard} />} />
+        <Route component={NotFound} />
+      </Switch>
+    </Suspense>
   );
 }
 
@@ -261,9 +264,12 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
-        <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, "")}>
-          <Router />
-        </WouterRouter>
+        <ErrorBoundary>
+          <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, "")}>
+            <CommandPalette />
+            <Router />
+          </WouterRouter>
+        </ErrorBoundary>
         <Toaster />
       </TooltipProvider>
     </QueryClientProvider>

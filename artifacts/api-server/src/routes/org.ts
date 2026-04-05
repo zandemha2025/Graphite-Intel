@@ -138,6 +138,42 @@ router.get("/org/members", async (req: Request, res: Response) => {
   }
 });
 
+router.patch("/org/members/:userId", async (req: Request, res: Response) => {
+  if (!requireAdmin(req, res)) return;
+
+  const orgId = req.user!.orgId!;
+  const targetUserId = req.params.userId as string;
+  const { role } = req.body;
+
+  if (!role || !["admin", "member"].includes(role)) {
+    res.status(400).json({ error: "Role must be 'admin' or 'member'" });
+    return;
+  }
+
+  if (targetUserId === req.user!.id) {
+    res.status(400).json({ error: "You cannot change your own role" });
+    return;
+  }
+
+  try {
+    const [updated] = await db
+      .update(orgMembers)
+      .set({ role })
+      .where(and(eq(orgMembers.orgId, orgId), eq(orgMembers.userId, targetUserId)))
+      .returning();
+
+    if (!updated) {
+      res.status(404).json({ error: "Member not found" });
+      return;
+    }
+
+    res.json(updated);
+  } catch (err) {
+    req.log.error({ err }, "Failed to update member role");
+    res.status(500).json({ error: "Failed to update member role" });
+  }
+});
+
 router.delete("/org/members/:userId", async (req: Request, res: Response) => {
   if (!requireAdmin(req, res)) return;
 

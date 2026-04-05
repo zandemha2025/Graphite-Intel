@@ -1,15 +1,29 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 import { useParams, useLocation } from "wouter";
 import GridLayout, { LayoutItem, Layout as GridLayoutType } from "react-grid-layout";
 import "react-grid-layout/css/styles.css";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Loader2 } from "lucide-react";
+import { useQueryClient } from "@tanstack/react-query";
 import { BoardToolbar } from "@/components/boards/BoardToolbar";
 import { BoardCard } from "@/components/boards/BoardCard";
 import { AddCardModal } from "@/components/boards/AddCardModal";
 import type { BoardCardData, BoardCardContent } from "@/components/boards/BoardCard";
 import type { BoardType } from "@/components/boards/BoardTypeSelector";
+import {
+  useGetBoard,
+  useUpdateBoard,
+  getGetBoardQueryKey,
+  getListBoardsQueryKey,
+} from "@workspace/api-client-react";
 
-// ── seed helpers ────────────────────────────────────────────────────────────
+// ── types for persisted config ─────────────────────────────────────────────
+
+interface BoardConfig {
+  cards: BoardCardData[];
+  layout: LayoutItem[];
+}
+
+// ── seed helpers (used only for brand-new boards with no config) ────────────
 
 function makeSeedCards(): BoardCardData[] {
   return [
@@ -93,15 +107,67 @@ const SEED_LAYOUT: LayoutItem[] = [
 
 export default function BoardView() {
   const params = useParams<{ id: string }>();
+  const boardId = parseInt(params.id ?? "0");
   const [, setLocation] = useLocation();
+  const queryClient = useQueryClient();
+
+  const { data: board, isLoading, isError } = useGetBoard(boardId);
+  const updateBoardMutation = useUpdateBoard();
 
   const [title, setTitle] = useState("Untitled Board");
   const [boardType, setBoardType] = useState<BoardType>("live");
   const [viewMode, setViewMode] = useState<"layout" | "edit">("layout");
-  const [cards, setCards] = useState<BoardCardData[]>(makeSeedCards);
-  const [layout, setLayout] = useState<LayoutItem[]>(SEED_LAYOUT);
+  const [cards, setCards] = useState<BoardCardData[]>([]);
+  const [layout, setLayout] = useState<LayoutItem[]>([]);
   const [addOpen, setAddOpen] = useState(false);
   const [containerWidth, setContainerWidth] = useState(900);
+  const [initialized, setInitialized] = useState(false);
+
+  // Debounce timer ref for auto-saving config
+  const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Initialize local state from fetched board data
+  useEffect(() => {
+    if (!board || initialized) return;
+
+    setTitle(board.title);
+    setBoardType((board.type as BoardType) || "live");
+
+    const config = board.config as BoardConfig | null;
+    if (config && Array.isArray(config.cards) && config.cards.length > 0) {
+      setCards(config.cards);
+      setLayout(config.layout ?? []);
+    } else {
+      // Brand-new board with no config — use seed data
+      setCards(makeSeedCards());
+      setLayout(SEED_LAYOUT);
+    }
+
+    setInitialized(true);
+  }, [board, initialized]);
+
+  // Auto-save config when cards or layout change (debounced)
+  const persistConfig = useCallback(
+    (newCards: BoardCardData[], newLayout: LayoutItem[]) => {
+      if (!initialized || !boardId) return;
+
+      if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
+
+      saveTimerRef.current = setTimeout(() => {
+        const config: BoardConfig = { cards: newCards, layout: newLayout };
+        updateBoardMutation.mutate(
+          { id: boardId, data: { config } },
+          {
+            onSuccess: () => {
+              queryClient.invalidateQueries({ queryKey: getGetBoardQueryKey(boardId) });
+              queryClient.invalidateQueries({ queryKey: getListBoardsQueryKey() });
+            },
+          },
+        );
+      }, 1000);
+    },
+    [initialized, boardId, updateBoardMutation, queryClient],
+  );
 
   const containerRef = useCallback((node: HTMLDivElement | null) => {
     if (!node) return;
@@ -111,25 +177,92 @@ export default function BoardView() {
     ro.observe(node);
   }, []);
 
+  const handleTitleChange = (newTitle: string) => {
+    setTitle(newTitle);
+    if (!boardId) return;
+    // Save title immediately (no debounce)
+    updateBoardMutation.mutate(
+      { id: boardId, data: { title: newTitle } },
+      {
+        onSuccess: () => {
+          queryClient.invalidateQueries({ queryKey: getGetBoardQueryKey(boardId) });
+          queryClient.invalidateQueries({ queryKey: getListBoardsQueryKey() });
+        },
+      },
+    );
+  };
+
+  const handleBoardTypeChange = (newType: BoardType) => {
+    setBoardType(newType);
+    if (!boardId) return;
+    updateBoardMutation.mutate(
+      { id: boardId, data: { type: newType } },
+      {
+        onSuccess: () => {
+          queryClient.invalidateQueries({ queryKey: getGetBoardQueryKey(boardId) });
+          queryClient.invalidateQueries({ queryKey: getListBoardsQueryKey() });
+        },
+      },
+    );
+  };
+
   const handleAddCard = (cardTitle: string, content: BoardCardContent) => {
     const id = `c-${Date.now()}`;
-    setCards((prev) => [...prev, { id, title: cardTitle, content }]);
-    setLayout((prev) => [...prev, { i: id, x: 0, y: Infinity, w: 6, h: 4 }]);
+    const newCards = [...cards, { id, title: cardTitle, content }];
+    const newLayout = [...layout, { i: id, x: 0, y: Infinity, w: 6, h: 4 }];
+    setCards(newCards);
+    setLayout(newLayout);
+    persistConfig(newCards, newLayout);
   };
 
   const handleRemove = (id: string) => {
-    setCards((prev) => prev.filter((c) => c.id !== id));
-    setLayout((prev) => prev.filter((l) => l.i !== id));
+    const newCards = cards.filter((c) => c.id !== id);
+    const newLayout = layout.filter((l) => l.i !== id);
+    setCards(newCards);
+    setLayout(newLayout);
+    persistConfig(newCards, newLayout);
   };
 
   const handleDuplicate = (id: string) => {
     const original = cards.find((c) => c.id === id);
     if (!original) return;
     const newId = `c-${Date.now()}`;
-    setCards((prev) => [...prev, { ...original, id: newId, title: `${original.title} (copy)` }]);
+    const newCards = [...cards, { ...original, id: newId, title: `${original.title} (copy)` }];
     const origLayout = layout.find((l) => l.i === id);
-    setLayout((prev) => [...prev, { ...(origLayout ?? { w: 6, h: 4, x: 0 }), i: newId, y: Infinity }]);
+    const newLayout = [...layout, { ...(origLayout ?? { w: 6, h: 4, x: 0 }), i: newId, y: Infinity }];
+    setCards(newCards);
+    setLayout(newLayout);
+    persistConfig(newCards, newLayout);
   };
+
+  const handleLayoutChange = (newLayout: GridLayoutType) => {
+    const layoutArr = [...newLayout];
+    setLayout(layoutArr);
+    persistConfig(cards, layoutArr);
+  };
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-full" style={{ background: "#F3F4F6" }}>
+        <Loader2 className="h-6 w-6 animate-spin" style={{ color: "#9CA3AF" }} />
+      </div>
+    );
+  }
+
+  if (isError || (!isLoading && !board)) {
+    return (
+      <div className="flex flex-col items-center justify-center h-full gap-3" style={{ background: "#F3F4F6" }}>
+        <div className="text-sm" style={{ color: "#EF4444" }}>Board not found.</div>
+        <button
+          onClick={() => setLocation("/boards")}
+          className="text-sm underline"
+          style={{ color: "#4F46E5" }}
+        >
+          Back to Boards
+        </button>
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col h-full" style={{ background: "#F3F4F6" }}>
@@ -143,14 +276,17 @@ export default function BoardView() {
           <ArrowLeft className="h-3.5 w-3.5" />
           Boards
         </button>
+        {updateBoardMutation.isPending && (
+          <span className="text-[10px] ml-auto" style={{ color: "#9CA3AF" }}>Saving...</span>
+        )}
       </div>
 
       <BoardToolbar
         title={title}
         boardType={boardType}
         viewMode={viewMode}
-        onTitleChange={setTitle}
-        onBoardTypeChange={setBoardType}
+        onTitleChange={handleTitleChange}
+        onBoardTypeChange={handleBoardTypeChange}
         onViewModeChange={setViewMode}
         onAddCard={() => setAddOpen(true)}
       />
@@ -161,7 +297,7 @@ export default function BoardView() {
           className="layout"
           layout={layout as GridLayoutType}
           width={containerWidth - 32}
-          onLayoutChange={(l: GridLayoutType) => setLayout([...l])}
+          onLayoutChange={handleLayoutChange}
           cols={12}
           rowHeight={80}
           margin={[12, 12] as [number, number]}

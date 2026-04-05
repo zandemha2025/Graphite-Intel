@@ -60,6 +60,8 @@ async function buildAll() {
       "@mikro-orm/*",
       "@grpc/*",
       "@swc/*",
+      "fontkit",
+      "pdfkit",
       "@aws-sdk/*",
       "@azure/*",
       "@opentelemetry/*",

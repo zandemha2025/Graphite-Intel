@@ -2,8 +2,19 @@ import { Router, type IRouter, type Request, type Response } from "express";
 import { db, conversations, messages, companyProfiles, documents, conversationDocuments, documentChunks } from "@workspace/db";
 import { eq, desc, and, inArray, sql } from "drizzle-orm";
 import { getOpenAIClient } from "@workspace/integrations-openai-ai-server";
+import OpenAI from "openai";
 
 const router: IRouter = Router();
+
+// Perplexity client for deep research (has built-in web search)
+function getPerplexityClient(): OpenAI | null {
+  const key = process.env.PERPLEXITY_API_KEY;
+  if (!key) return null;
+  return new OpenAI({
+    apiKey: key,
+    baseURL: "https://api.perplexity.ai",
+  });
+}
 
 function requireAuth(req: Request, res: Response): boolean {
   if (!req.isAuthenticated()) {
@@ -277,11 +288,13 @@ router.post(
       return;
     }
 
-    const { content } = req.body;
+    const { content, research_depth } = req.body;
     if (!content || typeof content !== "string") {
       res.status(400).json({ error: "content is required" });
       return;
     }
+    const isDeepResearch = research_depth === "deep";
+    const isQuickResearch = research_depth === "quick";
 
     try {
       const [convo] = await db
@@ -300,7 +313,7 @@ router.post(
         content,
       });
 
-      if (convo.title === "New Engagement" || convo.title === "New Conversation") {
+      if (convo.title === "New Engagement" || convo.title === "New Conversation" || convo.title === "New Session") {
         const shortTitle = content.substring(0, 60).trim();
         await db
           .update(conversations)
@@ -331,18 +344,31 @@ router.post(
       const { prompt: systemPrompt, retrievedChunks } = await buildSystemPrompt(req, id, content);
       let fullResponse = "";
 
-      const stream = await getOpenAIClient().chat.completions.create({
-        model: "gpt-4o",
+      // Use Perplexity for deep research (has built-in web search), OpenRouter for everything else
+      const perplexity = isDeepResearch ? getPerplexityClient() : null;
+      const llmClient = perplexity || getOpenAIClient();
+      const llmModel = perplexity ? "sonar-pro" : "gpt-4o";
+
+      const stream = await (llmClient as any).chat.completions.create({
+        model: llmModel,
         messages: [
-          { role: "system", content: systemPrompt },
+          {
+            role: "system",
+            content: isDeepResearch
+              ? systemPrompt + "\n\nIMPORTANT: The user has requested DEEP RESEARCH mode. You have access to real-time web search. Provide an extremely thorough, comprehensive, and detailed response with current data. Include multiple perspectives, cite sources where possible, cover edge cases, and structure your response with clear sections and subsections. Leave no stone unturned."
+              : isQuickResearch
+              ? systemPrompt + "\n\nBe concise and direct. Provide a brief, focused answer without unnecessary elaboration."
+              : systemPrompt,
+          },
           ...chatMessages,
         ],
         stream: true,
-        max_tokens: 4096,
+        max_tokens: isDeepResearch ? 8192 : isQuickResearch ? 1024 : 4096,
+        temperature: isDeepResearch ? 0.3 : 0.7,
       });
 
-      for await (const chunk of stream) {
-        const delta = chunk.choices[0]?.delta?.content || "";
+      for await (const chunk of stream as any) {
+        const delta = (chunk as any).choices[0]?.delta?.content || "";
         if (delta) {
           fullResponse += delta;
           sendEvent("content", { delta });

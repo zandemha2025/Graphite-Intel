@@ -43,7 +43,7 @@ export const workflowExecuteFunction = inngest.createFunction(
       await db
         .update(workflowExecutions)
         .set({
-          status: "running",
+          status: "in-progress",
           startedAt: new Date(),
           inngestRunId: event.id ?? null,
         })
@@ -280,7 +280,7 @@ export const workflowExecuteFunction = inngest.createFunction(
             await db
               .update(workflowExecutions)
               .set({
-                status: "rejected",
+                status: "failed",
                 completedAt: new Date(),
                 errorMessage: reviewResult
                   ? "Review rejected"
@@ -303,7 +303,7 @@ export const workflowExecuteFunction = inngest.createFunction(
         await step.run(`resume-after-review-${currentIndex}`, async () => {
           await db
             .update(workflowExecutions)
-            .set({ status: "running" })
+            .set({ status: "in-progress" })
             .where(eq(workflowExecutions.id, executionId));
         });
       } else {

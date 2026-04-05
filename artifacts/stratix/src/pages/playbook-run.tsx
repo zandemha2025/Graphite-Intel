@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useRoute } from "wouter";
+import { useRoute, useLocation } from "wouter";
 import { useToast } from "@/hooks/use-toast";
 import {
   CheckCircle,
@@ -11,6 +11,13 @@ import {
   ChevronUp,
   FileText,
   StickyNote,
+  ArrowLeft,
+  ThumbsUp,
+  ThumbsDown,
+  CheckSquare,
+  FileSearch,
+  GitCompare,
+  Eye,
 } from "lucide-react";
 
 interface StepDef {
@@ -18,7 +25,12 @@ interface StepDef {
   title: string;
   description: string;
   type: string;
-  config: Record<string, unknown>;
+  config: {
+    extractionFields?: string[];
+    comparisonDocTypes?: string[];
+    flagConditions?: string[];
+    aiPrompt?: string;
+  };
   isRequired: boolean;
 }
 
@@ -67,6 +79,7 @@ const typeLabels: Record<string, string> = {
 export function PlaybookRun() {
   const { toast } = useToast();
   const [, params] = useRoute("/playbooks/runs/:id");
+  const [, navigate] = useLocation();
   const runId = params?.id;
 
   const [run, setRun] = useState<PlaybookRunData | null>(null);
@@ -142,8 +155,40 @@ export function PlaybookRun() {
   const steps = playbook.steps ?? [];
   const results = run.stepResults ?? [];
 
+  const handleReviewAction = async (stepIndex: number, approved: boolean) => {
+    if (!runId) return;
+    try {
+      const res = await fetch(`/api/playbook-runs/${runId}/steps/${stepIndex}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({
+          status: "completed",
+          result: { approved, action: approved ? "approved" : "rejected" },
+          notes: noteInputs[stepIndex] || undefined,
+        }),
+      });
+      if (res.ok) {
+        await fetchRun();
+        toast({ title: approved ? "Approved" : "Rejected" });
+      }
+    } catch {
+      toast({ title: "Failed to update step", variant: "destructive" });
+    }
+  };
+
   return (
     <div className="space-y-8 max-w-2xl">
+      {/* Back */}
+      <button
+        onClick={() => navigate("/playbooks")}
+        className="flex items-center gap-1.5 text-xs uppercase tracking-widest"
+        style={{ color: "var(--workspace-muted)" }}
+      >
+        <ArrowLeft className="h-3 w-3" />
+        Playbooks
+      </button>
+
       {/* Header */}
       <div>
         <h1 className="font-serif text-2xl font-light mb-2" style={{ color: "var(--workspace-fg)" }}>{run.title}</h1>
@@ -207,6 +252,51 @@ export function PlaybookRun() {
                 <div className="px-4 pb-4" style={{ borderTop: "1px solid var(--workspace-border)" }}>
                   <p className="text-xs mt-3 mb-3" style={{ color: "var(--workspace-muted)" }}>{step.description}</p>
 
+                  {/* Type-specific config info */}
+                  {step.type === "extract" && step.config.extractionFields && step.config.extractionFields.length > 0 && (
+                    <div className="mb-3 p-2" style={{ background: "var(--workspace-muted-bg)" }}>
+                      <p className="text-[10px] uppercase tracking-wider mb-1" style={{ color: "var(--workspace-muted)" }}>Fields to Extract</p>
+                      <div className="flex flex-wrap gap-1">
+                        {step.config.extractionFields!.map((field: string) => (
+                          <span key={field} className="text-xs px-1.5 py-0.5 font-mono" style={{ border: "1px solid var(--workspace-border)", color: "var(--workspace-fg)" }}>{field}</span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {step.type === "flag" && step.config.flagConditions && step.config.flagConditions!.length > 0 && (
+                    <div className="mb-3 p-2" style={{ background: "var(--workspace-muted-bg)" }}>
+                      <p className="text-[10px] uppercase tracking-wider mb-1" style={{ color: "var(--workspace-muted)" }}>Conditions</p>
+                      <ul className="text-xs space-y-1" style={{ color: "var(--workspace-fg)" }}>
+                        {step.config.flagConditions!.map((c: string, ci: number) => (
+                          <li key={ci} className="flex items-center gap-1.5">
+                            <AlertTriangle className="h-3 w-3 shrink-0" style={{ color: "#f59e0b" }} />
+                            {c}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+
+                  {step.type === "compare" && step.config.comparisonDocTypes && step.config.comparisonDocTypes!.length > 0 && (
+                    <div className="mb-3 p-2" style={{ background: "var(--workspace-muted-bg)" }}>
+                      <p className="text-[10px] uppercase tracking-wider mb-1" style={{ color: "var(--workspace-muted)" }}>Comparing</p>
+                      <div className="flex flex-wrap gap-1">
+                        {step.config.comparisonDocTypes!.map((t: string) => (
+                          <span key={t} className="text-xs px-1.5 py-0.5" style={{ border: "1px solid var(--workspace-border)", color: "var(--workspace-fg)" }}>{t}</span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {step.type === "review" && step.config.aiPrompt && (
+                    <div className="mb-3 p-2" style={{ background: "var(--workspace-muted-bg)" }}>
+                      <p className="text-[10px] uppercase tracking-wider mb-1" style={{ color: "var(--workspace-muted)" }}>AI Review Prompt</p>
+                      <p className="text-xs italic" style={{ color: "var(--workspace-fg)" }}>{step.config.aiPrompt}</p>
+                    </div>
+                  )}
+
+                  {/* Completed info */}
                   {result?.notes && (
                     <div className="flex items-start gap-2 mb-3 p-2" style={{ background: "var(--workspace-muted-bg)" }}>
                       <StickyNote className="h-3 w-3 mt-0.5 shrink-0" style={{ color: "var(--workspace-muted)" }} />
@@ -217,12 +307,13 @@ export function PlaybookRun() {
                   {result?.result != null && (
                     <div className="mb-3 p-2" style={{ background: "var(--workspace-muted-bg)" }}>
                       <p className="text-[10px] uppercase tracking-wider mb-1" style={{ color: "var(--workspace-muted)" }}>Result</p>
-                      <pre className="text-xs overflow-auto" style={{ color: "var(--workspace-fg)" }}>
+                      <pre className="text-xs overflow-auto whitespace-pre-wrap" style={{ color: "var(--workspace-fg)" }}>
                         {typeof result.result === "string" ? result.result : JSON.stringify(result.result as object, null, 2)}
                       </pre>
                     </div>
                   )}
 
+                  {/* Actions for incomplete steps */}
                   {!isComplete && (
                     <div className="space-y-2">
                       <textarea
@@ -234,14 +325,44 @@ export function PlaybookRun() {
                         style={{ border: "1px solid var(--workspace-border)", color: "var(--workspace-fg)", background: "#FFFFFF" }}
                       />
                       <div className="flex items-center gap-2">
-                        <button
-                          onClick={() => handleCompleteStep(i)}
-                          className="flex items-center gap-1.5 px-3 py-1.5 text-xs uppercase tracking-widest"
-                          style={{ border: "1px solid var(--workspace-fg)", color: "var(--workspace-fg)", background: "#FFFFFF" }}
-                        >
-                          <CheckCircle className="h-3 w-3" />
-                          Complete
-                        </button>
+                        {step.type === "review" ? (
+                          <>
+                            <button
+                              onClick={() => handleReviewAction(i, true)}
+                              className="flex items-center gap-1.5 px-3 py-1.5 text-xs uppercase tracking-widest"
+                              style={{ border: "1px solid #10b981", color: "#10b981", background: "#FFFFFF" }}
+                            >
+                              <ThumbsUp className="h-3 w-3" />
+                              Approve
+                            </button>
+                            <button
+                              onClick={() => handleReviewAction(i, false)}
+                              className="flex items-center gap-1.5 px-3 py-1.5 text-xs uppercase tracking-widest"
+                              style={{ border: "1px solid #ef4444", color: "#ef4444", background: "#FFFFFF" }}
+                            >
+                              <ThumbsDown className="h-3 w-3" />
+                              Reject
+                            </button>
+                          </>
+                        ) : step.type === "checklist" ? (
+                          <button
+                            onClick={() => handleCompleteStep(i)}
+                            className="flex items-center gap-1.5 px-3 py-1.5 text-xs uppercase tracking-widest"
+                            style={{ border: "1px solid var(--workspace-fg)", color: "var(--workspace-fg)", background: "#FFFFFF" }}
+                          >
+                            <CheckSquare className="h-3 w-3" />
+                            Check Off
+                          </button>
+                        ) : (
+                          <button
+                            onClick={() => handleCompleteStep(i)}
+                            className="flex items-center gap-1.5 px-3 py-1.5 text-xs uppercase tracking-widest"
+                            style={{ border: "1px solid var(--workspace-fg)", color: "var(--workspace-fg)", background: "#FFFFFF" }}
+                          >
+                            <CheckCircle className="h-3 w-3" />
+                            Complete
+                          </button>
+                        )}
                         {!step.isRequired && (
                           <button
                             onClick={() => handleSkipStep(i)}

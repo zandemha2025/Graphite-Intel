@@ -306,4 +306,92 @@ router.get("/analytics/cost-tracking", async (req: Request, res: Response) => {
   }
 });
 
+// GET /analytics/usage-over-time - Daily event counts for last 30 days (admin)
+router.get("/analytics/usage-over-time", async (req: Request, res: Response) => {
+  if (!requireAdmin(req, res)) return;
+
+  const orgId = req.user!.orgId!;
+
+  try {
+    const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+
+    const dailyCounts = await db
+      .select({
+        date: sql<string>`DATE(${analyticsEvents.timestamp})`,
+        count: count(),
+      })
+      .from(analyticsEvents)
+      .where(
+        and(
+          eq(analyticsEvents.orgId, orgId),
+          gte(analyticsEvents.timestamp, thirtyDaysAgo),
+        ),
+      )
+      .groupBy(sql`DATE(${analyticsEvents.timestamp})`)
+      .orderBy(sql`DATE(${analyticsEvents.timestamp})`);
+
+    // Fill in missing days with 0 counts
+    const result: Array<{ date: string; count: number }> = [];
+    const now = new Date();
+    for (let d = new Date(thirtyDaysAgo); d <= now; d.setDate(d.getDate() + 1)) {
+      const dateStr = d.toISOString().split("T")[0];
+      const found = dailyCounts.find((r) => r.date === dateStr);
+      result.push({ date: dateStr, count: found ? Number(found.count) : 0 });
+    }
+
+    res.json(result);
+  } catch (err) {
+    req.log.error({ err }, "Failed to fetch usage over time");
+    res.status(500).json({ error: "Failed to fetch usage over time" });
+  }
+});
+
+// GET /analytics/recent-activity - Last 50 analytics events (admin)
+router.get("/analytics/recent-activity", async (req: Request, res: Response) => {
+  if (!requireAdmin(req, res)) return;
+
+  const orgId = req.user!.orgId!;
+
+  try {
+    const events = await db
+      .select({
+        id: analyticsEvents.id,
+        eventType: analyticsEvents.eventType,
+        feature: analyticsEvents.feature,
+        resourceType: analyticsEvents.resourceType,
+        resourceId: analyticsEvents.resourceId,
+        tokensInput: analyticsEvents.tokensInput,
+        tokensOutput: analyticsEvents.tokensOutput,
+        dollarsCost: analyticsEvents.dollarsCost,
+        timestamp: analyticsEvents.timestamp,
+        userId: analyticsEvents.userId,
+        userName: sql<string>`CONCAT(${usersTable.firstName}, ' ', ${usersTable.lastName})`,
+      })
+      .from(analyticsEvents)
+      .leftJoin(usersTable, eq(analyticsEvents.userId, usersTable.id))
+      .where(eq(analyticsEvents.orgId, orgId))
+      .orderBy(sql`${analyticsEvents.timestamp} DESC`)
+      .limit(50);
+
+    res.json(
+      events.map((e) => ({
+        id: e.id,
+        eventType: e.eventType,
+        feature: e.feature || null,
+        resourceType: e.resourceType || null,
+        resourceId: e.resourceId,
+        tokensInput: e.tokensInput ? Number(e.tokensInput) : null,
+        tokensOutput: e.tokensOutput ? Number(e.tokensOutput) : null,
+        dollarsCost: e.dollarsCost ? Number(e.dollarsCost) : null,
+        timestamp: e.timestamp.toISOString(),
+        userId: e.userId,
+        userName: e.userName?.trim() || null,
+      })),
+    );
+  } catch (err) {
+    req.log.error({ err }, "Failed to fetch recent activity");
+    res.status(500).json({ error: "Failed to fetch recent activity" });
+  }
+});
+
 export default router;

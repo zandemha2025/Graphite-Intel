@@ -24,6 +24,8 @@ tags:
     description: Workflow agent templates and runs
   - name: documents
     description: Document knowledge vault management
+  - name: boards
+    description: Board dashboards, reports, and monitors
   - name: Storage
     description: Object storage upload and serving endpoints.
 paths:
@@ -826,6 +828,111 @@ paths:
                 items:
                   $ref: "#/components/schemas/ReportTypeStat"
 
+  /boards:
+    get:
+      operationId: listBoards
+      tags: [boards]
+      summary: List boards for the current org
+      responses:
+        "200":
+          description: List of boards
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Board"
+    post:
+      operationId: createBoard
+      tags: [boards]
+      summary: Create a new board
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateBoardBody"
+      responses:
+        "201":
+          description: Created board
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Board"
+
+  /boards/{id}:
+    get:
+      operationId: getBoard
+      tags: [boards]
+      summary: Get a single board
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Board details
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Board"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+    patch:
+      operationId: updateBoard
+      tags: [boards]
+      summary: Update a board
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateBoardBody"
+      responses:
+        "200":
+          description: Updated board
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Board"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+    delete:
+      operationId: deleteBoard
+      tags: [boards]
+      summary: Delete a board
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+
 components:
   parameters:
     AuthorizationSessionHeader:
@@ -1446,3 +1553,70 @@ components:
           type: integer
       required:
         - documentId
+
+    Board:
+      type: object
+      properties:
+        id:
+          type: integer
+        orgId:
+          type: integer
+        createdByUserId:
+          type: string
+        title:
+          type: string
+        description:
+          type: [string, 'null']
+        type:
+          type: string
+        config:
+          type: [object, 'null']
+        isShared:
+          type: boolean
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - orgId
+        - createdByUserId
+        - title
+        - type
+        - isShared
+        - createdAt
+        - updatedAt
+
+    CreateBoardBody:
+      type: object
+      properties:
+        title:
+          type: string
+        description:
+          type: string
+        type:
+          type: string
+          enum: [live, report, monitor]
+        config:
+          type: object
+        isShared:
+          type: boolean
+      required:
+        - title
+
+    UpdateBoardBody:
+      type: object
+      properties:
+        title:
+          type: string
+        description:
+          type: string
+        type:
+          type: string
+          enum: [live, report, monitor]
+        config:
+          type: object
+        isShared:
+          type: boolean

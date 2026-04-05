@@ -25,7 +25,7 @@ function getWorkflowsClient(): PipedreamWorkflowsClient {
 }
 
 function getBuilder(): WorkflowBuilder {
-  return new WorkflowBuilder(getOpenAIClient());
+  return new WorkflowBuilder(getOpenAIClient() as any);
 }
 
 // ---------------------------------------------------------------------------

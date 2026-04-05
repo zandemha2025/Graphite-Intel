@@ -45,7 +45,7 @@ function Logo() {
   );
 }
 
-function UrlEntryPhase({ onSubmit }: { onSubmit: (url: string) => void }) {
+function UrlEntryPhase({ onSubmit, onSkip }: { onSubmit: (url: string) => void; onSkip: () => void }) {
   const [url, setUrl] = useState("");
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -63,7 +63,16 @@ function UrlEntryPhase({ onSubmit }: { onSubmit: (url: string) => void }) {
       <main className="flex-1 flex items-center justify-center px-8">
         <form onSubmit={handleSubmit} className="w-full max-w-lg">
           <div className="mb-10">
-            <p className="text-[10px] uppercase tracking-[0.25em] text-[#E8E4DC]/35 mb-4">Intelligence Setup</p>
+            <div className="flex items-center gap-3 mb-6">
+              <span className="text-[10px] font-medium uppercase tracking-[0.25em] text-[#E8E4DC]/40 border border-[#E8E4DC]/15 px-3 py-1">
+                Step 3 of 3
+              </span>
+              <div className="flex items-center gap-1.5">
+                <div className="h-1 w-6 bg-[#E8E4DC]/60" />
+                <div className="h-1 w-6 bg-[#E8E4DC]/60" />
+                <div className="h-1 w-6 bg-[#E8E4DC]/60" />
+              </div>
+            </div>
             <h1 className="font-serif text-5xl font-light text-[#E8E4DC] mb-4 leading-tight">
               Enter your company's website.
             </h1>
@@ -86,7 +95,14 @@ function UrlEntryPhase({ onSubmit }: { onSubmit: (url: string) => void }) {
               />
             </div>
 
-            <div className="flex justify-end">
+            <div className="flex items-center justify-between">
+              <button
+                type="button"
+                onClick={onSkip}
+                className="text-xs text-[#E8E4DC]/40 hover:text-[#E8E4DC]/70 transition-colors underline underline-offset-4 decoration-[#E8E4DC]/20"
+              >
+                Skip for now
+              </button>
               <button
                 type="submit"
                 disabled={!url.trim()}
@@ -461,6 +477,10 @@ export function Onboarding() {
     setPhase("researching");
   };
 
+  const handleSkip = () => {
+    setLocation("/explore");
+  };
+
   const handleResearchComplete = (result: ResearchResult) => {
     setResearchResult(result);
     setPhase("review");
@@ -500,7 +520,7 @@ export function Onboarding() {
         onSuccess: async (savedData) => {
           await queryClient.invalidateQueries({ queryKey: getGetCompanyProfileQueryKey() });
           queryClient.setQueryData(getGetCompanyProfileQueryKey(), savedData);
-          setLocation("/dashboard");
+          setLocation("/explore");
         },
         onError: () => {
           toast({ title: "Failed to save profile", variant: "destructive" });
@@ -511,7 +531,7 @@ export function Onboarding() {
   };
 
   if (phase === "url-entry") {
-    return <UrlEntryPhase onSubmit={handleUrlSubmit} />;
+    return <UrlEntryPhase onSubmit={handleUrlSubmit} onSkip={handleSkip} />;
   }
 
   if (phase === "researching") {

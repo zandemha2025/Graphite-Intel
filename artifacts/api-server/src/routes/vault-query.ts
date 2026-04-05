@@ -93,9 +93,29 @@ router.post("/vault/query", async (req: Request, res: Response) => {
 
     const results = await executeSearch(searchOptions, queryEmbedding);
 
+    // Get a rough total count by running an unbounded search (capped at 500)
+    let totalCount = results.length + offset;
+    if (results.length === searchOptions.limit) {
+      // There may be more results; do a count query for full-text as proxy
+      try {
+        const tsquery = sql`plainto_tsquery('english', ${query})`;
+        const countResult = await db.execute(sql`
+          SELECT COUNT(*)::int AS cnt
+          FROM document_chunks dc
+          JOIN documents d ON d.id = dc.document_id
+          WHERE d.org_id = ${orgId}
+            AND dc.chunk_search_vector @@ ${tsquery}
+        `);
+        const fullCount = (countResult.rows[0] as any)?.cnt ?? totalCount;
+        totalCount = Math.max(totalCount, fullCount);
+      } catch {
+        // Fall back to estimated total
+      }
+    }
+
     res.json({
       results,
-      total: results.length,
+      total: totalCount,
       query,
       searchMode,
       projectsSearched: projectIds || [],

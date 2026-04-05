@@ -1,6 +1,7 @@
 import { Link, useLocation } from "wouter";
 import { useGetCurrentAuthUser } from "@workspace/api-client-react";
 import { useState, useEffect } from "react";
+import type { AuthUserWithOrg } from "@/lib/types";
 import {
   LayoutGrid,
   Compass,
@@ -16,7 +17,7 @@ import {
   Shield,
   BarChart3,
   Link2,
-  LayoutGrid,
+  ClipboardList,
 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
@@ -29,6 +30,7 @@ const NAV_ITEMS = [
   { href: "/reports", label: "Report Library", icon: Library },
   { href: "/knowledge", label: "Knowledge", icon: BookOpen },
   { href: "/context", label: "Context", icon: Database },
+  { href: "/playbooks", label: "Playbooks", icon: ClipboardList },
 ];
 
 const ADMIN_NAV_ITEMS = [
@@ -53,6 +55,8 @@ const PAGE_BREADCRUMBS: Record<string, { section?: string; title: string }> = {
   "/audit": { section: "Admin", title: "Audit Log" },
   "/analytics": { section: "Admin", title: "Analytics" },
   "/settings/integrations": { section: "Settings", title: "Integrations" },
+  "/playbooks": { title: "Playbooks" },
+  "/playbooks/new": { section: "Playbooks", title: "New Playbook" },
 };
 
 function useOrgName() {
@@ -73,7 +77,7 @@ function useOrgName() {
 export function Layout({ children }: { children: React.ReactNode }) {
   const [location] = useLocation();
   const { data: auth } = useGetCurrentAuthUser();
-  const user = auth?.user as any;
+  const user = auth?.user as AuthUserWithOrg | null;
   const orgName = useOrgName();
 
   const breadcrumb =
@@ -86,6 +90,8 @@ export function Layout({ children }: { children: React.ReactNode }) {
     location.startsWith("/context") ? { title: "Context" } :
     location.startsWith("/vault/") ? { section: "Vault", title: "Project" } :
     location.startsWith("/workflow-builder/") ? { section: "Builder", title: "Edit Workflow" } :
+    location.startsWith("/playbooks/runs/") ? { section: "Playbooks", title: "Run" } :
+    location.startsWith("/playbooks/") ? { section: "Playbooks", title: "Edit Playbook" } :
     { title: "Stratix" });
 
   const isAdmin = user?.orgRole === "admin" || user?.orgRole === "owner";

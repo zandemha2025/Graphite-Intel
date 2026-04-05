@@ -215,5 +215,34 @@ router.get("/sharing/shared-with-me", async (req: Request, res: Response) => {
   }
 });
 
+/**
+ * GET /sharing/shared-by-me
+ * List all resources the current user has shared with others.
+ */
+router.get("/sharing/shared-by-me", async (req: Request, res: Response) => {
+  if (!requireAuth(req, res)) return;
+  const orgId = req.user!.orgId!;
+  const userId = req.user!.id;
+
+  try {
+    const shares = await db
+      .select()
+      .from(resourceShares)
+      .where(
+        and(
+          eq(resourceShares.orgId, orgId),
+          eq(resourceShares.isActive, true),
+          eq(resourceShares.sharedByUserId, userId),
+        ),
+      )
+      .orderBy(resourceShares.createdAt);
+
+    res.json(shares);
+  } catch (err) {
+    req.log.error({ err }, "Failed to list shared-by-me resources");
+    res.status(500).json({ error: "Failed to list shared resources" });
+  }
+});
+
 export { router as sharingRouter };
 export default router;

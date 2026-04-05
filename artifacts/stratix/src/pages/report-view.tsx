@@ -6,7 +6,7 @@ import {
   useGetReport,
   getGetReportQueryKey,
 } from "@workspace/api-client-react";
-import { Download, ChevronLeft, FileDown, FileText, File } from "lucide-react";
+import { Download, ChevronLeft, FileDown, FileText, File, Loader2 } from "lucide-react";
 import { Link } from "wouter";
 import { useToast } from "@/hooks/use-toast";
 
@@ -25,18 +25,21 @@ export function ReportView() {
   });
 
   const [isDownloading, setIsDownloading] = useState(false);
+  const [exportingFormat, setExportingFormat] = useState<ExportFormat | null>(null);
 
   const handleDownload = async () => {
     setIsDownloading(true);
     try {
       const response = await fetch(`/api/reports/${reportId}/download`, { credentials: 'include' });
       if (!response.ok) throw new Error('Download failed');
-      const data = await response.json();
-      const blob = new Blob([data.content], { type: 'text/markdown' });
+      const disposition = response.headers.get('Content-Disposition') || '';
+      const filenameMatch = disposition.match(/filename="?([^"]+)"?/);
+      const filename = filenameMatch ? filenameMatch[1] : 'report.md';
+      const blob = await response.blob();
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `${data.company.replace(/\s+/g, '_')}_${data.reportType}.md`;
+      a.download = filename;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
@@ -48,9 +51,10 @@ export function ReportView() {
     }
   };
 
-  const handleExport = async (format: ExportFormat) => {
+  const handleExport = async (fmt: ExportFormat) => {
+    setExportingFormat(fmt);
     try {
-      const response = await fetch(`/api/reports/${reportId}/export?format=${format}`, {
+      const response = await fetch(`/api/reports/${reportId}/export?format=${fmt}`, {
         credentials: 'include',
       });
 
@@ -62,21 +66,25 @@ export function ReportView() {
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `report-${reportId}.${format}`;
+      a.download = `report-${reportId}.${fmt}`;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
 
-      toast({ title: `Report exported as ${format.toUpperCase()}` });
+      toast({ title: `Report exported as ${fmt.toUpperCase()}` });
     } catch (err) {
       toast({
         title: 'Export failed',
         description: err instanceof Error ? err.message : 'Failed to export report',
         variant: 'destructive',
       });
+    } finally {
+      setExportingFormat(null);
     }
   };
+
+  const isComplete = report?.status === "complete";
 
   if (isLoading) {
     return (
@@ -115,43 +123,81 @@ export function ReportView() {
               </h1>
             </div>
             <div className="shrink-0 flex items-center gap-2">
-              <button
-                onClick={handleDownload}
-                className="shrink-0 flex items-center gap-2 px-4 py-2 text-xs uppercase tracking-widest mt-1 transition-colors"
-                style={{ border: "1px solid var(--workspace-border)", color: "var(--workspace-muted)", background: "#FFFFFF" }}
-                data-testid="btn-download-report"
-                disabled={isDownloading}
-              >
-                <Download className="w-3.5 h-3.5" />
-                Download
-              </button>
-              <button
-                onClick={() => handleExport('pdf')}
-                className="shrink-0 flex items-center gap-2 px-3 py-2 text-xs uppercase tracking-widest mt-1 transition-colors"
-                style={{ border: "1px solid var(--workspace-border)", color: "var(--workspace-muted)", background: "#FFFFFF" }}
-                data-testid="btn-export-pdf"
-                title="Export as PDF"
-              >
-                <FileDown className="w-3.5 h-3.5" />
-              </button>
-              <button
-                onClick={() => handleExport('docx')}
-                className="shrink-0 flex items-center gap-2 px-3 py-2 text-xs uppercase tracking-widest mt-1 transition-colors"
-                style={{ border: "1px solid var(--workspace-border)", color: "var(--workspace-muted)", background: "#FFFFFF" }}
-                data-testid="btn-export-docx"
-                title="Export as DOCX"
-              >
-                <FileText className="w-3.5 h-3.5" />
-              </button>
-              <button
-                onClick={() => handleExport('md')}
-                className="shrink-0 flex items-center gap-2 px-3 py-2 text-xs uppercase tracking-widest mt-1 transition-colors"
-                style={{ border: "1px solid var(--workspace-border)", color: "var(--workspace-muted)", background: "#FFFFFF" }}
-                data-testid="btn-export-md"
-                title="Export as Markdown"
-              >
-                <File className="w-3.5 h-3.5" />
-              </button>
+              {isComplete && (
+                <>
+                  <button
+                    onClick={handleDownload}
+                    className="shrink-0 flex items-center gap-2 px-4 py-2 text-xs uppercase tracking-widest mt-1 transition-colors disabled:opacity-40"
+                    style={{ border: "1px solid var(--workspace-border)", color: "var(--workspace-muted)", background: "#FFFFFF" }}
+                    data-testid="btn-download-report"
+                    disabled={isDownloading || !!exportingFormat}
+                  >
+                    {isDownloading ? (
+                      <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                    ) : (
+                      <Download className="w-3.5 h-3.5" />
+                    )}
+                    Download
+                  </button>
+                  <button
+                    onClick={() => handleExport('pdf')}
+                    className="shrink-0 flex items-center gap-2 px-3 py-2 text-xs uppercase tracking-widest mt-1 transition-colors disabled:opacity-40"
+                    style={{
+                      border: "1px solid var(--workspace-border)",
+                      color: exportingFormat === 'pdf' ? "var(--workspace-fg)" : "var(--workspace-muted)",
+                      background: "#FFFFFF",
+                    }}
+                    data-testid="btn-export-pdf"
+                    title="Export as PDF"
+                    disabled={!!exportingFormat || isDownloading}
+                  >
+                    {exportingFormat === 'pdf' ? (
+                      <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                    ) : (
+                      <FileDown className="w-3.5 h-3.5" />
+                    )}
+                    PDF
+                  </button>
+                  <button
+                    onClick={() => handleExport('docx')}
+                    className="shrink-0 flex items-center gap-2 px-3 py-2 text-xs uppercase tracking-widest mt-1 transition-colors disabled:opacity-40"
+                    style={{
+                      border: "1px solid var(--workspace-border)",
+                      color: exportingFormat === 'docx' ? "var(--workspace-fg)" : "var(--workspace-muted)",
+                      background: "#FFFFFF",
+                    }}
+                    data-testid="btn-export-docx"
+                    title="Export as DOCX"
+                    disabled={!!exportingFormat || isDownloading}
+                  >
+                    {exportingFormat === 'docx' ? (
+                      <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                    ) : (
+                      <FileText className="w-3.5 h-3.5" />
+                    )}
+                    DOCX
+                  </button>
+                  <button
+                    onClick={() => handleExport('md')}
+                    className="shrink-0 flex items-center gap-2 px-3 py-2 text-xs uppercase tracking-widest mt-1 transition-colors disabled:opacity-40"
+                    style={{
+                      border: "1px solid var(--workspace-border)",
+                      color: exportingFormat === 'md' ? "var(--workspace-fg)" : "var(--workspace-muted)",
+                      background: "#FFFFFF",
+                    }}
+                    data-testid="btn-export-md"
+                    title="Export as Markdown"
+                    disabled={!!exportingFormat || isDownloading}
+                  >
+                    {exportingFormat === 'md' ? (
+                      <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                    ) : (
+                      <File className="w-3.5 h-3.5" />
+                    )}
+                    MD
+                  </button>
+                </>
+              )}
             </div>
           </div>
         </div>

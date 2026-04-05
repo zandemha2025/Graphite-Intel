@@ -7,18 +7,16 @@ import {
   Play,
   Copy,
   Trash2,
-  ArrowRight,
   Clock,
-  Settings,
   ChevronRight,
 } from "lucide-react";
 
 interface WorkflowDefinition {
-  id: string;
+  id: number;
   name: string;
   description: string;
-  stepCount: number;
-  status: "draft" | "published";
+  status: string;
+  isPublished: boolean;
   version: number;
   usageCount: number;
   createdAt: string;
@@ -26,11 +24,11 @@ interface WorkflowDefinition {
 }
 
 interface WorkflowExecution {
-  id: string;
-  workflowId: string;
-  workflowName: string;
-  status: "pending" | "running" | "completed" | "failed";
-  triggeredBy: string;
+  id: number;
+  workflowDefinitionId: number | null;
+  title: string;
+  status: string;
+  triggeredByUserId: string;
   createdAt: string;
   completedAt?: string;
 }
@@ -39,18 +37,20 @@ const STATUS_COLORS: Record<string, string> = {
   draft: "var(--workspace-muted)",
   published: "#16a34a",
   pending: "#ca8a04",
-  running: "#3b82f6",
+  "in-progress": "#3b82f6",
   completed: "#16a34a",
   failed: "#dc2626",
+  cancelled: "var(--workspace-muted)",
 };
 
 const STATUS_LABELS: Record<string, string> = {
   draft: "Draft",
   published: "Published",
   pending: "Pending",
-  running: "Running",
+  "in-progress": "Running",
   completed: "Completed",
   failed: "Failed",
+  cancelled: "Cancelled",
 };
 
 export function WorkflowBuilder() {
@@ -60,7 +60,7 @@ export function WorkflowBuilder() {
   const [loadingWorkflows, setLoadingWorkflows] = useState(true);
   const [loadingExecutions, setLoadingExecutions] = useState(true);
   const [activeTab, setActiveTab] = useState<"workflows" | "executions">("workflows");
-  const [deleting, setDeleting] = useState<string | null>(null);
+  const [deleting, setDeleting] = useState<number | null>(null);
 
   useEffect(() => {
     // Fetch workflow definitions
@@ -82,7 +82,7 @@ export function WorkflowBuilder() {
       .catch(() => setLoadingExecutions(false));
   }, []);
 
-  const handleDelete = async (id: string) => {
+  const handleDelete = async (id: number) => {
     if (!confirm("Delete this workflow definition? This action cannot be undone.")) {
       return;
     }
@@ -124,7 +124,7 @@ export function WorkflowBuilder() {
     }
   };
 
-  const handlePublish = async (id: string, publish: boolean) => {
+  const handlePublish = async (id: number, publish: boolean) => {
     try {
       const response = await fetch(`/api/workflow-definitions/${id}/publish`, {
         method: "POST",
@@ -259,12 +259,8 @@ export function WorkflowBuilder() {
                   {/* Stats */}
                   <div className="flex items-center gap-4 text-xs mt-auto" style={{ color: "var(--workspace-muted)" }}>
                     <div className="flex items-center gap-1">
-                      <Settings className="h-3 w-3" />
-                      <span>{workflow.stepCount} steps</span>
-                    </div>
-                    <div className="flex items-center gap-1">
                       <Play className="h-3 w-3" />
-                      <span>{workflow.usageCount} runs</span>
+                      <span>{Number(workflow.usageCount) || 0} runs</span>
                     </div>
                   </div>
 
@@ -280,7 +276,7 @@ export function WorkflowBuilder() {
                       {STATUS_LABELS[workflow.status]}
                     </span>
                     <span className="text-[10px]" style={{ color: "var(--workspace-muted)" }}>
-                      v{workflow.version}
+                      v{Number(workflow.version) || 1}
                     </span>
                   </div>
 
@@ -364,7 +360,7 @@ export function WorkflowBuilder() {
               {executions.map((execution, i) => (
                 <Link
                   key={execution.id}
-                  href={`/workflow-builder/${execution.workflowId}?execution=${execution.id}`}
+                  href={execution.workflowDefinitionId ? `/workflow-builder/${execution.workflowDefinitionId}?execution=${execution.id}` : "#"}
                   className="flex items-center gap-4 px-4 py-3.5 transition-colors group"
                   style={{
                     borderTop: i > 0 ? `1px solid var(--workspace-border)` : undefined,
@@ -375,19 +371,16 @@ export function WorkflowBuilder() {
                 >
                   <div className="flex-1 min-w-0">
                     <span className="text-sm font-medium" style={{ color: "var(--workspace-fg)" }}>
-                      {execution.workflowName}
-                    </span>
-                    <span className="text-xs ml-2" style={{ color: "var(--workspace-muted)" }}>
-                      Triggered by {execution.triggeredBy}
+                      {execution.title}
                     </span>
                   </div>
                   <span
                     className={`text-[10px] uppercase tracking-wider shrink-0 ${
-                      execution.status === "running" ? "animate-pulse" : ""
+                      execution.status === "in-progress" ? "animate-pulse" : ""
                     }`}
                     style={{ color: STATUS_COLORS[execution.status] || "var(--workspace-muted)" }}
                   >
-                    {STATUS_LABELS[execution.status]}
+                    {STATUS_LABELS[execution.status] || execution.status}
                   </span>
                   <span className="text-[10px] shrink-0" style={{ color: "var(--workspace-muted)" }}>
                     {format(new Date(execution.createdAt), "MMM d, yyyy")}

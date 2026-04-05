@@ -11,9 +11,13 @@
   "private": true,
   "devDependencies": {
     "prettier": "^3.8.1",
+    "react-grid-layout": "^1.5.3",
     "typescript": "~5.9.2"
   },
   "optionalDependencies": {
     "lightningcss-darwin-arm64": "^1.32.0"
+  },
+  "dependencies": {
+    "@swc/helpers": "^0.5.21"
   }
 }

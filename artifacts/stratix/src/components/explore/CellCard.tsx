@@ -41,7 +41,7 @@ export function CellCard({ cell }: { cell: CellData }) {
         </div>
       )}
       <div className="p-4">
-        <ChartRenderer cell={cell} />
+        <ChartRenderer cell={cell as any} />
       </div>
     </div>
   );

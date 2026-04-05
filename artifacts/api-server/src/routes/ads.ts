@@ -627,6 +627,7 @@ router.post("/ads/reports", async (req: Request, res: Response) => {
     await inngest.send({
       name: "ads/report.generate",
       data: {
+        reportId: report.id,
         orgId,
         reportType,
         campaignIds: campaignIds ?? [],

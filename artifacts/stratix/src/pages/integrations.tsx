@@ -90,9 +90,25 @@ export function Integrations() {
       id: "slack",
       name: "Slack",
       icon: <Cloud className="h-5 w-5" />,
-      description: "Import messages and files from Slack",
+      description: "Import messages and files from Slack channels",
       isAvailable: false,
       oauthType: "slack",
+    },
+    {
+      id: "salesforce",
+      name: "Salesforce",
+      icon: <Cloud className="h-5 w-5" />,
+      description: "Sync CRM data, opportunities, and account intel",
+      isAvailable: false,
+      oauthType: "salesforce",
+    },
+    {
+      id: "hubspot",
+      name: "HubSpot",
+      icon: <Cloud className="h-5 w-5" />,
+      description: "Import contacts, deals, and marketing analytics",
+      isAvailable: false,
+      oauthType: "hubspot",
     },
   ];
 

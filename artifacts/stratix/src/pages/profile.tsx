@@ -1,12 +1,14 @@
 import { useState, useEffect, useRef } from "react";
 import {
+  useGetCurrentAuthUser,
   useGetCompanyProfile,
   getGetCompanyProfileQueryKey,
   useSaveCompanyProfile,
 } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
-import { CheckCircle2, RefreshCw, Clock } from "lucide-react";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { CheckCircle2, RefreshCw, Clock, User } from "lucide-react";
 
 const STAGES = ["Pre-seed", "Seed", "Series A", "Series B", "Series C+", "Growth", "Public", "Enterprise"];
 const REVENUE_RANGES = ["Pre-revenue", "<$1M", "$1M–$10M", "$10M–$50M", "$50M–$200M", "$200M–$1B", "$1B+"];
@@ -33,6 +35,8 @@ type RefreshStatus = {
 export function Profile() {
   const queryClient = useQueryClient();
   const { toast } = useToast();
+  const { data: auth } = useGetCurrentAuthUser();
+  const authUser = auth?.user;
 
   const { data: profile, isLoading } = useGetCompanyProfile({
     query: { queryKey: getGetCompanyProfileQueryKey() }
@@ -207,6 +211,41 @@ export function Profile() {
 
   return (
     <div className="max-w-2xl space-y-8 animate-in fade-in duration-500">
+      {/* User Profile Section */}
+      {authUser && (
+        <div className="pb-6 border-b" style={{ borderColor: "var(--workspace-border)" }}>
+          <h2 className="font-serif text-2xl font-light mb-4" style={{ color: "var(--workspace-fg)" }}>Your Profile</h2>
+          <div className="flex items-center gap-4">
+            <Avatar className="h-14 w-14 border" style={{ borderColor: "var(--workspace-border)" }}>
+              <AvatarImage src={(authUser as any).profileImageUrl || undefined} />
+              <AvatarFallback className="text-sm" style={{ background: "var(--workspace-muted-bg)", color: "var(--workspace-fg)" }}>
+                <User className="h-5 w-5" />
+              </AvatarFallback>
+            </Avatar>
+            <div className="flex-1 min-w-0">
+              <div className="text-base font-medium" style={{ color: "var(--workspace-fg)" }}>
+                {(authUser as any).firstName
+                  ? `${(authUser as any).firstName} ${(authUser as any).lastName || ""}`.trim()
+                  : (authUser as any).email || "User"}
+              </div>
+              <div className="text-sm mt-0.5" style={{ color: "var(--workspace-muted)" }}>
+                {(authUser as any).email}
+              </div>
+              {(authUser as any).orgRole && (
+                <div className="mt-1">
+                  <span
+                    className="text-[10px] uppercase tracking-wider px-2 py-0.5"
+                    style={{ border: "1px solid var(--workspace-border)", color: "var(--workspace-muted)" }}
+                  >
+                    {(authUser as any).orgRole}
+                  </span>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="pb-6 border-b" style={{ borderColor: "var(--workspace-border)" }}>
         <div className="flex items-start justify-between gap-4">
           <div>

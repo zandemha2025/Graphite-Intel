@@ -1,4 +1,4 @@
-export type { ChartCell } from "./types";
+export type { ChartCell, CellData, CellType, StatItem } from "./types";
 export { CHART_COLORS, TOOLTIP_STYLE } from "./theme";
 export { ChartRenderer } from "./ChartRenderer";
 export { BarChartCell } from "./BarChartCell";

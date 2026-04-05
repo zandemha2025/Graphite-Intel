@@ -57,6 +57,7 @@ export function VaultProject() {
   const [project, setProject] = useState<VaultProject | null>(null);
   const [extractions, setExtractions] = useState<ExtractionResult[]>([]);
   const [templates, setTemplates] = useState<ExtractionTemplate[]>([]);
+  const [availableDocuments, setAvailableDocuments] = useState<Document[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [activeTab, setActiveTab] = useState<"documents" | "extractions" | "compare">("documents");
@@ -78,9 +79,10 @@ export function VaultProject() {
     if (!projectId) return;
     setIsLoading(true);
     try {
-      const [projRes, templatesRes] = await Promise.all([
+      const [projRes, templatesRes, docsRes] = await Promise.all([
         fetch(`/api/vault/projects/${projectId}`, { credentials: "include" }),
         fetch("/api/extraction-templates", { credentials: "include" }),
+        fetch("/api/documents", { credentials: "include" }),
       ]);
 
       if (!projRes.ok) throw new Error("Failed to load project");
@@ -91,6 +93,11 @@ export function VaultProject() {
       if (templatesRes.ok) {
         const templatesData = await templatesRes.json();
         setTemplates(templatesData);
+      }
+
+      if (docsRes.ok) {
+        const docsData = await docsRes.json();
+        setAvailableDocuments(docsData);
       }
 
       // Load extractions for all documents
@@ -234,7 +241,7 @@ export function VaultProject() {
 
   const handleCompare = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!projectId || !compareQuestion.trim()) return;
+    if (!projectId || !selectedTemplate) return;
 
     setIsComparing(true);
     try {
@@ -242,7 +249,7 @@ export function VaultProject() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
-        body: JSON.stringify({ question: compareQuestion }),
+        body: JSON.stringify({ templateId: selectedTemplate }),
       });
       if (!res.ok) throw new Error("Failed to compare documents");
       const result = await res.json();
@@ -433,13 +440,51 @@ export function VaultProject() {
                 Select documents from your Knowledge Vault
               </p>
               <div className="space-y-2 mb-4 max-h-48 overflow-y-auto">
-                {/* In production, this would fetch available documents */}
-                <p
-                  className="text-[10px]"
-                  style={{ color: "var(--workspace-muted)", opacity: 0.6 }}
-                >
-                  (Document picker would load available documents here)
-                </p>
+                {(() => {
+                  const projectDocIds = new Set(project.documents.map((d) => d.id));
+                  const pickableDocs = availableDocuments.filter(
+                    (d) => d.status === "ready" && !projectDocIds.has(d.id)
+                  );
+                  if (pickableDocs.length === 0) {
+                    return (
+                      <p
+                        className="text-[10px]"
+                        style={{ color: "var(--workspace-muted)", opacity: 0.6 }}
+                      >
+                        No additional documents available. Upload documents in the Knowledge Vault first.
+                      </p>
+                    );
+                  }
+                  return pickableDocs.map((doc) => (
+                    <label
+                      key={doc.id}
+                      className="flex items-center gap-2 px-2 py-1.5 rounded cursor-pointer hover:bg-gray-50 transition-colors"
+                    >
+                      <input
+                        type="checkbox"
+                        checked={selectedDocuments.includes(doc.id)}
+                        onChange={(e) => {
+                          if (e.target.checked) {
+                            setSelectedDocuments((prev) => [...prev, doc.id]);
+                          } else {
+                            setSelectedDocuments((prev) => prev.filter((id) => id !== doc.id));
+                          }
+                        }}
+                        className="accent-[var(--workspace-fg)]"
+                      />
+                      <FileText className="w-3 h-3 shrink-0" style={{ color: "var(--workspace-muted)" }} />
+                      <span className="text-xs truncate" style={{ color: "var(--workspace-fg)" }}>
+                        {doc.title}
+                      </span>
+                      <span
+                        className="text-[10px] uppercase ml-auto shrink-0"
+                        style={{ color: "var(--workspace-muted)" }}
+                      >
+                        {doc.fileType}
+                      </span>
+                    </label>
+                  ));
+                })()}
               </div>
               <div className="flex gap-2 justify-end">
                 <button
@@ -723,24 +768,29 @@ export function VaultProject() {
                     className="block text-xs uppercase tracking-widest mb-2"
                     style={{ color: "var(--workspace-muted)" }}
                   >
-                    Comparison Question
+                    Extraction Template
                   </label>
-                  <textarea
-                    value={compareQuestion}
-                    onChange={(e) => setCompareQuestion(e.target.value)}
-                    placeholder="What would you like to compare across these documents?"
+                  <select
+                    value={selectedTemplate ?? ""}
+                    onChange={(e) => setSelectedTemplate(e.target.value ? parseInt(e.target.value) : null)}
                     className="w-full px-3 py-2 text-xs focus:outline-none transition-colors"
-                    rows={3}
                     style={{
                       border: "1px solid var(--workspace-border)",
                       color: "var(--workspace-fg)",
                       background: "var(--workspace-muted-bg)",
                     }}
-                  />
+                  >
+                    <option value="">Select a template to compare across documents...</option>
+                    {templates.map((t) => (
+                      <option key={t.id} value={t.id}>
+                        {t.name}{t.description ? ` — ${t.description}` : ""}
+                      </option>
+                    ))}
+                  </select>
                 </div>
                 <button
                   type="submit"
-                  disabled={isComparing || !compareQuestion.trim()}
+                  disabled={isComparing || !selectedTemplate}
                   className="flex items-center gap-2 px-4 py-2 text-xs uppercase tracking-widest transition-colors disabled:opacity-40"
                   style={{ background: "var(--workspace-fg)", color: "#FFFFFF" }}
                 >

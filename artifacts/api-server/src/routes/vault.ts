@@ -8,6 +8,7 @@ import {
   documents,
 } from "@workspace/db";
 import { eq, and, inArray, sql } from "drizzle-orm";
+import { inngest } from "../inngest/client";
 
 const router: IRouter = Router();
 
@@ -456,10 +457,15 @@ router.post("/documents/:id/extract", async (req: Request, res: Response) => {
       })
       .returning();
 
-    // TODO: Trigger Inngest event to process extraction asynchronously
+    // Trigger Inngest event to process extraction asynchronously
+    await inngest.send({
+      name: "vault/extraction.requested",
+      data: { extractionId: extraction.id },
+    });
+
     req.log.info(
       { extractionId: extraction.id, documentId: docId, templateId },
-      "TODO: Send extraction to Inngest queue"
+      "Sent extraction to Inngest queue"
     );
 
     res.status(201).json(extraction);
@@ -601,10 +607,15 @@ router.post("/vault/projects/:id/compare", async (req: Request, res: Response) =
           })
           .returning();
 
-        // TODO: Trigger Inngest event
+        // Trigger Inngest event to process extraction asynchronously
+        await inngest.send({
+          name: "vault/extraction.requested",
+          data: { extractionId: extraction.id },
+        });
+
         req.log.info(
           { extractionId: extraction.id, documentId: doc.id, templateId },
-          "TODO: Send extraction to Inngest queue"
+          "Sent extraction to Inngest queue"
         );
 
         results.push({

@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { useLocation } from "wouter";
+import { useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 
 function Logo() {
@@ -16,6 +18,8 @@ export function OrgSetup() {
   const [orgName, setOrgName] = useState("");
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
+  const [, setLocation] = useLocation();
+  const queryClient = useQueryClient();
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -26,6 +30,7 @@ export function OrgSetup() {
       const res = await fetch("/api/org", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        credentials: "include",
         body: JSON.stringify({ name: orgName.trim() }),
       });
 
@@ -34,7 +39,8 @@ export function OrgSetup() {
         throw new Error(err.error || "Failed to create organization");
       }
 
-      window.location.href = "/onboarding";
+      await queryClient.invalidateQueries({ queryKey: ["/api/auth/me"] });
+      setLocation("/onboarding");
     } catch (err) {
       toast({
         title: "Error",
@@ -52,8 +58,18 @@ export function OrgSetup() {
       </header>
       <main className="flex-1 flex items-center justify-center px-8">
         <div className="w-full max-w-lg">
+          {/* Progress indicator */}
           <div className="mb-10">
-            <p className="text-[10px] uppercase tracking-[0.25em] text-[#E8E4DC]/35 mb-4">Workspace Setup</p>
+            <div className="flex items-center gap-3 mb-6">
+              <span className="text-[10px] font-medium uppercase tracking-[0.25em] text-[#E8E4DC]/40 border border-[#E8E4DC]/15 px-3 py-1">
+                Step 2 of 3
+              </span>
+              <div className="flex items-center gap-1.5">
+                <div className="h-1 w-6 bg-[#E8E4DC]/60" />
+                <div className="h-1 w-6 bg-[#E8E4DC]/60" />
+                <div className="h-1 w-6 bg-[#E8E4DC]/15" />
+              </div>
+            </div>
             <h1 className="font-serif text-5xl font-light text-[#E8E4DC] mb-4 leading-tight">
               Create your organization.
             </h1>

@@ -11,6 +11,7 @@ import {
   Clock,
   Tag,
   ChevronRight,
+  Trash2,
 } from "lucide-react";
 
 interface PlaybookItem {
@@ -42,6 +43,7 @@ export function Playbooks() {
   const [templates, setTemplates] = useState<PlaybookItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<"mine" | "templates">("mine");
+  const [deleteConfirmId, setDeleteConfirmId] = useState<number | null>(null);
 
   useEffect(() => {
     const fetch_ = async () => {
@@ -77,6 +79,24 @@ export function Playbooks() {
     } catch {
       toast({ title: "Failed to create playbook", variant: "destructive" });
     }
+  };
+
+  const handleDelete = async (id: number) => {
+    try {
+      const res = await fetch(`/api/playbooks/${id}`, {
+        method: "DELETE",
+        credentials: "include",
+      });
+      if (res.ok) {
+        setPlaybooks((prev) => prev.filter((p) => p.id !== id));
+        toast({ title: "Playbook deleted" });
+      } else {
+        toast({ title: "Failed to delete playbook", variant: "destructive" });
+      }
+    } catch {
+      toast({ title: "Failed to delete playbook", variant: "destructive" });
+    }
+    setDeleteConfirmId(null);
   };
 
   if (loading) {
@@ -127,25 +147,39 @@ export function Playbooks() {
       {activeTab === "mine" && (
         <div>
           {playbooks.filter((p) => !p.isTemplate).length === 0 ? (
-            <div className="p-8 text-center border border-dashed" style={{ borderColor: "var(--workspace-border)", background: "#FFFFFF" }}>
-              <BookOpen className="h-6 w-6 mx-auto mb-3" style={{ color: "var(--workspace-muted)" }} />
-              <p className="text-sm mb-1" style={{ color: "var(--workspace-fg)" }}>No playbooks yet</p>
-              <p className="text-xs mb-4" style={{ color: "var(--workspace-muted)" }}>Create a playbook from scratch or use a template</p>
-              <button
-                onClick={() => setActiveTab("templates")}
-                className="flex items-center gap-2 px-3 py-1.5 text-xs uppercase tracking-widest mx-auto"
-                style={{ border: "1px solid var(--workspace-border)", color: "var(--workspace-muted)", background: "#FFFFFF" }}
-              >
-                <ClipboardList className="h-3 w-3" />
-                Browse Templates
-              </button>
+            <div className="p-10 text-center border border-dashed" style={{ borderColor: "var(--workspace-border)", background: "#FFFFFF" }}>
+              <div className="w-12 h-12 mx-auto mb-4 flex items-center justify-center" style={{ background: "var(--workspace-muted-bg)", border: "1px solid var(--workspace-border)" }}>
+                <BookOpen className="h-5 w-5" style={{ color: "var(--workspace-muted)" }} />
+              </div>
+              <h3 className="text-sm font-medium mb-1" style={{ color: "var(--workspace-fg)" }}>No playbooks yet</h3>
+              <p className="text-xs mb-5 max-w-xs mx-auto" style={{ color: "var(--workspace-muted)" }}>
+                Build structured review workflows for due diligence, compliance, and audits. Start from a template or create your own.
+              </p>
+              <div className="flex items-center gap-3 justify-center">
+                <button
+                  onClick={() => setActiveTab("templates")}
+                  className="flex items-center gap-2 px-4 py-2 text-xs uppercase tracking-widest"
+                  style={{ background: "var(--workspace-fg)", color: "#FFFFFF" }}
+                >
+                  <ClipboardList className="h-3 w-3" />
+                  Browse Templates
+                </button>
+                <button
+                  onClick={() => setLocation("/playbooks/new")}
+                  className="flex items-center gap-2 px-4 py-2 text-xs uppercase tracking-widest"
+                  style={{ border: "1px solid var(--workspace-border)", color: "var(--workspace-muted)", background: "#FFFFFF" }}
+                >
+                  <Plus className="h-3 w-3" />
+                  Create Blank
+                </button>
+              </div>
             </div>
           ) : (
             <div className="grid gap-3">
               {playbooks.filter((p) => !p.isTemplate).map((pb) => (
                 <div
                   key={pb.id}
-                  className="px-5 py-4 border cursor-pointer transition-colors"
+                  className="group px-5 py-4 border cursor-pointer transition-colors"
                   style={{ borderColor: "var(--workspace-border)", background: "#FFFFFF" }}
                   onClick={() => setLocation(`/playbooks/${pb.id}`)}
                   onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.borderColor = "var(--workspace-fg)"; }}
@@ -171,7 +205,35 @@ export function Playbooks() {
                         <span className="flex items-center gap-1"><Clock className="h-3 w-3" />{new Date(pb.updatedAt).toLocaleDateString()}</span>
                       </div>
                     </div>
-                    <ChevronRight className="h-4 w-4 shrink-0 mt-1" style={{ color: "var(--workspace-muted)" }} />
+                    <div className="flex items-center gap-2 shrink-0">
+                      {deleteConfirmId === pb.id ? (
+                        <div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
+                          <button
+                            onClick={() => handleDelete(pb.id)}
+                            className="px-2 py-1 text-[10px] uppercase tracking-widest"
+                            style={{ border: "1px solid #ef4444", color: "#ef4444", background: "#FFFFFF" }}
+                          >
+                            Confirm
+                          </button>
+                          <button
+                            onClick={() => setDeleteConfirmId(null)}
+                            className="px-2 py-1 text-[10px] uppercase tracking-widest"
+                            style={{ border: "1px solid var(--workspace-border)", color: "var(--workspace-muted)", background: "#FFFFFF" }}
+                          >
+                            Cancel
+                          </button>
+                        </div>
+                      ) : (
+                        <button
+                          onClick={(e) => { e.stopPropagation(); setDeleteConfirmId(pb.id); }}
+                          className="p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                          title="Delete playbook"
+                        >
+                          <Trash2 className="h-3.5 w-3.5" style={{ color: "var(--workspace-muted)" }} />
+                        </button>
+                      )}
+                      <ChevronRight className="h-4 w-4" style={{ color: "var(--workspace-muted)" }} />
+                    </div>
                   </div>
                 </div>
               ))}

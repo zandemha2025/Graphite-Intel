@@ -1,5 +1,5 @@
 import { Router, type IRouter, type Request, type Response } from "express";
-import { db, documents, conversationDocuments, conversations, documentChunks } from "@workspace/db";
+import { db, documents, conversationDocuments, conversations, documentChunks, projectDocuments, documentExtractions } from "@workspace/db";
 import { eq, and, inArray, sql } from "drizzle-orm";
 import { ObjectStorageService } from "../lib/objectStorage";
 import { getOpenAIClient } from "@workspace/integrations-openai-ai-server";
@@ -92,6 +92,15 @@ async function processChunksInBackground(docId: number, extractedText: string, l
   }
 }
 
+function conversationFilter(req: Request) {
+  const userId = req.user!.id;
+  const orgId = req.user!.orgId;
+  if (orgId) {
+    return eq(conversations.orgId, orgId);
+  }
+  return eq(conversations.userId, userId);
+}
+
 function documentsFilter(req: Request) {
   const orgId = req.user!.orgId;
   if (orgId) {
@@ -154,6 +163,8 @@ router.delete("/documents/:id", async (req: Request, res: Response) => {
     }
     await db.delete(conversationDocuments).where(eq(conversationDocuments.documentId, id));
     await db.delete(documentChunks).where(eq(documentChunks.documentId, id));
+    await db.delete(projectDocuments).where(eq(projectDocuments.documentId, id));
+    await db.delete(documentExtractions).where(eq(documentExtractions.documentId, id));
     await db.delete(documents).where(eq(documents.id, id));
     res.status(204).send();
   } catch (err) {
@@ -255,56 +266,56 @@ router.patch("/documents/:id", async (req: Request, res: Response) => {
 
 router.post("/documents/search", async (req: Request, res: Response) => {
   if (!requireAuth(req, res)) return;
-  const { query, documentIds } = req.body;
+  const { query, documentIds, searchMode = "hybrid", filters, limit = 20, offset = 0 } = req.body;
   if (!query || typeof query !== "string") {
     res.status(400).json({ error: "query is required" });
     return;
   }
 
+  const orgId = req.user!.orgId;
+  const validModes = ["semantic", "fulltext", "hybrid"];
+  if (!validModes.includes(searchMode)) {
+    res.status(400).json({ error: `searchMode must be one of: ${validModes.join(", ")}` });
+    return;
+  }
+
   try {
-    const accessibleDocs = await db
-      .select({ id: documents.id })
-      .from(documents)
-      .where(documentsFilter(req));
-    const userDocIds = new Set(accessibleDocs.map((d) => d.id));
+    const searchOptions: import("../lib/search").SearchOptions = {
+      query,
+      orgId: orgId ?? 0,
+      mode: searchMode,
+      filters: filters
+        ? {
+            dateRange: filters.dateRange
+              ? { from: new Date(filters.dateRange.from), to: new Date(filters.dateRange.to) }
+              : undefined,
+            fileTypes: filters.fileTypes,
+            tags: filters.tags,
+          }
+        : undefined,
+      limit: Math.min(limit, 100),
+      offset,
+    };
 
-    let targetDocIds: number[] = Array.from(userDocIds);
-    if (documentIds && Array.isArray(documentIds)) {
-      targetDocIds = documentIds.filter((id: number) => userDocIds.has(id));
-    }
-
-    if (targetDocIds.length === 0) {
-      res.json([]);
-      return;
-    }
-
-    const [embeddingResponse] = await Promise.all([
-      getOpenAIClient().embeddings.create({
+    // Generate embedding if needed for semantic/hybrid modes
+    let queryEmbedding: number[] | undefined;
+    if (searchMode !== "fulltext") {
+      const embeddingResponse = await getOpenAIClient().embeddings.create({
         model: "text-embedding-3-small",
         input: query,
-      }),
-    ]);
-    const queryEmbedding = embeddingResponse.data[0].embedding;
-    const embeddingStr = `[${queryEmbedding.join(",")}]`;
+      });
+      queryEmbedding = embeddingResponse.data[0].embedding;
+    }
 
-    const results = await db.execute(sql`
-      SELECT
-        dc.id,
-        dc.document_id AS "documentId",
-        dc.chunk_index AS "chunkIndex",
-        dc.text,
-        d.title AS "documentTitle",
-        1 - (dc.embedding <=> ${embeddingStr}::vector) AS similarity
-      FROM document_chunks dc
-      JOIN documents d ON d.id = dc.document_id
-      WHERE dc.document_id = ANY(${targetDocIds}::int[])
-        AND dc.embedding IS NOT NULL
-        AND 1 - (dc.embedding <=> ${embeddingStr}::vector) > 0.3
-      ORDER BY dc.embedding <=> ${embeddingStr}::vector
-      LIMIT 12
-    `);
+    const { executeSearch } = await import("../lib/search");
+    const results = await executeSearch(searchOptions, queryEmbedding);
 
-    res.json(results.rows);
+    res.json({
+      results,
+      total: results.length,
+      query,
+      searchMode,
+    });
   } catch (err) {
     req.log.error({ err }, "Failed to search documents");
     res.status(500).json({ error: "Failed to search documents" });
@@ -323,7 +334,7 @@ router.get("/conversations/:id/documents", async (req: Request, res: Response) =
     const [convo] = await db
       .select()
       .from(conversations)
-      .where(and(eq(conversations.id, conversationId), eq(conversations.userId, userId)));
+      .where(and(eq(conversations.id, conversationId), conversationFilter(req)));
     if (!convo) {
       res.status(404).json({ error: "Conversation not found" });
       return;
@@ -361,7 +372,7 @@ router.post("/conversations/:id/documents", async (req: Request, res: Response) 
     const [convo] = await db
       .select()
       .from(conversations)
-      .where(and(eq(conversations.id, conversationId), eq(conversations.userId, userId)));
+      .where(and(eq(conversations.id, conversationId), conversationFilter(req)));
     if (!convo) {
       res.status(404).json({ error: "Conversation not found" });
       return;
@@ -406,7 +417,7 @@ router.delete("/conversations/:id/documents", async (req: Request, res: Response
     const [convo] = await db
       .select()
       .from(conversations)
-      .where(and(eq(conversations.id, conversationId), eq(conversations.userId, userId)));
+      .where(and(eq(conversations.id, conversationId), conversationFilter(req)));
     if (!convo) {
       res.status(404).json({ error: "Conversation not found" });
       return;

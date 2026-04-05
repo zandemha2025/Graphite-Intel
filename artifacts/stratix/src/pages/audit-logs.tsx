@@ -1,4 +1,6 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
+import { useGetCurrentAuthUser } from "@workspace/api-client-react";
+import type { AuthUserWithOrg } from "@/lib/types";
 import { format } from "date-fns";
 import {
   Shield,
@@ -42,7 +44,7 @@ function useFetchAuditLogs() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const fetch_ = async (
+  const fetch_ = useCallback(async (
     limit: number,
     offset: number,
     userId?: string,
@@ -77,13 +79,23 @@ function useFetchAuditLogs() {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   return { logs, total, loading, error, fetch: fetch_ };
 }
 
 export function AuditLogs() {
+  const { data: auth } = useGetCurrentAuthUser();
+  const currentUser = auth?.user as AuthUserWithOrg | undefined;
   const { logs, total, loading, error, fetch: fetchLogs } = useFetchAuditLogs();
+
+  if (currentUser && currentUser.orgRole !== "admin" && currentUser.orgRole !== "owner") {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <p className="text-sm" style={{ color: "var(--workspace-muted)" }}>Admin access required</p>
+      </div>
+    );
+  }
   const [limit] = useState(20);
   const [offset, setOffset] = useState(0);
   const [expandedId, setExpandedId] = useState<number | null>(null);

@@ -115,7 +115,9 @@ export async function extractData<T>(
   url: string,
   schema: z.ZodType<T>,
 ): Promise<T> {
-  const jsonSchema = z.toJSONSchema(schema);
+  const jsonSchema = "toJSONSchema" in z
+    ? (z as any).toJSONSchema(schema)
+    : JSON.parse(JSON.stringify(schema));
   const data = await postJson<{ data: T }>("/v1/extract", {
     urls: [url],
     schema: jsonSchema,

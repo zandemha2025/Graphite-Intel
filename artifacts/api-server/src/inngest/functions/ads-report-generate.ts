@@ -18,11 +18,27 @@ export const adsReportGenerateFunction = inngest.createFunction(
   { id: "ads-report-generate", retries: 2 },
   { event: "ads/report.generate" },
   async ({ event, step }) => {
-    const { orgId, reportType, campaignIds, dateRange } = event.data;
+    const { reportId, orgId, reportType, campaignIds, dateRange } = event.data;
 
     // Step 1: Load report record
     const report = await step.run("load-report", async () => {
-      // Find the most recent pending report matching these params
+      // If reportId was provided, load that specific report
+      if (reportId) {
+        const [r] = await db
+          .select()
+          .from(adReports)
+          .where(eq(adReports.id, reportId));
+
+        if (r) {
+          await db
+            .update(adReports)
+            .set({ status: "generating" })
+            .where(eq(adReports.id, r.id));
+          return r;
+        }
+      }
+
+      // Fallback: find the most recent pending report matching these params
       const [r] = await db
         .select()
         .from(adReports)

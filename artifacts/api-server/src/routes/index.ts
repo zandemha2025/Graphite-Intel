@@ -28,6 +28,7 @@ import connectorsRouter from "./connectors";
 import scrapeRouter from "./scrape";
 import seoRouter from "./seo";
 import pipedreamWorkflowsRouter from "./pipedream-workflows";
+import boardsRouter from "./boards";
 
 const router: IRouter = Router();
 
@@ -60,5 +61,6 @@ router.use(connectorsRouter);
 router.use(scrapeRouter);
 router.use(seoRouter);
 router.use(pipedreamWorkflowsRouter);
+router.use(boardsRouter);
 
 export default router;
