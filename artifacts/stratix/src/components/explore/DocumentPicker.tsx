@@ -65,7 +65,7 @@ export function DocumentPicker({ conversationId, onClose }: Props) {
         style={{ borderBottom: "1px solid var(--explore-border, #E5E7EB)" }}
       >
         <span
-          className="text-[10px] uppercase tracking-widest"
+          className="text-xs font-medium"
           style={{ color: "var(--explore-muted, #9CA3AF)" }}
         >
           Attach Documents
@@ -134,7 +134,7 @@ export function DocumentPicker({ conversationId, onClose }: Props) {
                   {doc.title}
                 </span>
                 <span
-                  className="text-[10px] uppercase ml-auto shrink-0"
+                  className="text-[11px] font-medium ml-auto shrink-0"
                   style={{ color: "var(--explore-muted, #9CA3AF)" }}
                 >
                   {doc.fileType}

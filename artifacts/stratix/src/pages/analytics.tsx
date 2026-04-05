@@ -148,13 +148,13 @@ function SummaryCard({
       <div className="flex items-start justify-between">
         <div className="flex-1">
           <p
-            className="text-[10px] uppercase tracking-[0.15em] mb-2"
+            className="text-xs font-medium mb-2"
             style={{ color: "var(--workspace-muted)" }}
           >
             {label}
           </p>
           <p
-            className="font-serif text-3xl font-light"
+            className="font-sans text-xl font-semibold tracking-tight"
             style={{ color: "var(--workspace-fg)" }}
           >
             {value}
@@ -185,7 +185,7 @@ function ChartCard({
     >
       <div className="mb-6">
         <p
-          className="text-[10px] uppercase tracking-[0.15em]"
+          className="text-xs font-medium"
           style={{ color: "var(--workspace-muted)" }}
         >
           {title}
@@ -366,7 +366,7 @@ export function Analytics() {
         style={{ borderColor: "var(--workspace-border)" }}
       >
         <h1
-          className="font-serif text-5xl font-light mb-2"
+          className="font-sans text-2xl font-semibold tracking-tight mb-2"
           style={{ color: "var(--workspace-fg)" }}
         >
           Analytics
@@ -552,7 +552,7 @@ export function Analytics() {
                 <table className="w-full">
                   <thead>
                     <tr
-                      className="text-[10px] uppercase tracking-[0.1em]"
+                      className="text-xs font-medium"
                       style={{
                         color: "var(--workspace-muted)",
                         borderBottom: "1px solid var(--workspace-border)",
@@ -615,7 +615,7 @@ export function Analytics() {
                 style={{ borderColor: "var(--workspace-border)" }}
               >
                 <p
-                  className="text-[10px] uppercase tracking-[0.15em]"
+                  className="text-xs font-medium"
                   style={{ color: "var(--workspace-muted)" }}
                 >
                   Usage by User
@@ -631,7 +631,7 @@ export function Analytics() {
                 <table className="w-full">
                   <thead>
                     <tr
-                      className="text-[10px] uppercase tracking-[0.1em]"
+                      className="text-xs font-medium"
                       style={{
                         color: "var(--workspace-muted)",
                         borderBottom: "1px solid var(--workspace-border)",
@@ -708,7 +708,7 @@ export function Analytics() {
                 style={{ borderColor: "var(--workspace-border)" }}
               >
                 <p
-                  className="text-[10px] uppercase tracking-[0.15em]"
+                  className="text-xs font-medium"
                   style={{ color: "var(--workspace-muted)" }}
                 >
                   Recent Activity
@@ -724,7 +724,7 @@ export function Analytics() {
                 <table className="w-full">
                   <thead>
                     <tr
-                      className="text-[10px] uppercase tracking-[0.1em]"
+                      className="text-xs font-medium"
                       style={{
                         color: "var(--workspace-muted)",
                         borderBottom: "1px solid var(--workspace-border)",
@@ -836,7 +836,7 @@ export function Analytics() {
                 style={{ color: "var(--workspace-muted)" }}
               />
               <h3
-                className="font-serif text-lg font-light mb-2"
+                className="font-sans text-lg font-light mb-2"
                 style={{ color: "var(--workspace-muted)" }}
               >
                 No analytics data available

@@ -163,7 +163,7 @@ export function CommandPalette() {
         onOpenAutoFocus={(e) => e.preventDefault()}
       >
         <Command
-          className="bg-[#0D0C0B] text-[#E8E4DC] [&_[cmdk-group-heading]]:px-3 [&_[cmdk-group-heading]]:py-2 [&_[cmdk-group-heading]]:text-xs [&_[cmdk-group-heading]]:font-medium [&_[cmdk-group-heading]]:text-[#E8E4DC]/40 [&_[cmdk-group-heading]]:uppercase [&_[cmdk-group-heading]]:tracking-wider"
+          className="bg-[#0D0C0B] text-[#E8E4DC] [&_[cmdk-group-heading]]:px-3 [&_[cmdk-group-heading]]:py-2 [&_[cmdk-group-heading]]:text-xs [&_[cmdk-group-heading]]:font-medium [&_[cmdk-group-heading]]:text-[#E8E4DC]/40"
         >
           <CommandInput
             placeholder="Type a command or search..."

@@ -329,7 +329,7 @@ export function WorkflowBuilderEdit() {
       <div className="flex items-center gap-3 mb-6">
         <button
           onClick={() => navigate("/workflow-builder")}
-          className="flex items-center gap-1 text-xs uppercase tracking-widest transition-colors"
+          className="flex items-center gap-1 text-xs font-medium transition-colors"
           style={{ color: "var(--workspace-muted)" }}
         >
           <ArrowLeft className="h-3.5 w-3.5" />
@@ -340,14 +340,14 @@ export function WorkflowBuilderEdit() {
       {/* Title Section */}
       <div className="pb-6 border-b space-y-6" style={{ borderColor: "var(--workspace-border)" }}>
         <div>
-          <label className="text-[10px] uppercase tracking-[0.2em] mb-2 block" style={{ color: "var(--workspace-muted)" }}>
+          <label className="text-xs font-medium mb-2 block" style={{ color: "var(--workspace-muted)" }}>
             Workflow Name
           </label>
           <input
             type="text"
             value={workflow.name}
             onChange={(e) => setWorkflow({ ...workflow, name: e.target.value })}
-            className="w-full text-3xl font-light font-serif mb-2 focus:outline-none"
+            className="w-full text-xl font-semibold tracking-tight font-sans mb-2 focus:outline-none"
             style={{
               color: "var(--workspace-fg)",
               background: "transparent",
@@ -360,7 +360,7 @@ export function WorkflowBuilderEdit() {
         </div>
 
         <div>
-          <label className="text-[10px] uppercase tracking-[0.2em] mb-2 block" style={{ color: "var(--workspace-muted)" }}>
+          <label className="text-xs font-medium mb-2 block" style={{ color: "var(--workspace-muted)" }}>
             Description
           </label>
           <textarea
@@ -383,7 +383,7 @@ export function WorkflowBuilderEdit() {
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <span
-              className="text-[10px] uppercase tracking-wide px-2 py-0.5"
+              className="text-[11px] font-medium px-2 py-0.5"
               style={{
                 border: "1px solid var(--workspace-border)",
                 color: STATUS_COLORS[workflow.status],
@@ -403,7 +403,7 @@ export function WorkflowBuilderEdit() {
             <button
               onClick={handleSave}
               disabled={saving}
-              className="flex items-center gap-2 px-4 py-2 text-xs uppercase tracking-widest font-medium transition-colors"
+              className="flex items-center gap-2 px-4 py-2 text-xs font-medium transition-colors"
               style={{
                 background: "var(--workspace-fg)",
                 color: "#FFFFFF",
@@ -416,7 +416,7 @@ export function WorkflowBuilderEdit() {
 
             <button
               onClick={handlePublish}
-              className="flex items-center gap-2 px-4 py-2 text-xs uppercase tracking-widest transition-colors"
+              className="flex items-center gap-2 px-4 py-2 text-xs font-medium transition-colors"
               style={{
                 border: "1px solid var(--workspace-border)",
                 color: workflow.status === "draft" ? "var(--workspace-fg)" : "var(--workspace-muted)",
@@ -429,7 +429,7 @@ export function WorkflowBuilderEdit() {
             {workflow.status === "published" && (
               <button
                 onClick={handleExecute}
-                className="flex items-center gap-2 px-4 py-2 text-xs uppercase tracking-widest font-medium transition-colors"
+                className="flex items-center gap-2 px-4 py-2 text-xs font-medium transition-colors"
                 style={{
                   background: "#16a34a",
                   color: "#FFFFFF",
@@ -494,7 +494,7 @@ function StepEditor({
 }: StepEditorProps) {
   return (
     <div className="space-y-6">
-      <h2 className="text-[10px] uppercase tracking-[0.25em]" style={{ color: "var(--workspace-muted)" }}>
+      <h2 className="text-xs font-medium" style={{ color: "var(--workspace-muted)" }}>
         Workflow Steps
       </h2>
 
@@ -524,7 +524,7 @@ function StepEditor({
                     Step {index + 1}
                   </span>
                   <span
-                    className="text-[10px] uppercase tracking-wide px-2 py-0.5"
+                    className="text-[11px] font-medium px-2 py-0.5"
                     style={{
                       border: "1px solid var(--workspace-border)",
                       color: "var(--workspace-muted)",
@@ -598,7 +598,7 @@ function StepEditor({
                 <div className="px-4 py-4 border-t" style={{ borderColor: "var(--workspace-border)", background: "var(--workspace-muted-bg)" }}>
                   <div className="space-y-4">
                     <div>
-                      <label className="text-xs uppercase tracking-widest mb-2 block" style={{ color: "var(--workspace-muted)" }}>
+                      <label className="text-xs font-medium mb-2 block" style={{ color: "var(--workspace-muted)" }}>
                         Step Type
                       </label>
                       <select
@@ -624,7 +624,7 @@ function StepEditor({
                     </div>
 
                     <div>
-                      <label className="text-xs uppercase tracking-widest mb-2 block" style={{ color: "var(--workspace-muted)" }}>
+                      <label className="text-xs font-medium mb-2 block" style={{ color: "var(--workspace-muted)" }}>
                         Step Name
                       </label>
                       <input
@@ -641,7 +641,7 @@ function StepEditor({
                     </div>
 
                     <div>
-                      <label className="text-xs uppercase tracking-widest mb-2 block" style={{ color: "var(--workspace-muted)" }}>
+                      <label className="text-xs font-medium mb-2 block" style={{ color: "var(--workspace-muted)" }}>
                         Description
                       </label>
                       <textarea
@@ -658,7 +658,7 @@ function StepEditor({
                     </div>
 
                     <div>
-                      <label className="text-xs uppercase tracking-widest mb-2 block" style={{ color: "var(--workspace-muted)" }}>
+                      <label className="text-xs font-medium mb-2 block" style={{ color: "var(--workspace-muted)" }}>
                         Configuration (JSON)
                       </label>
                       <textarea
@@ -700,7 +700,7 @@ function StepEditor({
         onMouseLeave={(e) => (e.currentTarget.style.borderColor = "var(--workspace-border)")}
       >
         <Plus className="h-4 w-4" />
-        <span className="text-xs uppercase tracking-widest">Add Step</span>
+        <span className="text-xs font-medium">Add Step</span>
       </button>
     </div>
   );
@@ -715,11 +715,11 @@ function ExecutionTrace({ execution, workflow }: ExecutionTraceProps) {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between pb-6 border-b" style={{ borderColor: "var(--workspace-border)" }}>
-        <h2 className="text-[10px] uppercase tracking-[0.25em]" style={{ color: "var(--workspace-muted)" }}>
+        <h2 className="text-xs font-medium" style={{ color: "var(--workspace-muted)" }}>
           Execution Trace
         </h2>
         <span
-          className="text-[10px] uppercase tracking-wide px-2 py-0.5"
+          className="text-[11px] font-medium px-2 py-0.5"
           style={{
             border: "1px solid var(--workspace-border)",
             color: STATUS_COLORS[execution.status] || "var(--workspace-muted)",
@@ -767,7 +767,7 @@ function ExecutionTrace({ execution, workflow }: ExecutionTraceProps) {
 
                 {trace?.status && (
                   <span
-                    className={`text-[10px] uppercase tracking-wide px-2 py-0.5 shrink-0 ${
+                    className={`text-[11px] font-medium px-2 py-0.5 shrink-0 ${
                       isRunning ? "animate-pulse" : ""
                     }`}
                     style={{

@@ -73,13 +73,13 @@ export function ExecutionTraceView({
         style={{ borderColor: "var(--workspace-border)" }}
       >
         <h2
-          className="text-[10px] uppercase tracking-[0.25em]"
+          className="text-xs font-medium"
           style={{ color: "var(--workspace-muted)" }}
         >
           Execution Trace
         </h2>
         <span
-          className="text-[10px] uppercase tracking-wide px-2 py-0.5"
+          className="text-[11px] font-medium px-2 py-0.5"
           style={{
             border: "1px solid var(--workspace-border)",
             color: STATUS_COLORS[execution.status] || "var(--workspace-muted)",
@@ -143,7 +143,7 @@ export function ExecutionTraceView({
                 </div>
 
                 <span
-                  className={`text-[10px] uppercase tracking-wide px-2 py-0.5 shrink-0 ${
+                  className={`text-[11px] font-medium px-2 py-0.5 shrink-0 ${
                     isRunning ? "animate-pulse" : ""
                   }`}
                   style={{

@@ -7,13 +7,13 @@ export function Security() {
       <header className="px-8 py-5 flex items-center justify-between border-b border-white/8 z-20 relative">
         <Link href="/" className="flex items-center gap-3">
           <div className="h-7 w-7 border border-[#E8E4DC]/40 flex items-center justify-center">
-            <span className="font-serif font-semibold text-[#E8E4DC] text-sm leading-none">S</span>
+            <span className="font-sans font-semibold text-[#E8E4DC] text-sm leading-none">S</span>
           </div>
-          <span className="font-serif font-semibold text-lg tracking-tight text-[#E8E4DC] uppercase">Stratix</span>
+          <span className="font-sans font-semibold text-lg tracking-tight text-[#E8E4DC]">Stratix</span>
         </Link>
         <Link
           href="/login"
-          className="text-sm font-medium bg-[#E8E4DC] text-[#0D0C0B] px-5 py-2 hover:bg-[#D4CEC5] transition-colors tracking-wide uppercase"
+          className="text-sm font-medium bg-[#E8E4DC] text-[#0D0C0B] px-5 py-2 hover:bg-[#D4CEC5] transition-colors font-medium"
         >
           Sign In
         </Link>
@@ -22,11 +22,11 @@ export function Security() {
       {/* Page title */}
       <div className="border-b border-white/8 px-12 py-14 max-w-5xl mx-auto w-full">
         <div className="mb-4">
-          <span className="text-[10px] font-medium uppercase tracking-[0.25em] text-[#E8E4DC]/40 border border-[#E8E4DC]/15 px-3 py-1">
+          <span className="text-xs font-medium text-[#E8E4DC]/40 border border-[#E8E4DC]/15 px-3 py-1">
             Trust & Security
           </span>
         </div>
-        <h1 className="font-serif text-5xl md:text-6xl font-light tracking-tight text-[#E8E4DC] leading-[0.95] mt-6 mb-6">
+        <h1 className="font-sans text-2xl md:text-3xl font-semibold tracking-tight text-[#E8E4DC] leading-[0.95] mt-6 mb-6">
           Built for enterprise trust.
         </h1>
         <p className="text-base text-[#E8E4DC]/50 max-w-xl font-light leading-relaxed">
@@ -41,8 +41,8 @@ export function Security() {
         <section className="border-b border-white/8 pb-12 mb-12">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             <div>
-              <p className="text-[10px] uppercase tracking-[0.25em] text-[#E8E4DC]/35 mb-3">Data Policy</p>
-              <h2 className="font-serif text-2xl font-light text-[#E8E4DC]">Your data is never used to train AI models.</h2>
+              <p className="text-xs font-medium text-[#E8E4DC]/35 mb-3">Data Policy</p>
+              <h2 className="font-sans text-2xl font-light text-[#E8E4DC]">Your data is never used to train AI models.</h2>
             </div>
             <div className="md:col-span-2 space-y-4 text-sm text-[#E8E4DC]/55 font-light leading-relaxed">
               <p>
@@ -59,19 +59,19 @@ export function Security() {
         <section className="border-b border-white/8 pb-12 mb-12">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             <div>
-              <p className="text-[10px] uppercase tracking-[0.25em] text-[#E8E4DC]/35 mb-3">Encryption</p>
-              <h2 className="font-serif text-2xl font-light text-[#E8E4DC]">TLS 1.3 in transit. AES-256 at rest.</h2>
+              <p className="text-xs font-medium text-[#E8E4DC]/35 mb-3">Encryption</p>
+              <h2 className="font-sans text-2xl font-light text-[#E8E4DC]">TLS 1.3 in transit. AES-256 at rest.</h2>
             </div>
             <div className="md:col-span-2 space-y-4 text-sm text-[#E8E4DC]/55 font-light leading-relaxed">
               <div className="grid grid-cols-2 gap-6">
                 <div className="border border-white/8 p-5">
-                  <p className="text-[10px] uppercase tracking-[0.2em] text-[#E8E4DC]/35 mb-2">In Transit</p>
-                  <p className="font-serif text-base text-[#E8E4DC]/80 mb-2">TLS 1.3</p>
+                  <p className="text-xs font-medium text-[#E8E4DC]/35 mb-2">In Transit</p>
+                  <p className="font-sans text-base text-[#E8E4DC]/80 mb-2">TLS 1.3</p>
                   <p className="text-xs text-[#E8E4DC]/45 leading-relaxed">All API traffic between your browser and Stratix servers is encrypted using TLS 1.3, the current industry standard.</p>
                 </div>
                 <div className="border border-white/8 p-5">
-                  <p className="text-[10px] uppercase tracking-[0.2em] text-[#E8E4DC]/35 mb-2">At Rest</p>
-                  <p className="font-serif text-base text-[#E8E4DC]/80 mb-2">AES-256</p>
+                  <p className="text-xs font-medium text-[#E8E4DC]/35 mb-2">At Rest</p>
+                  <p className="font-sans text-base text-[#E8E4DC]/80 mb-2">AES-256</p>
                   <p className="text-xs text-[#E8E4DC]/45 leading-relaxed">All data stored in our systems, including your company profile, reports, and chat history, is encrypted at rest using AES-256.</p>
                 </div>
               </div>
@@ -83,8 +83,8 @@ export function Security() {
         <section className="border-b border-white/8 pb-12 mb-12">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             <div>
-              <p className="text-[10px] uppercase tracking-[0.25em] text-[#E8E4DC]/35 mb-3">Compliance</p>
-              <h2 className="font-serif text-2xl font-light text-[#E8E4DC]">SOC 2 Type II</h2>
+              <p className="text-xs font-medium text-[#E8E4DC]/35 mb-3">Compliance</p>
+              <h2 className="font-sans text-2xl font-light text-[#E8E4DC]">SOC 2 Type II</h2>
             </div>
             <div className="md:col-span-2 space-y-4 text-sm text-[#E8E4DC]/55 font-light leading-relaxed">
               <div className="flex items-start gap-4 border border-[#E8E4DC]/10 bg-white/2 p-5">
@@ -104,15 +104,15 @@ export function Security() {
         <section className="border-b border-white/8 pb-12 mb-12">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             <div>
-              <p className="text-[10px] uppercase tracking-[0.25em] text-[#E8E4DC]/35 mb-3">Access Control</p>
-              <h2 className="font-serif text-2xl font-light text-[#E8E4DC]">SSO & RBAC</h2>
+              <p className="text-xs font-medium text-[#E8E4DC]/35 mb-3">Access Control</p>
+              <h2 className="font-sans text-2xl font-light text-[#E8E4DC]">SSO & RBAC</h2>
             </div>
             <div className="md:col-span-2 space-y-4">
               <div className="grid grid-cols-2 gap-6">
                 <div className="border border-white/8 p-5">
                   <div className="flex items-center gap-2 mb-3">
-                    <p className="text-[10px] uppercase tracking-[0.2em] text-[#E8E4DC]/35">Single Sign-On</p>
-                    <span className="text-[9px] uppercase tracking-wider text-[#C9A96E] border border-[#C9A96E]/30 px-2 py-0.5">Enterprise</span>
+                    <p className="text-xs font-medium text-[#E8E4DC]/35">Single Sign-On</p>
+                    <span className="text-[9px] text-[#C9A96E] border border-[#C9A96E]/30 px-2 py-0.5">Enterprise</span>
                   </div>
                   <p className="text-sm text-[#E8E4DC]/55 font-light leading-relaxed">
                     SAML 2.0 and OIDC-based SSO is available on the Enterprise plan. Integrate with Okta, Azure AD, Google Workspace, and other identity providers.
@@ -120,8 +120,8 @@ export function Security() {
                 </div>
                 <div className="border border-white/8 p-5">
                   <div className="flex items-center gap-2 mb-3">
-                    <p className="text-[10px] uppercase tracking-[0.2em] text-[#E8E4DC]/35">Role-Based Access</p>
-                    <span className="text-[9px] uppercase tracking-wider text-[#E8E4DC]/60 border border-white/15 px-2 py-0.5">Available</span>
+                    <p className="text-xs font-medium text-[#E8E4DC]/35">Role-Based Access</p>
+                    <span className="text-[9px] text-[#E8E4DC]/60 border border-white/15 px-2 py-0.5">Available</span>
                   </div>
                   <p className="text-sm text-[#E8E4DC]/55 font-light leading-relaxed">
                     Granular RBAC controls allow administrators to define what each team member can view, commission, and share across reports and strategic sessions.
@@ -136,8 +136,8 @@ export function Security() {
         <section className="border-b border-white/8 pb-12 mb-12">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             <div>
-              <p className="text-[10px] uppercase tracking-[0.25em] text-[#E8E4DC]/35 mb-3">Retention & Deletion</p>
-              <h2 className="font-serif text-2xl font-light text-[#E8E4DC]">You control your data lifecycle.</h2>
+              <p className="text-xs font-medium text-[#E8E4DC]/35 mb-3">Retention & Deletion</p>
+              <h2 className="font-sans text-2xl font-light text-[#E8E4DC]">You control your data lifecycle.</h2>
             </div>
             <div className="md:col-span-2 space-y-4 text-sm text-[#E8E4DC]/55 font-light leading-relaxed">
               <p>
@@ -154,8 +154,8 @@ export function Security() {
         <section className="pb-4">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             <div>
-              <p className="text-[10px] uppercase tracking-[0.25em] text-[#E8E4DC]/35 mb-3">Security Inquiries</p>
-              <h2 className="font-serif text-2xl font-light text-[#E8E4DC]">Contact our security team.</h2>
+              <p className="text-xs font-medium text-[#E8E4DC]/35 mb-3">Security Inquiries</p>
+              <h2 className="font-sans text-2xl font-light text-[#E8E4DC]">Contact our security team.</h2>
             </div>
             <div className="md:col-span-2 space-y-4 text-sm text-[#E8E4DC]/55 font-light leading-relaxed">
               <p>
@@ -163,7 +163,7 @@ export function Security() {
               </p>
               <a
                 href="mailto:security@stratix.ai"
-                className="inline-flex items-center gap-2 border border-[#E8E4DC]/20 px-6 py-3 text-[#E8E4DC]/70 hover:text-[#E8E4DC] hover:border-[#E8E4DC]/40 transition-colors text-xs uppercase tracking-widest"
+                className="inline-flex items-center gap-2 border border-[#E8E4DC]/20 px-6 py-3 text-[#E8E4DC]/70 hover:text-[#E8E4DC] hover:border-[#E8E4DC]/40 transition-colors text-xs font-medium"
               >
                 security@stratix.ai
               </a>
@@ -179,9 +179,9 @@ export function Security() {
             &copy; {new Date().getFullYear()} Stratix Intelligence Platform. All rights reserved.
           </p>
           <nav className="flex items-center gap-6">
-            <Link href="/security" className="text-xs text-[#E8E4DC]/40 hover:text-[#E8E4DC]/70 transition-colors uppercase tracking-wider">Security</Link>
-            <a href="#" className="text-xs text-[#E8E4DC]/40 hover:text-[#E8E4DC]/70 transition-colors uppercase tracking-wider">Privacy Policy</a>
-            <a href="#" className="text-xs text-[#E8E4DC]/40 hover:text-[#E8E4DC]/70 transition-colors uppercase tracking-wider">Terms</a>
+            <Link href="/security" className="text-xs text-[#E8E4DC]/40 hover:text-[#E8E4DC]/70 transition-colors">Security</Link>
+            <a href="#" className="text-xs text-[#E8E4DC]/40 hover:text-[#E8E4DC]/70 transition-colors">Privacy Policy</a>
+            <a href="#" className="text-xs text-[#E8E4DC]/40 hover:text-[#E8E4DC]/70 transition-colors">Terms</a>
           </nav>
         </div>
       </footer>

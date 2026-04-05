@@ -127,7 +127,7 @@ export function ShareDialog({ resourceType, resourceId, isOpen, onClose }: Share
             <button
               onClick={handleShare}
               disabled={loading || !email.trim()}
-              className="px-3 py-1.5 text-xs uppercase tracking-widest"
+              className="px-3 py-1.5 text-xs font-medium"
               style={{
                 border: "1px solid var(--workspace-fg)",
                 color: "var(--workspace-fg)",

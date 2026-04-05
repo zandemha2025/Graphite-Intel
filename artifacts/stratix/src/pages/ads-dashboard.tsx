@@ -187,7 +187,7 @@ export function AdsDashboard() {
       {overview && (
         <div>
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-sm font-medium text-[#E8E4DC]/60 uppercase tracking-wider">
+            <h2 className="text-sm font-medium text-[#E8E4DC]/60">
               Performance Overview
             </h2>
             <div className="flex gap-2">
@@ -229,7 +229,7 @@ export function AdsDashboard() {
       {/* Connected Accounts */}
       <div>
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-sm font-medium text-[#E8E4DC]/60 uppercase tracking-wider">
+          <h2 className="text-sm font-medium text-[#E8E4DC]/60">
             Ad Accounts ({accounts.length})
           </h2>
           <button
@@ -253,7 +253,7 @@ export function AdsDashboard() {
             </p>
             <button
               onClick={() => setShowConnectDialog(true)}
-              className="px-4 py-2 text-xs text-[#C9A55A] border border-[#C9A55A]/40 hover:bg-[#C9A55A]/10 transition-colors uppercase tracking-widest"
+              className="px-4 py-2 text-xs text-[#C9A55A] border border-[#C9A55A]/40 hover:bg-[#C9A55A]/10 transition-colors font-medium"
             >
               + Connect Account
             </button>
@@ -296,7 +296,7 @@ export function AdsDashboard() {
       {/* Campaigns */}
       <div>
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-sm font-medium text-[#E8E4DC]/60 uppercase tracking-wider">
+          <h2 className="text-sm font-medium text-[#E8E4DC]/60">
             Campaigns ({campaigns.length})
           </h2>
         </div>

@@ -42,7 +42,7 @@ export function SessionHistory({
       >
         {!collapsed && (
           <span
-            className="text-[10px] uppercase tracking-widest font-semibold"
+            className="text-xs font-medium font-semibold"
             style={{ color: "#9CA3AF" }}
           >
             Sessions

@@ -51,7 +51,7 @@ function SourcesPanel({ sources }: { sources: SourceChunk[] }) {
         <div className="flex items-center gap-2">
           <BookOpen className="w-3 h-3" style={{ color: "#9CA3AF" }} />
           <span
-            className="text-[10px] uppercase tracking-widest"
+            className="text-xs font-medium"
             style={{ color: "#9CA3AF" }}
           >
             Sources ({sources.length})

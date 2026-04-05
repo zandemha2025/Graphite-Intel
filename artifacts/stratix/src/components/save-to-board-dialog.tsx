@@ -126,7 +126,7 @@ export function SaveToBoardDialog({
             className="rounded-lg px-3 py-2"
             style={{ background: "#F9FAFB", border: "1px solid #E5E7EB" }}
           >
-            <p className="text-[10px] uppercase tracking-wider font-medium" style={{ color: "#9CA3AF" }}>
+            <p className="text-xs font-medium" style={{ color: "#9CA3AF" }}>
               Question
             </p>
             <p className="text-xs mt-0.5 line-clamp-2" style={{ color: "#111827" }}>

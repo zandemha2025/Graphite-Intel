@@ -48,7 +48,7 @@ function SourcesCollapsible({ sources }: { sources: SourceChunk[] }) {
         <div className="flex items-center gap-2">
           <BookOpen className="w-3 h-3" style={{ color: "var(--explore-muted, #9CA3AF)" }} />
           <span
-            className="text-[10px] uppercase tracking-widest"
+            className="text-xs font-medium"
             style={{ color: "var(--explore-muted, #9CA3AF)" }}
           >
             Sources ({sources.length})
@@ -136,7 +136,7 @@ export function InsightCellFallback({
         </div>
         <div className="flex-1 min-w-0">
           <span
-            className="text-[10px] uppercase tracking-widest font-semibold"
+            className="text-xs font-medium font-semibold"
             style={{ color: "var(--explore-muted, #9CA3AF)" }}
           >
             Question {index + 1}

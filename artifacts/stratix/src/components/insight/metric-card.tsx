@@ -57,7 +57,7 @@ export function MetricCard({
       )}
 
       <p
-        className="text-[11px] font-medium uppercase tracking-wider mb-1 relative z-10"
+        className="text-[11px] font-medium mb-1 relative z-10"
         style={{ color: "var(--insight-muted, #6B7280)" }}
       >
         {label}

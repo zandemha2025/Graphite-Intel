@@ -120,7 +120,7 @@ export function ContextPage() {
         style={{ borderColor: "#E5E7EB" }}
       >
         <h1
-          className="font-serif text-5xl font-light mb-2"
+          className="font-sans text-2xl font-semibold tracking-tight mb-2"
           style={{ color: "#111827" }}
         >
           Context
@@ -182,8 +182,8 @@ export function ContextPage() {
                 gap: "7px",
                 padding: "11px 20px",
                 fontSize: "12px",
-                textTransform: "uppercase",
-                letterSpacing: "0.1em",
+                
+                letterSpacing: "0.01em",
                 border: "none",
                 borderBottom: `2px solid ${active ? "#4F46E5" : "transparent"}`,
                 background: "transparent",

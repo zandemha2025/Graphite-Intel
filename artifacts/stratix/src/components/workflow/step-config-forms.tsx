@@ -26,7 +26,7 @@ const labelStyle: React.CSSProperties = {
 function Label({ children }: { children: React.ReactNode }) {
   return (
     <label
-      className="text-xs uppercase tracking-widest mb-1.5 block"
+      className="text-xs font-medium mb-1.5 block"
       style={labelStyle}
     >
       {children}
@@ -519,7 +519,7 @@ export function StepConfigForm({
       return (
         <div>
           <label
-            className="text-xs uppercase tracking-widest mb-2 block"
+            className="text-xs font-medium mb-2 block"
             style={labelStyle}
           >
             Configuration (JSON)

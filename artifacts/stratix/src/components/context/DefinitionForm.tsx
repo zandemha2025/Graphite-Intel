@@ -63,8 +63,8 @@ export function DefinitionForm({ initial, onSave, onClose }: Props) {
 
   const labelStyle: React.CSSProperties = {
     fontSize: "10px",
-    textTransform: "uppercase",
-    letterSpacing: "0.15em",
+    
+    letterSpacing: "0.01em",
     color: "#6B7280",
     display: "block",
     marginBottom: "6px",

@@ -54,7 +54,7 @@ export function TriggerConfigSection({
   return (
     <div className="space-y-4">
       <h2
-        className="text-[10px] uppercase tracking-[0.25em]"
+        className="text-xs font-medium"
         style={{ color: "var(--workspace-muted)" }}
       >
         Trigger
@@ -104,7 +104,7 @@ export function TriggerConfigSection({
           style={{ border: "1px solid var(--workspace-border)", background: "var(--workspace-muted-bg)" }}
         >
           <label
-            className="text-xs uppercase tracking-widest mb-1.5 block"
+            className="text-xs font-medium mb-1.5 block"
             style={{ color: "var(--workspace-muted)" }}
           >
             Schedule
@@ -135,7 +135,7 @@ export function TriggerConfigSection({
           </div>
           <div>
             <label
-              className="text-[10px] uppercase tracking-widest mb-1 block"
+              className="text-xs font-medium mb-1 block"
               style={{ color: "var(--workspace-muted)" }}
             >
               Cron Expression
@@ -163,7 +163,7 @@ export function TriggerConfigSection({
         >
           <div>
             <label
-              className="text-xs uppercase tracking-widest mb-1.5 block"
+              className="text-xs font-medium mb-1.5 block"
               style={{ color: "var(--workspace-muted)" }}
             >
               Connector / Data Source
@@ -187,7 +187,7 @@ export function TriggerConfigSection({
           </div>
           <div>
             <label
-              className="text-[10px] uppercase tracking-widest mb-1 block"
+              className="text-xs font-medium mb-1 block"
               style={{ color: "var(--workspace-muted)" }}
             >
               Data Type (optional)
@@ -215,7 +215,7 @@ export function TriggerConfigSection({
         >
           <div>
             <label
-              className="text-xs uppercase tracking-widest mb-1.5 block"
+              className="text-xs font-medium mb-1.5 block"
               style={{ color: "var(--workspace-muted)" }}
             >
               Metric
@@ -236,7 +236,7 @@ export function TriggerConfigSection({
           <div className="grid grid-cols-2 gap-3">
             <div>
               <label
-                className="text-[10px] uppercase tracking-widest mb-1 block"
+                className="text-xs font-medium mb-1 block"
                 style={{ color: "var(--workspace-muted)" }}
               >
                 Condition
@@ -257,7 +257,7 @@ export function TriggerConfigSection({
             </div>
             <div>
               <label
-                className="text-[10px] uppercase tracking-widest mb-1 block"
+                className="text-xs font-medium mb-1 block"
                 style={{ color: "var(--workspace-muted)" }}
               >
                 Value

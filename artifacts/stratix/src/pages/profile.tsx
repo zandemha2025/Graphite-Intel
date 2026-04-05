@@ -214,7 +214,7 @@ export function Profile() {
       {/* User Profile Section */}
       {authUser && (
         <div className="pb-6 border-b" style={{ borderColor: "var(--workspace-border)" }}>
-          <h2 className="font-serif text-2xl font-light mb-4" style={{ color: "var(--workspace-fg)" }}>Your Profile</h2>
+          <h2 className="font-sans text-2xl font-light mb-4" style={{ color: "var(--workspace-fg)" }}>Your Profile</h2>
           <div className="flex items-center gap-4">
             <Avatar className="h-14 w-14 border" style={{ borderColor: "var(--workspace-border)" }}>
               <AvatarImage src={(authUser as any).profileImageUrl || undefined} />
@@ -234,7 +234,7 @@ export function Profile() {
               {(authUser as any).orgRole && (
                 <div className="mt-1">
                   <span
-                    className="text-[10px] uppercase tracking-wider px-2 py-0.5"
+                    className="text-xs font-medium px-2 py-0.5"
                     style={{ border: "1px solid var(--workspace-border)", color: "var(--workspace-muted)" }}
                   >
                     {(authUser as any).orgRole}
@@ -249,7 +249,7 @@ export function Profile() {
       <div className="pb-6 border-b" style={{ borderColor: "var(--workspace-border)" }}>
         <div className="flex items-start justify-between gap-4">
           <div>
-            <h1 className="font-serif text-4xl font-light mb-2" style={{ color: "var(--workspace-fg)" }}>Company Profile</h1>
+            <h1 className="font-sans text-2xl font-semibold tracking-tight mb-2" style={{ color: "var(--workspace-fg)" }}>Company Profile</h1>
             <p className="text-sm" style={{ color: "var(--workspace-muted)" }}>
               This context is injected into every AI conversation and report. Keep it current for the best results.
             </p>
@@ -259,7 +259,7 @@ export function Profile() {
               type="button"
               onClick={handleRefreshIntelligence}
               disabled={refreshStatus.active}
-              className="flex items-center gap-2 px-4 py-2 text-xs uppercase tracking-widest transition-colors disabled:opacity-40 disabled:cursor-not-allowed flex-shrink-0"
+              className="flex items-center gap-2 px-4 py-2 text-xs font-medium transition-colors disabled:opacity-40 disabled:cursor-not-allowed flex-shrink-0"
               style={{ border: "1px solid var(--workspace-border)", color: "var(--workspace-muted)", background: "#FFFFFF" }}
               data-testid="btn-refresh-intelligence"
             >
@@ -282,7 +282,7 @@ export function Profile() {
           {refreshStatus.lines.map((line, i) => (
             <div key={i} className="flex items-center gap-3 animate-in fade-in slide-in-from-bottom-1 duration-400">
               <div className="h-px w-4 flex-shrink-0" style={{ background: "var(--workspace-muted)" }} />
-              <span className="text-sm font-serif" style={{ color: "var(--workspace-fg)" }}>{line}</span>
+              <span className="text-sm font-sans" style={{ color: "var(--workspace-fg)" }}>{line}</span>
             </div>
           ))}
         </div>
@@ -290,8 +290,8 @@ export function Profile() {
 
       {profile?.researchSummary && !refreshStatus.active && (
         <div className="p-5" style={{ border: "1px solid var(--workspace-border)", background: "#FFFFFF" }}>
-          <p className="text-[10px] uppercase tracking-[0.2em] mb-3" style={{ color: "var(--workspace-muted)" }}>Intelligence Summary</p>
-          <p className="text-sm leading-relaxed font-serif" style={{ color: "var(--workspace-fg)" }}>{profile.researchSummary}</p>
+          <p className="text-xs font-medium mb-3" style={{ color: "var(--workspace-muted)" }}>Intelligence Summary</p>
+          <p className="text-sm leading-relaxed font-sans" style={{ color: "var(--workspace-fg)" }}>{profile.researchSummary}</p>
           {profile.companyUrl && (
             <p className="text-[10px] mt-3" style={{ color: "var(--workspace-muted)", opacity: 0.6 }}>Source: {profile.companyUrl}</p>
           )}
@@ -301,20 +301,20 @@ export function Profile() {
       <form onSubmit={handleSubmit} className="space-y-8">
         <div className="space-y-5">
           <div className="space-y-2">
-            <label className="text-[10px] uppercase tracking-[0.2em]" style={{ color: "var(--workspace-muted)" }}>Company Name</label>
+            <label className="text-xs font-medium" style={{ color: "var(--workspace-muted)" }}>Company Name</label>
             <input
               type="text"
               value={companyName}
               onChange={(e) => setCompanyName(e.target.value)}
               required
-              className="w-full py-2.5 text-base font-serif focus:outline-none transition-colors"
+              className="w-full py-2.5 text-base font-sans focus:outline-none transition-colors"
               style={{ background: "transparent", borderBottom: "1px solid var(--workspace-border)", color: "var(--workspace-fg)" }}
               data-testid="input-company-name"
             />
           </div>
 
           <div className="space-y-2">
-            <label className="text-[10px] uppercase tracking-[0.2em]" style={{ color: "var(--workspace-muted)" }}>Industry</label>
+            <label className="text-xs font-medium" style={{ color: "var(--workspace-muted)" }}>Industry</label>
             <div className="grid grid-cols-3 gap-1.5 mt-2">
               {INDUSTRIES.map((ind) => (
                 <button
@@ -337,7 +337,7 @@ export function Profile() {
 
         <div className="grid grid-cols-2 gap-6">
           <div className="space-y-2">
-            <label className="text-[10px] uppercase tracking-[0.2em]" style={{ color: "var(--workspace-muted)" }}>Stage</label>
+            <label className="text-xs font-medium" style={{ color: "var(--workspace-muted)" }}>Stage</label>
             <div className="space-y-1 mt-2">
               {STAGES.map((s) => (
                 <button
@@ -357,7 +357,7 @@ export function Profile() {
             </div>
           </div>
           <div className="space-y-2">
-            <label className="text-[10px] uppercase tracking-[0.2em]" style={{ color: "var(--workspace-muted)" }}>Annual Revenue</label>
+            <label className="text-xs font-medium" style={{ color: "var(--workspace-muted)" }}>Annual Revenue</label>
             <div className="space-y-1 mt-2">
               {REVENUE_RANGES.map((r) => (
                 <button
@@ -380,7 +380,7 @@ export function Profile() {
 
         <div className="space-y-5">
           <div className="space-y-2">
-            <label className="text-[10px] uppercase tracking-[0.2em]" style={{ color: "var(--workspace-muted)" }}>
+            <label className="text-xs font-medium" style={{ color: "var(--workspace-muted)" }}>
               Key Competitors <span className="normal-case tracking-normal opacity-60">(optional)</span>
             </label>
             <textarea
@@ -394,7 +394,7 @@ export function Profile() {
             />
           </div>
           <div className="space-y-2">
-            <label className="text-[10px] uppercase tracking-[0.2em]" style={{ color: "var(--workspace-muted)" }}>
+            <label className="text-xs font-medium" style={{ color: "var(--workspace-muted)" }}>
               Strategic Priorities <span className="normal-case tracking-normal opacity-60">(optional)</span>
             </label>
             <textarea
@@ -421,7 +421,7 @@ export function Profile() {
           <button
             type="submit"
             disabled={saveProfile.isPending || !companyName || !industry || !stage || !revenueRange}
-            className="px-8 py-2.5 text-xs uppercase tracking-widest font-medium transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+            className="px-8 py-2.5 text-xs font-medium transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
             style={{ background: "var(--workspace-fg)", color: "#FFFFFF" }}
             data-testid="btn-save-profile"
           >

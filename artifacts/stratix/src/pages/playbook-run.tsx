@@ -182,7 +182,7 @@ export function PlaybookRun() {
       {/* Back */}
       <button
         onClick={() => navigate("/playbooks")}
-        className="flex items-center gap-1.5 text-xs uppercase tracking-widest"
+        className="flex items-center gap-1.5 text-xs font-medium"
         style={{ color: "var(--workspace-muted)" }}
       >
         <ArrowLeft className="h-3 w-3" />
@@ -191,11 +191,11 @@ export function PlaybookRun() {
 
       {/* Header */}
       <div>
-        <h1 className="font-serif text-2xl font-light mb-2" style={{ color: "var(--workspace-fg)" }}>{run.title}</h1>
+        <h1 className="font-sans text-2xl font-light mb-2" style={{ color: "var(--workspace-fg)" }}>{run.title}</h1>
         <div className="flex items-center gap-4 text-xs" style={{ color: "var(--workspace-muted)" }}>
           <span>{playbook.name}</span>
           <span>{run.completedSteps}/{run.totalSteps} steps</span>
-          <span className="uppercase tracking-wider px-1.5 py-0.5" style={{
+          <span className="font-medium px-1.5 py-0.5" style={{
             border: "1px solid var(--workspace-border)",
             color: run.status === "completed" ? "#10b981" : run.status === "failed" ? "#ef4444" : "var(--workspace-muted)",
           }}>
@@ -237,7 +237,7 @@ export function PlaybookRun() {
                     <span className="text-sm" style={{ color: isComplete ? "var(--workspace-muted)" : "var(--workspace-fg)", textDecoration: isComplete ? "line-through" : undefined }}>
                       {step.title}
                     </span>
-                    <span className="text-[9px] uppercase tracking-wider px-1 py-0.5" style={{ border: "1px solid var(--workspace-border)", color: "var(--workspace-muted)" }}>
+                    <span className="text-[9px] px-1 py-0.5" style={{ border: "1px solid var(--workspace-border)", color: "var(--workspace-muted)" }}>
                       {typeLabels[step.type] ?? step.type}
                     </span>
                     {step.isRequired && (
@@ -255,7 +255,7 @@ export function PlaybookRun() {
                   {/* Type-specific config info */}
                   {step.type === "extract" && step.config.extractionFields && step.config.extractionFields.length > 0 && (
                     <div className="mb-3 p-2" style={{ background: "var(--workspace-muted-bg)" }}>
-                      <p className="text-[10px] uppercase tracking-wider mb-1" style={{ color: "var(--workspace-muted)" }}>Fields to Extract</p>
+                      <p className="text-xs font-medium mb-1" style={{ color: "var(--workspace-muted)" }}>Fields to Extract</p>
                       <div className="flex flex-wrap gap-1">
                         {step.config.extractionFields!.map((field: string) => (
                           <span key={field} className="text-xs px-1.5 py-0.5 font-mono" style={{ border: "1px solid var(--workspace-border)", color: "var(--workspace-fg)" }}>{field}</span>
@@ -266,7 +266,7 @@ export function PlaybookRun() {
 
                   {step.type === "flag" && step.config.flagConditions && step.config.flagConditions!.length > 0 && (
                     <div className="mb-3 p-2" style={{ background: "var(--workspace-muted-bg)" }}>
-                      <p className="text-[10px] uppercase tracking-wider mb-1" style={{ color: "var(--workspace-muted)" }}>Conditions</p>
+                      <p className="text-xs font-medium mb-1" style={{ color: "var(--workspace-muted)" }}>Conditions</p>
                       <ul className="text-xs space-y-1" style={{ color: "var(--workspace-fg)" }}>
                         {step.config.flagConditions!.map((c: string, ci: number) => (
                           <li key={ci} className="flex items-center gap-1.5">
@@ -280,7 +280,7 @@ export function PlaybookRun() {
 
                   {step.type === "compare" && step.config.comparisonDocTypes && step.config.comparisonDocTypes!.length > 0 && (
                     <div className="mb-3 p-2" style={{ background: "var(--workspace-muted-bg)" }}>
-                      <p className="text-[10px] uppercase tracking-wider mb-1" style={{ color: "var(--workspace-muted)" }}>Comparing</p>
+                      <p className="text-xs font-medium mb-1" style={{ color: "var(--workspace-muted)" }}>Comparing</p>
                       <div className="flex flex-wrap gap-1">
                         {step.config.comparisonDocTypes!.map((t: string) => (
                           <span key={t} className="text-xs px-1.5 py-0.5" style={{ border: "1px solid var(--workspace-border)", color: "var(--workspace-fg)" }}>{t}</span>
@@ -291,7 +291,7 @@ export function PlaybookRun() {
 
                   {step.type === "review" && step.config.aiPrompt && (
                     <div className="mb-3 p-2" style={{ background: "var(--workspace-muted-bg)" }}>
-                      <p className="text-[10px] uppercase tracking-wider mb-1" style={{ color: "var(--workspace-muted)" }}>AI Review Prompt</p>
+                      <p className="text-xs font-medium mb-1" style={{ color: "var(--workspace-muted)" }}>AI Review Prompt</p>
                       <p className="text-xs italic" style={{ color: "var(--workspace-fg)" }}>{step.config.aiPrompt}</p>
                     </div>
                   )}
@@ -306,7 +306,7 @@ export function PlaybookRun() {
 
                   {result?.result != null && (
                     <div className="mb-3 p-2" style={{ background: "var(--workspace-muted-bg)" }}>
-                      <p className="text-[10px] uppercase tracking-wider mb-1" style={{ color: "var(--workspace-muted)" }}>Result</p>
+                      <p className="text-xs font-medium mb-1" style={{ color: "var(--workspace-muted)" }}>Result</p>
                       <pre className="text-xs overflow-auto whitespace-pre-wrap" style={{ color: "var(--workspace-fg)" }}>
                         {typeof result.result === "string" ? result.result : JSON.stringify(result.result as object, null, 2)}
                       </pre>
@@ -329,7 +329,7 @@ export function PlaybookRun() {
                           <>
                             <button
                               onClick={() => handleReviewAction(i, true)}
-                              className="flex items-center gap-1.5 px-3 py-1.5 text-xs uppercase tracking-widest"
+                              className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium"
                               style={{ border: "1px solid #10b981", color: "#10b981", background: "#FFFFFF" }}
                             >
                               <ThumbsUp className="h-3 w-3" />
@@ -337,7 +337,7 @@ export function PlaybookRun() {
                             </button>
                             <button
                               onClick={() => handleReviewAction(i, false)}
-                              className="flex items-center gap-1.5 px-3 py-1.5 text-xs uppercase tracking-widest"
+                              className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium"
                               style={{ border: "1px solid #ef4444", color: "#ef4444", background: "#FFFFFF" }}
                             >
                               <ThumbsDown className="h-3 w-3" />
@@ -347,7 +347,7 @@ export function PlaybookRun() {
                         ) : step.type === "checklist" ? (
                           <button
                             onClick={() => handleCompleteStep(i)}
-                            className="flex items-center gap-1.5 px-3 py-1.5 text-xs uppercase tracking-widest"
+                            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium"
                             style={{ border: "1px solid var(--workspace-fg)", color: "var(--workspace-fg)", background: "#FFFFFF" }}
                           >
                             <CheckSquare className="h-3 w-3" />
@@ -356,7 +356,7 @@ export function PlaybookRun() {
                         ) : (
                           <button
                             onClick={() => handleCompleteStep(i)}
-                            className="flex items-center gap-1.5 px-3 py-1.5 text-xs uppercase tracking-widest"
+                            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium"
                             style={{ border: "1px solid var(--workspace-fg)", color: "var(--workspace-fg)", background: "#FFFFFF" }}
                           >
                             <CheckCircle className="h-3 w-3" />
@@ -366,7 +366,7 @@ export function PlaybookRun() {
                         {!step.isRequired && (
                           <button
                             onClick={() => handleSkipStep(i)}
-                            className="flex items-center gap-1.5 px-3 py-1.5 text-xs uppercase tracking-widest"
+                            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium"
                             style={{ border: "1px solid var(--workspace-border)", color: "var(--workspace-muted)", background: "#FFFFFF" }}
                           >
                             <SkipForward className="h-3 w-3" />

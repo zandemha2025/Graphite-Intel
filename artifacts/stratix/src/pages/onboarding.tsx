@@ -38,9 +38,9 @@ function Logo() {
   return (
     <div className="flex items-center gap-2.5">
       <div className="h-6 w-6 border border-[#E8E4DC]/30 flex items-center justify-center">
-        <span className="font-serif font-semibold text-[#E8E4DC] text-xs leading-none">S</span>
+        <span className="font-sans font-semibold text-[#E8E4DC] text-xs leading-none">S</span>
       </div>
-      <span className="font-serif font-medium text-base uppercase tracking-tight text-[#E8E4DC]">Stratix</span>
+      <span className="font-sans font-medium text-base tracking-tight text-[#E8E4DC]">Stratix</span>
     </div>
   );
 }
@@ -64,7 +64,7 @@ function UrlEntryPhase({ onSubmit, onSkip }: { onSubmit: (url: string) => void; 
         <form onSubmit={handleSubmit} className="w-full max-w-lg">
           <div className="mb-10">
             <div className="flex items-center gap-3 mb-6">
-              <span className="text-[10px] font-medium uppercase tracking-[0.25em] text-[#E8E4DC]/40 border border-[#E8E4DC]/15 px-3 py-1">
+              <span className="text-xs font-medium text-[#E8E4DC]/40 border border-[#E8E4DC]/15 px-3 py-1">
                 Step 3 of 3
               </span>
               <div className="flex items-center gap-1.5">
@@ -73,7 +73,7 @@ function UrlEntryPhase({ onSubmit, onSkip }: { onSubmit: (url: string) => void; 
                 <div className="h-1 w-6 bg-[#E8E4DC]/60" />
               </div>
             </div>
-            <h1 className="font-serif text-5xl font-light text-[#E8E4DC] mb-4 leading-tight">
+            <h1 className="font-sans text-2xl font-semibold tracking-tight text-[#E8E4DC] mb-4 leading-tight">
               Enter your company's website.
             </h1>
             <p className="text-sm text-[#E8E4DC]/45 leading-relaxed">
@@ -83,14 +83,14 @@ function UrlEntryPhase({ onSubmit, onSkip }: { onSubmit: (url: string) => void; 
 
           <div className="space-y-6">
             <div className="space-y-2">
-              <label className="text-[10px] uppercase tracking-[0.2em] text-[#E8E4DC]/40">Company Website</label>
+              <label className="text-xs font-medium text-[#E8E4DC]/40">Company Website</label>
               <input
                 autoFocus
                 type="text"
                 value={url}
                 onChange={(e) => setUrl(e.target.value)}
                 placeholder="e.g. acmecorp.com"
-                className="w-full bg-transparent border-b border-white/20 py-3 text-[#E8E4DC] text-xl font-serif placeholder:text-[#E8E4DC]/20 focus:outline-none focus:border-[#E8E4DC]/60 transition-colors"
+                className="w-full bg-transparent border-b border-white/20 py-3 text-[#E8E4DC] text-xl font-sans placeholder:text-[#E8E4DC]/20 focus:outline-none focus:border-[#E8E4DC]/60 transition-colors"
                 data-testid="input-company-url"
               />
             </div>
@@ -106,7 +106,7 @@ function UrlEntryPhase({ onSubmit, onSkip }: { onSubmit: (url: string) => void; 
               <button
                 type="submit"
                 disabled={!url.trim()}
-                className="bg-[#E8E4DC] text-[#0D0C0B] px-8 py-3 text-xs uppercase tracking-widest font-medium hover:bg-[#D4CEC5] transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                className="bg-[#E8E4DC] text-[#0D0C0B] px-8 py-3 text-xs font-medium hover:bg-[#D4CEC5] transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
                 data-testid="btn-start-research"
               >
                 Begin Research
@@ -235,8 +235,8 @@ function ResearchingPhase({ url, onComplete, onError }: {
       <main className="flex-1 flex items-center justify-center px-8">
         <div className="w-full max-w-lg">
           <div className="mb-12">
-            <p className="text-[10px] uppercase tracking-[0.25em] text-[#E8E4DC]/35 mb-4">Researching</p>
-            <h1 className="font-serif text-4xl font-light text-[#E8E4DC] leading-tight">
+            <p className="text-xs font-medium text-[#E8E4DC]/35 mb-4">Researching</p>
+            <h1 className="font-sans text-2xl font-semibold tracking-tight text-[#E8E4DC] leading-tight">
               Building your intelligence profile.
             </h1>
           </div>
@@ -255,7 +255,7 @@ function ResearchingPhase({ url, onComplete, onError }: {
                 style={{ animationDelay: `${i * 100}ms` }}
               >
                 <div className="h-px w-6 bg-[#E8E4DC]/40 flex-shrink-0" />
-                <span className="text-base text-[#E8E4DC]/80 font-serif">{line.message}</span>
+                <span className="text-base text-[#E8E4DC]/80 font-sans">{line.message}</span>
               </div>
             ))}
           </div>
@@ -302,8 +302,8 @@ function ReviewPhase({ url, result, onSubmit, isSubmitting }: {
       <main className="flex-1 flex items-center justify-center px-8 py-12">
         <form onSubmit={handleSubmit} className="w-full max-w-2xl space-y-10 animate-in fade-in duration-500">
           <div>
-            <p className="text-[10px] uppercase tracking-[0.25em] text-[#E8E4DC]/35 mb-4">Intelligence Profile</p>
-            <h1 className="font-serif text-4xl font-light text-[#E8E4DC] mb-3">
+            <p className="text-xs font-medium text-[#E8E4DC]/35 mb-4">Intelligence Profile</p>
+            <h1 className="font-sans text-2xl font-semibold tracking-tight text-[#E8E4DC] mb-3">
               Here's what we found.
             </h1>
             <p className="text-sm text-[#E8E4DC]/45 leading-relaxed">
@@ -313,29 +313,29 @@ function ReviewPhase({ url, result, onSubmit, isSubmitting }: {
 
           {result.researchSummary && (
             <div className="border border-white/10 p-5 bg-white/[0.02]">
-              <p className="text-[10px] uppercase tracking-[0.2em] text-[#E8E4DC]/35 mb-3">Intelligence Summary</p>
-              <p className="text-sm text-[#E8E4DC]/70 leading-relaxed font-serif">{result.researchSummary}</p>
+              <p className="text-xs font-medium text-[#E8E4DC]/35 mb-3">Intelligence Summary</p>
+              <p className="text-sm text-[#E8E4DC]/70 leading-relaxed font-sans">{result.researchSummary}</p>
             </div>
           )}
 
           <div className="space-y-6">
-            <p className="text-[10px] uppercase tracking-[0.2em] text-[#E8E4DC]/35">Extracted Profile</p>
+            <p className="text-xs font-medium text-[#E8E4DC]/35">Extracted Profile</p>
 
             <div className="space-y-2">
-              <label className="text-[10px] uppercase tracking-[0.15em] text-[#E8E4DC]/40">Company Name</label>
+              <label className="text-xs font-medium text-[#E8E4DC]/40">Company Name</label>
               <input
                 type="text"
                 value={companyName}
                 onChange={(e) => setCompanyName(e.target.value)}
                 required
-                className="w-full bg-transparent border-b border-white/20 py-2.5 text-[#E8E4DC] text-base font-serif placeholder:text-[#E8E4DC]/20 focus:outline-none focus:border-[#E8E4DC]/50 transition-colors"
+                className="w-full bg-transparent border-b border-white/20 py-2.5 text-[#E8E4DC] text-base font-sans placeholder:text-[#E8E4DC]/20 focus:outline-none focus:border-[#E8E4DC]/50 transition-colors"
                 data-testid="input-company-name"
               />
             </div>
 
             <div className="grid grid-cols-2 gap-6">
               <div className="space-y-2">
-                <label className="text-[10px] uppercase tracking-[0.15em] text-[#E8E4DC]/40">Industry</label>
+                <label className="text-xs font-medium text-[#E8E4DC]/40">Industry</label>
                 <div className="space-y-1 mt-1">
                   {INDUSTRIES.map((ind) => (
                     <button
@@ -356,7 +356,7 @@ function ReviewPhase({ url, result, onSubmit, isSubmitting }: {
 
               <div className="space-y-4">
                 <div className="space-y-2">
-                  <label className="text-[10px] uppercase tracking-[0.15em] text-[#E8E4DC]/40">Stage</label>
+                  <label className="text-xs font-medium text-[#E8E4DC]/40">Stage</label>
                   <div className="space-y-1 mt-1">
                     {STAGES.map((s) => (
                       <button
@@ -376,7 +376,7 @@ function ReviewPhase({ url, result, onSubmit, isSubmitting }: {
                 </div>
 
                 <div className="space-y-2">
-                  <label className="text-[10px] uppercase tracking-[0.15em] text-[#E8E4DC]/40">Revenue Range</label>
+                  <label className="text-xs font-medium text-[#E8E4DC]/40">Revenue Range</label>
                   <div className="space-y-1 mt-1">
                     {REVENUE_RANGES.map((r) => (
                       <button
@@ -398,7 +398,7 @@ function ReviewPhase({ url, result, onSubmit, isSubmitting }: {
             </div>
 
             <div className="space-y-2">
-              <label className="text-[10px] uppercase tracking-[0.15em] text-[#E8E4DC]/40">
+              <label className="text-xs font-medium text-[#E8E4DC]/40">
                 Key Competitors <span className="normal-case tracking-normal text-[#E8E4DC]/25">(AI-identified)</span>
               </label>
               <textarea
@@ -411,7 +411,7 @@ function ReviewPhase({ url, result, onSubmit, isSubmitting }: {
             </div>
 
             <div className="space-y-2">
-              <label className="text-[10px] uppercase tracking-[0.15em] text-[#E8E4DC]/40">
+              <label className="text-xs font-medium text-[#E8E4DC]/40">
                 Strategic Priorities <span className="normal-case tracking-normal text-[#E8E4DC]/25">(AI-identified)</span>
               </label>
               <textarea
@@ -427,7 +427,7 @@ function ReviewPhase({ url, result, onSubmit, isSubmitting }: {
           {result.followUpQuestions && result.followUpQuestions.length > 0 && (
             <div className="space-y-5 border-t border-white/8 pt-8">
               <div>
-                <p className="text-[10px] uppercase tracking-[0.2em] text-[#E8E4DC]/35 mb-1">A few questions</p>
+                <p className="text-xs font-medium text-[#E8E4DC]/35 mb-1">A few questions</p>
                 <p className="text-xs text-[#E8E4DC]/40">Things we couldn't determine automatically. Answer what you can — these sharpen the AI's advice.</p>
               </div>
               {result.followUpQuestions.map((q, i) => (
@@ -449,7 +449,7 @@ function ReviewPhase({ url, result, onSubmit, isSubmitting }: {
             <button
               type="submit"
               disabled={isSubmitting || !companyName || !industry || !stage || !revenueRange}
-              className="bg-[#E8E4DC] text-[#0D0C0B] px-8 py-3 text-xs uppercase tracking-widest font-medium hover:bg-[#D4CEC5] transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+              className="bg-[#E8E4DC] text-[#0D0C0B] px-8 py-3 text-xs font-medium hover:bg-[#D4CEC5] transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
               data-testid="btn-enter-platform"
             >
               {isSubmitting ? "Saving..." : "Enter Platform"}

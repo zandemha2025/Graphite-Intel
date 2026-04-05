@@ -109,7 +109,7 @@ function DocumentPicker({
   return (
     <div className="absolute bottom-full left-0 mb-2 w-72 shadow-lg z-10" style={{ background: "#FFFFFF", border: "1px solid var(--workspace-border)" }}>
       <div className="flex items-center justify-between px-4 py-3 border-b" style={{ borderColor: "var(--workspace-border)" }}>
-        <span className="text-[10px] uppercase tracking-widest" style={{ color: "var(--workspace-muted)" }}>Attach Documents</span>
+        <span className="text-xs font-medium" style={{ color: "var(--workspace-muted)" }}>Attach Documents</span>
         <button onClick={onClose} style={{ color: "var(--workspace-muted)" }} className="hover:opacity-70 transition-opacity">
           <X className="w-3.5 h-3.5" />
         </button>
@@ -137,7 +137,7 @@ function DocumentPicker({
                 </div>
                 <FileText className="w-3 h-3 shrink-0" style={{ color: "var(--workspace-muted)" }} />
                 <span className="text-xs truncate">{doc.title}</span>
-                <span className="text-[10px] uppercase ml-auto shrink-0" style={{ color: "var(--workspace-muted)" }}>{doc.fileType}</span>
+                <span className="text-[11px] font-medium ml-auto shrink-0" style={{ color: "var(--workspace-muted)" }}>{doc.fileType}</span>
               </button>
             );
           })}
@@ -159,7 +159,7 @@ function SourcesPanel({ sources }: { sources: SourceChunk[] }) {
       >
         <div className="flex items-center gap-2">
           <BookOpen className="w-3 h-3" style={{ color: "var(--workspace-muted)" }} />
-          <span className="text-[10px] uppercase tracking-widest" style={{ color: "var(--workspace-muted)" }}>
+          <span className="text-xs font-medium" style={{ color: "var(--workspace-muted)" }}>
             Sources ({sources.length})
           </span>
         </div>
@@ -347,7 +347,7 @@ export function Chat() {
         <div className="p-3 border-b" style={{ borderColor: "rgba(255,255,255,0.08)" }}>
           <button
             onClick={handleCreateNew}
-            className="w-full flex items-center justify-center gap-2 py-2 text-xs uppercase tracking-widest transition-colors"
+            className="w-full flex items-center justify-center gap-2 py-2 text-xs font-medium transition-colors"
             style={{ border: "1px solid rgba(255,255,255,0.20)", color: "rgba(232,228,220,0.75)" }}
             data-testid="btn-create-conversation"
             disabled={createConversation.isPending}
@@ -405,7 +405,7 @@ export function Chat() {
               <div className="border-b px-5 py-2 flex items-center gap-3 flex-wrap shrink-0" style={{ borderColor: "var(--workspace-border)", background: "var(--workspace-topbar)" }}>
                 {profile && (
                   <>
-                    <span className="text-[9px] uppercase tracking-[0.2em]" style={{ color: "var(--workspace-muted)" }}>Context</span>
+                    <span className="text-[11px] font-medium" style={{ color: "var(--workspace-muted)" }}>Context</span>
                     <span className="text-[10px]" style={{ color: "var(--workspace-fg)", opacity: 0.6 }}>
                       {profile.companyName} · {profile.industry} · {profile.stage}
                     </span>
@@ -413,7 +413,7 @@ export function Chat() {
                 )}
                 {linkedDocs.length > 0 && (
                   <>
-                    <span className="text-[9px] uppercase tracking-[0.2em] ml-2" style={{ color: "var(--workspace-muted)" }}>Docs</span>
+                    <span className="text-[11px] font-medium ml-2" style={{ color: "var(--workspace-muted)" }}>Docs</span>
                     <div className="flex items-center gap-1.5 flex-wrap">
                       {linkedDocs.map((d) => (
                         <span
@@ -433,7 +433,7 @@ export function Chat() {
 
             {/* Title bar */}
             <div className="px-6 py-4 border-b shrink-0" style={{ borderColor: "var(--workspace-border)" }}>
-              <h2 className="font-serif text-xl font-light" style={{ color: "var(--workspace-fg)" }}>
+              <h2 className="font-sans text-xl font-light" style={{ color: "var(--workspace-fg)" }}>
                 {activeConversation?.title || "New Conversation"}
               </h2>
             </div>
@@ -602,7 +602,7 @@ export function Chat() {
         ) : (
           <div className="flex-1 flex flex-col items-start justify-center p-10">
             <div className="max-w-lg">
-              <h3 className="font-serif text-4xl font-light mb-3" style={{ color: "var(--workspace-fg)" }}>Strategic Advisor</h3>
+              <h3 className="font-sans text-2xl font-semibold tracking-tight mb-3" style={{ color: "var(--workspace-fg)" }}>Strategic Advisor</h3>
               {profile ? (
                 <p className="text-sm mb-8 leading-relaxed" style={{ color: "var(--workspace-muted)" }}>
                   Contextualized for {profile.companyName} — {profile.industry} · {profile.stage}. The advisor knows your business.
@@ -614,7 +614,7 @@ export function Chat() {
               )}
 
               <div className="space-y-2 mb-8">
-                <p className="text-[10px] uppercase tracking-[0.2em] mb-3" style={{ color: "var(--workspace-muted)", opacity: 0.6 }}>Suggested Questions</p>
+                <p className="text-xs font-medium mb-3" style={{ color: "var(--workspace-muted)", opacity: 0.6 }}>Suggested Questions</p>
                 {getSuggestedStarters(profile).map((q) => (
                   <button
                     key={q}
@@ -632,7 +632,7 @@ export function Chat() {
 
               <button
                 onClick={handleCreateNew}
-                className="flex items-center gap-2 px-6 py-2.5 text-xs uppercase tracking-widest font-medium transition-colors disabled:opacity-40"
+                className="flex items-center gap-2 px-6 py-2.5 text-xs font-medium transition-colors disabled:opacity-40"
                 style={{ background: "var(--workspace-fg)", color: "#FFFFFF" }}
                 disabled={createConversation.isPending}
                 data-testid="btn-create-conversation-empty"

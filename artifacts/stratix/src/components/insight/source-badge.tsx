@@ -36,7 +36,7 @@ export function SourceBadge({ source }: { source: Source }) {
 
   const badge = (
     <span
-      className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium tracking-wide cursor-default"
+      className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium cursor-default"
       style={{ background: config.bg, color: config.text }}
     >
       <Icon className="w-2.5 h-2.5" />

@@ -115,12 +115,12 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <div className="px-5 py-5 border-b" style={{ borderColor: "rgba(255,255,255,0.08)" }}>
           <Link href="/explore" className="flex items-center gap-2.5" data-testid="link-home">
             <div className="h-6 w-6 border flex items-center justify-center" style={{ borderColor: "rgba(232,228,220,0.30)" }}>
-              <span className="font-serif font-semibold text-xs leading-none" style={{ color: "#E8E4DC" }}>S</span>
+              <span className="font-sans font-semibold text-xs leading-none" style={{ color: "#E8E4DC" }}>S</span>
             </div>
             <div className="flex flex-col min-w-0">
-              <span className="font-serif font-medium text-base tracking-tight uppercase leading-none" style={{ color: "#E8E4DC" }}>Stratix</span>
+              <span className="font-sans font-medium text-base tracking-tight leading-none" style={{ color: "#E8E4DC" }}>Stratix</span>
               {orgName && (
-                <span className="text-[9px] uppercase tracking-wider truncate mt-0.5" style={{ color: "rgba(232,228,220,0.35)" }}>{orgName}</span>
+                <span className="text-[9px] truncate mt-0.5" style={{ color: "rgba(232,228,220,0.35)" }}>{orgName}</span>
               )}
             </div>
           </Link>
@@ -143,7 +143,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
                 data-testid={`nav-link-${item.label.toLowerCase().replace(/\s+/g, '-')}`}
               >
                 <item.icon className="h-3.5 w-3.5 shrink-0" style={{ color: isActive ? "#E8E4DC" : "rgba(232,228,220,0.40)" }} />
-                <span className="uppercase tracking-wider">{item.label}</span>
+                <span className="font-medium">{item.label}</span>
               </Link>
             );
           })}
@@ -151,7 +151,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
           {isAdmin && (
             <>
               <div className="pt-4 pb-1 px-3">
-                <span className="text-[9px] uppercase tracking-[0.2em] font-medium" style={{ color: "rgba(232,228,220,0.25)" }}>
+                <span className="text-[11px] font-medium" style={{ color: "rgba(232,228,220,0.25)" }}>
                   Admin
                 </span>
               </div>
@@ -171,7 +171,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
                     data-testid={`nav-link-${item.label.toLowerCase().replace(/\s+/g, '-')}`}
                   >
                     <item.icon className="h-3.5 w-3.5 shrink-0" style={{ color: isActive ? "#E8E4DC" : "rgba(232,228,220,0.40)" }} />
-                    <span className="uppercase tracking-wider">{item.label}</span>
+                    <span className="font-medium">{item.label}</span>
                   </Link>
                 );
               })}
@@ -257,11 +257,11 @@ export function Layout({ children }: { children: React.ReactNode }) {
           <div className="flex items-center gap-2 text-xs" style={{ color: "var(--workspace-muted)" }}>
             {breadcrumb.section && (
               <>
-                <span className="uppercase tracking-wider">{breadcrumb.section}</span>
+                <span className="font-medium">{breadcrumb.section}</span>
                 <span style={{ color: "var(--workspace-border)" }}>/</span>
               </>
             )}
-            <span className="uppercase tracking-wider font-medium" style={{ color: "var(--workspace-fg)" }}>
+            <span className="font-medium" style={{ color: "var(--workspace-fg)" }}>
               {breadcrumb.title}
             </span>
           </div>

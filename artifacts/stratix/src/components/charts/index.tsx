@@ -113,7 +113,7 @@ function TableCell({ cell }: { cell: CellData }) {
             {columns.map((col) => (
               <th
                 key={col}
-                className="text-left px-3 py-2 font-medium uppercase tracking-wider"
+                className="text-left px-3 py-2 font-medium"
                 style={{ color: "#6B7280", fontSize: 10 }}
               >
                 {col}

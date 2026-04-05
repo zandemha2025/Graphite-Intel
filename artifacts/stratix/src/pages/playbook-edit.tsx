@@ -341,7 +341,7 @@ export function PlaybookEdit() {
       <div className="flex items-center justify-between">
         <button
           onClick={() => navigate("/playbooks")}
-          className="flex items-center gap-1.5 text-xs uppercase tracking-widest"
+          className="flex items-center gap-1.5 text-xs font-medium"
           style={{ color: "var(--workspace-muted)" }}
         >
           <ArrowLeft className="h-3 w-3" />
@@ -350,7 +350,7 @@ export function PlaybookEdit() {
         <div className="flex items-center gap-2">
           <button
             onClick={() => setShowAiPanel(!showAiPanel)}
-            className="flex items-center gap-1.5 px-3 py-1.5 text-xs uppercase tracking-widest"
+            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium"
             style={{ border: "1px solid var(--workspace-border)", color: "var(--workspace-muted)", background: "#FFFFFF" }}
           >
             <Sparkles className="h-3 w-3" />
@@ -359,7 +359,7 @@ export function PlaybookEdit() {
           <button
             onClick={handleSave}
             disabled={saving}
-            className="flex items-center gap-1.5 px-3 py-1.5 text-xs uppercase tracking-widest"
+            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium"
             style={{ border: "1px solid var(--workspace-border)", color: "var(--workspace-fg)", background: "#FFFFFF" }}
           >
             {saving ? <Loader2 className="h-3 w-3 animate-spin" /> : <Save className="h-3 w-3" />}
@@ -368,7 +368,7 @@ export function PlaybookEdit() {
           {!isNew && playbook.steps.length > 0 && (
             <button
               onClick={handleExecute}
-              className="flex items-center gap-1.5 px-3 py-1.5 text-xs uppercase tracking-widest"
+              className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium"
               style={{ border: "1px solid var(--workspace-fg)", color: "#FFFFFF", background: "var(--workspace-fg)" }}
             >
               <Play className="h-3 w-3" />
@@ -383,7 +383,7 @@ export function PlaybookEdit() {
         <div className="p-4 space-y-3" style={{ border: "1px solid var(--workspace-border)", background: "#FFFFFF" }}>
           <div className="flex items-center gap-2">
             <Sparkles className="h-4 w-4" style={{ color: "var(--workspace-fg)" }} />
-            <span className="text-xs uppercase tracking-widest font-medium" style={{ color: "var(--workspace-fg)" }}>Generate with AI</span>
+            <span className="text-xs font-medium" style={{ color: "var(--workspace-fg)" }}>Generate with AI</span>
           </div>
           <p className="text-xs" style={{ color: "var(--workspace-muted)" }}>
             Describe the playbook you want and AI will generate the steps for you.
@@ -400,7 +400,7 @@ export function PlaybookEdit() {
             <button
               onClick={handleGenerate}
               disabled={generating || !aiPrompt.trim()}
-              className="flex items-center gap-1.5 px-3 py-1.5 text-xs uppercase tracking-widest disabled:opacity-40"
+              className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium disabled:opacity-40"
               style={{ border: "1px solid var(--workspace-fg)", color: "#FFFFFF", background: "var(--workspace-fg)" }}
             >
               {generating ? <Loader2 className="h-3 w-3 animate-spin" /> : <Sparkles className="h-3 w-3" />}
@@ -408,7 +408,7 @@ export function PlaybookEdit() {
             </button>
             <button
               onClick={() => setShowAiPanel(false)}
-              className="px-3 py-1.5 text-xs uppercase tracking-widest"
+              className="px-3 py-1.5 text-xs font-medium"
               style={{ color: "var(--workspace-muted)" }}
             >
               Cancel
@@ -422,7 +422,7 @@ export function PlaybookEdit() {
         <input
           value={playbook.name}
           onChange={(e) => updateField("name", e.target.value)}
-          className="w-full font-serif text-xl font-light outline-none"
+          className="w-full font-sans text-xl font-light outline-none"
           style={{ color: "var(--workspace-fg)", background: "transparent" }}
           placeholder="Playbook Name"
         />
@@ -436,7 +436,7 @@ export function PlaybookEdit() {
         />
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-2">
-            <label className="text-[10px] uppercase tracking-widest" style={{ color: "var(--workspace-muted)" }}>Category</label>
+            <label className="text-xs font-medium" style={{ color: "var(--workspace-muted)" }}>Category</label>
             <select
               value={playbook.category ?? "custom"}
               onChange={(e) => updateField("category", e.target.value)}
@@ -449,7 +449,7 @@ export function PlaybookEdit() {
             </select>
           </div>
           {playbook.version && (
-            <span className="text-[10px] uppercase tracking-wider" style={{ color: "var(--workspace-muted)" }}>v{playbook.version}</span>
+            <span className="text-xs font-medium" style={{ color: "var(--workspace-muted)" }}>v{playbook.version}</span>
           )}
         </div>
       </div>
@@ -457,12 +457,12 @@ export function PlaybookEdit() {
       {/* Steps */}
       <div>
         <div className="flex items-center justify-between mb-3">
-          <h2 className="text-xs uppercase tracking-widest font-medium" style={{ color: "var(--workspace-fg)" }}>
+          <h2 className="text-xs font-medium" style={{ color: "var(--workspace-fg)" }}>
             Steps ({playbook.steps.length})
           </h2>
           <button
             onClick={addStep}
-            className="flex items-center gap-1.5 px-2 py-1 text-xs uppercase tracking-widest"
+            className="flex items-center gap-1.5 px-2 py-1 text-xs font-medium"
             style={{ border: "1px solid var(--workspace-border)", color: "var(--workspace-muted)", background: "#FFFFFF" }}
           >
             <Plus className="h-3 w-3" />
@@ -478,7 +478,7 @@ export function PlaybookEdit() {
             <div className="flex items-center gap-2 justify-center">
               <button
                 onClick={addStep}
-                className="flex items-center gap-1.5 px-3 py-1.5 text-xs uppercase tracking-widest"
+                className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium"
                 style={{ border: "1px solid var(--workspace-border)", color: "var(--workspace-muted)", background: "#FFFFFF" }}
               >
                 <Plus className="h-3 w-3" />
@@ -486,7 +486,7 @@ export function PlaybookEdit() {
               </button>
               <button
                 onClick={() => setShowAiPanel(true)}
-                className="flex items-center gap-1.5 px-3 py-1.5 text-xs uppercase tracking-widest"
+                className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium"
                 style={{ border: "1px solid var(--workspace-border)", color: "var(--workspace-muted)", background: "#FFFFFF" }}
               >
                 <Sparkles className="h-3 w-3" />
@@ -516,7 +516,7 @@ export function PlaybookEdit() {
       {/* Recent Runs */}
       {!isNew && runs.length > 0 && (
         <div>
-          <h2 className="text-xs uppercase tracking-widest font-medium mb-3" style={{ color: "var(--workspace-fg)" }}>
+          <h2 className="text-xs font-medium mb-3" style={{ color: "var(--workspace-fg)" }}>
             Recent Runs ({runs.length})
           </h2>
           <div className="space-y-2">
@@ -535,7 +535,7 @@ export function PlaybookEdit() {
                   </div>
                 </div>
                 <span
-                  className="text-[9px] uppercase tracking-wider px-1.5 py-0.5"
+                  className="text-[9px] px-1.5 py-0.5"
                   style={{
                     border: "1px solid var(--workspace-border)",
                     color: run.status === "completed" ? "#10b981" : run.status === "failed" ? "#ef4444" : "var(--workspace-muted)",

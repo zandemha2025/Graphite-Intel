@@ -195,8 +195,8 @@ export function CompanyProfile() {
 
   const labelStyle: React.CSSProperties = {
     fontSize: "10px",
-    textTransform: "uppercase",
-    letterSpacing: "0.15em",
+    
+    letterSpacing: "0.01em",
     color: "#6B7280",
     display: "block",
     marginBottom: "8px",
@@ -419,8 +419,8 @@ export function CompanyProfile() {
           style={{
             padding: "9px 24px",
             fontSize: "11px",
-            textTransform: "uppercase",
-            letterSpacing: "0.1em",
+            
+            letterSpacing: "0.01em",
             background: "#111827",
             color: "#FFFFFF",
             border: "none",

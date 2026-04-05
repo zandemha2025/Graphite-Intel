@@ -449,7 +449,7 @@ export function NotebookEdit() {
       {/* Back link */}
       <button
         onClick={() => setLocation("/notebooks")}
-        className="flex items-center gap-1 text-xs uppercase tracking-wider transition-opacity hover:opacity-80"
+        className="flex items-center gap-1 text-xs font-medium transition-opacity hover:opacity-80"
         style={{ color: "var(--workspace-muted)" }}
       >
         <ChevronLeft className="h-3 w-3" />
@@ -464,7 +464,7 @@ export function NotebookEdit() {
             setNotebook((prev) => (prev ? { ...prev, title: e.target.value } : prev));
             debouncedSaveMeta({ title: e.target.value });
           }}
-          className="w-full text-xl font-serif font-medium tracking-tight bg-transparent border-none outline-none"
+          className="w-full text-xl font-sans font-medium tracking-tight bg-transparent border-none outline-none"
           style={{ color: "var(--workspace-fg)" }}
           placeholder="Notebook title..."
         />
@@ -488,7 +488,7 @@ export function NotebookEdit() {
         <button
           onClick={executeAll}
           disabled={isExecuting || notebook.cells.length === 0}
-          className="flex items-center gap-1.5 px-3 py-1.5 text-[10px] font-medium uppercase tracking-wider transition-colors disabled:opacity-40"
+          className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium transition-colors disabled:opacity-40"
           style={{ background: "var(--workspace-fg)", color: "var(--workspace-bg)" }}
         >
           {runningAll ? (
@@ -501,7 +501,7 @@ export function NotebookEdit() {
 
         <button
           onClick={togglePublish}
-          className="flex items-center gap-1.5 px-3 py-1.5 text-[10px] font-medium uppercase tracking-wider border transition-colors"
+          className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium border transition-colors"
           style={{
             borderColor: "var(--workspace-border)",
             color: notebook.isPublished ? "rgb(34,197,94)" : "var(--workspace-muted)",
@@ -515,7 +515,7 @@ export function NotebookEdit() {
 
         {notebook.lastRefreshedAt && (
           <span
-            className="flex items-center gap-1 text-[10px] uppercase tracking-wider"
+            className="flex items-center gap-1 text-xs font-medium"
             style={{ color: "var(--workspace-muted)" }}
           >
             <Clock className="h-3 w-3" />
@@ -567,7 +567,7 @@ export function NotebookEdit() {
       {/* Add cell */}
       <button
         onClick={addCell}
-        className="flex items-center gap-2 w-full justify-center py-3 border border-dashed text-xs uppercase tracking-wider transition-colors hover:border-solid"
+        className="flex items-center gap-2 w-full justify-center py-3 border border-dashed text-xs font-medium transition-colors hover:border-solid"
         style={{
           borderColor: "var(--workspace-border)",
           color: "var(--workspace-muted)",
@@ -663,7 +663,7 @@ function CellEditor({
             style={{ color: status.color }}
           />
           <span
-            className="text-[10px] uppercase tracking-wider"
+            className="text-xs font-medium"
             style={{ color: status.color }}
           >
             {status.label}
@@ -724,7 +724,7 @@ function CellEditor({
           <select
             value={cell.dataSourceHint || ""}
             onChange={(e) => onUpdateDataSource(e.target.value)}
-            className="text-[10px] uppercase tracking-wider bg-transparent border px-2 py-1 outline-none"
+            className="text-xs font-medium bg-transparent border px-2 py-1 outline-none"
             style={{
               borderColor: "var(--workspace-border)",
               color: "var(--workspace-muted)",
@@ -746,7 +746,7 @@ function CellEditor({
           style={{ borderColor: "var(--workspace-border)" }}
         >
           <div
-            className="prose prose-sm max-w-none text-xs [&_h1]:text-sm [&_h2]:text-xs [&_h3]:text-xs [&_p]:text-xs [&_li]:text-xs [&_strong]:font-semibold [&_h1]:font-serif [&_h2]:font-serif"
+            className="prose prose-sm max-w-none text-xs [&_h1]:text-sm [&_h2]:text-xs [&_h3]:text-xs [&_p]:text-xs [&_li]:text-xs [&_strong]:font-semibold [&_h1]:font-sans [&_h2]:font-sans"
             style={{ color: "var(--workspace-fg)" }}
           >
             <ReactMarkdown>{displayOutput}</ReactMarkdown>

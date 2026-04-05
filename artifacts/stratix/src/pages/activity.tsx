@@ -157,7 +157,7 @@ export function ActivityFeed() {
       <div className="flex flex-col gap-4 pb-6 border-b" style={{ borderColor: "var(--workspace-border)" }}>
         <div className="flex items-start justify-between">
           <div>
-            <h1 className="font-serif text-5xl font-light mb-2" style={{ color: "var(--workspace-fg)" }}>
+            <h1 className="font-sans text-2xl font-semibold tracking-tight mb-2" style={{ color: "var(--workspace-fg)" }}>
               Activity
             </h1>
             <p className="text-sm" style={{ color: "var(--workspace-muted)" }}>
@@ -166,7 +166,7 @@ export function ActivityFeed() {
           </div>
           <button
             onClick={() => setShowFilters(!showFilters)}
-            className="flex items-center gap-2 px-3 py-2 text-xs uppercase tracking-widest transition-colors"
+            className="flex items-center gap-2 px-3 py-2 text-xs font-medium transition-colors"
             style={{
               border: "1px solid var(--workspace-border)",
               color: hasActiveFilters ? "var(--workspace-fg)" : "var(--workspace-muted)",
@@ -192,7 +192,7 @@ export function ActivityFeed() {
             {/* Action Type Filter */}
             <div>
               <label
-                className="text-[10px] uppercase tracking-[0.2em] block mb-2"
+                className="text-xs font-medium block mb-2"
                 style={{ color: "var(--workspace-muted)" }}
               >
                 Action
@@ -219,7 +219,7 @@ export function ActivityFeed() {
             {/* Resource Type Filter */}
             <div>
               <label
-                className="text-[10px] uppercase tracking-[0.2em] block mb-2"
+                className="text-xs font-medium block mb-2"
                 style={{ color: "var(--workspace-muted)" }}
               >
                 Resource Type
@@ -246,7 +246,7 @@ export function ActivityFeed() {
             {/* User Filter */}
             <div>
               <label
-                className="text-[10px] uppercase tracking-[0.2em] block mb-2"
+                className="text-xs font-medium block mb-2"
                 style={{ color: "var(--workspace-muted)" }}
               >
                 User
@@ -268,7 +268,7 @@ export function ActivityFeed() {
             {/* Start Date */}
             <div>
               <label
-                className="text-[10px] uppercase tracking-[0.2em] block mb-2"
+                className="text-xs font-medium block mb-2"
                 style={{ color: "var(--workspace-muted)" }}
               >
                 From Date
@@ -289,7 +289,7 @@ export function ActivityFeed() {
             {/* End Date */}
             <div>
               <label
-                className="text-[10px] uppercase tracking-[0.2em] block mb-2"
+                className="text-xs font-medium block mb-2"
                 style={{ color: "var(--workspace-muted)" }}
               >
                 To Date
@@ -312,7 +312,7 @@ export function ActivityFeed() {
             <div className="flex justify-end pt-2">
               <button
                 onClick={clearFilters}
-                className="text-[10px] uppercase tracking-widest transition-colors"
+                className="text-xs font-medium transition-colors"
                 style={{ color: "var(--workspace-muted)" }}
               >
                 Clear All Filters
@@ -346,7 +346,7 @@ export function ActivityFeed() {
             <Activity className="h-6 w-6" style={{ color: "var(--workspace-muted)" }} />
           </div>
           <h3
-            className="font-serif text-xl font-light mb-2"
+            className="font-sans text-xl font-light mb-2"
             style={{ color: "var(--workspace-fg)" }}
           >
             {hasActiveFilters ? "No matching activity" : "No activity yet"}
@@ -359,7 +359,7 @@ export function ActivityFeed() {
           {hasActiveFilters && (
             <button
               onClick={clearFilters}
-              className="mt-4 text-xs uppercase tracking-widest transition-colors"
+              className="mt-4 text-xs font-medium transition-colors"
               style={{ color: "var(--workspace-fg)", borderBottom: "1px solid var(--workspace-border)" }}
             >
               Clear Filters
@@ -378,7 +378,7 @@ export function ActivityFeed() {
               }}
             >
               <span
-                className="text-[10px] uppercase tracking-[0.2em]"
+                className="text-xs font-medium"
                 style={{ color: "var(--workspace-muted)" }}
               >
                 {total} {total === 1 ? "Event" : "Events"}
@@ -416,7 +416,7 @@ export function ActivityFeed() {
                   <p className="text-sm leading-relaxed" style={{ color: "var(--workspace-fg)" }}>
                     <span className="font-medium">{item.userId}</span>{" "}
                     <span
-                      className="text-[10px] uppercase tracking-wide px-1.5 py-0.5 mx-1"
+                      className="text-[11px] font-medium px-1.5 py-0.5 mx-1"
                       style={{
                         border: "1px solid var(--workspace-border)",
                         color: actionColors[item.action] ?? "var(--workspace-muted)",
@@ -445,7 +445,7 @@ export function ActivityFeed() {
                   <div className="flex items-center gap-3 mt-1.5">
                     {/* Resource type badge */}
                     <span
-                      className="flex items-center gap-1 text-[10px] uppercase tracking-wide"
+                      className="flex items-center gap-1 text-[11px] font-medium"
                       style={{ color: "var(--workspace-muted)" }}
                     >
                       {resourceIcons[item.resourceType] ?? <FileText className="h-3 w-3" />}
@@ -472,7 +472,7 @@ export function ActivityFeed() {
               <button
                 onClick={handleLoadMore}
                 disabled={loading}
-                className="px-4 py-2 text-xs uppercase tracking-widest transition-colors"
+                className="px-4 py-2 text-xs font-medium transition-colors"
                 style={{
                   border: "1px solid var(--workspace-border)",
                   color: "var(--workspace-muted)",

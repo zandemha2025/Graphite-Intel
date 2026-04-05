@@ -73,11 +73,11 @@ export function Login() {
       <header className="px-8 py-5 flex items-center justify-between border-b border-white/8">
         <Link href="/" className="flex items-center gap-3">
           <div className="h-7 w-7 border border-[#E8E4DC]/40 flex items-center justify-center">
-            <span className="font-serif font-semibold text-[#E8E4DC] text-sm leading-none">
+            <span className="font-sans font-semibold text-[#E8E4DC] text-sm leading-none">
               S
             </span>
           </div>
-          <span className="font-serif font-semibold text-lg tracking-tight text-[#E8E4DC] uppercase">
+          <span className="font-sans font-semibold text-lg tracking-tight text-[#E8E4DC]">
             Stratix
           </span>
         </Link>
@@ -88,7 +88,7 @@ export function Login() {
         <div className="w-full max-w-md">
           {/* Step indicator */}
           <div className="mb-8 flex items-center gap-3">
-            <span className="text-[10px] font-medium uppercase tracking-[0.25em] text-[#E8E4DC]/40 border border-[#E8E4DC]/15 px-3 py-1">
+            <span className="text-xs font-medium text-[#E8E4DC]/40 border border-[#E8E4DC]/15 px-3 py-1">
               {mode === "login" ? "Welcome Back" : "Step 1 of 3"}
             </span>
             {mode === "signup" && (
@@ -100,7 +100,7 @@ export function Login() {
             )}
           </div>
 
-          <h1 className="font-serif text-4xl font-light tracking-tight text-[#E8E4DC] mb-2">
+          <h1 className="font-sans text-2xl font-semibold tracking-tight tracking-tight text-[#E8E4DC] mb-2">
             {mode === "login" ? "Sign in" : "Get started"}
           </h1>
           <p className="text-sm text-[#E8E4DC]/50 mb-10 font-light">
@@ -118,7 +118,7 @@ export function Login() {
           <form onSubmit={handleSubmit} className="space-y-5">
             {mode === "signup" && (
               <div>
-                <label className="block text-[10px] uppercase tracking-[0.2em] text-[#E8E4DC]/40 mb-2">
+                <label className="block text-xs font-medium text-[#E8E4DC]/40 mb-2">
                   Full Name
                 </label>
                 <input
@@ -133,7 +133,7 @@ export function Login() {
             )}
 
             <div>
-              <label className="block text-[10px] uppercase tracking-[0.2em] text-[#E8E4DC]/40 mb-2">
+              <label className="block text-xs font-medium text-[#E8E4DC]/40 mb-2">
                 Email
               </label>
               <input
@@ -148,7 +148,7 @@ export function Login() {
             </div>
 
             <div>
-              <label className="block text-[10px] uppercase tracking-[0.2em] text-[#E8E4DC]/40 mb-2">
+              <label className="block text-xs font-medium text-[#E8E4DC]/40 mb-2">
                 Password
               </label>
               <input
@@ -168,7 +168,7 @@ export function Login() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full flex items-center justify-center gap-2 bg-[#E8E4DC] text-[#0D0C0B] px-8 py-3.5 font-medium text-sm uppercase tracking-widest hover:bg-[#D4CEC5] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full flex items-center justify-center gap-2 bg-[#E8E4DC] text-[#0D0C0B] px-8 py-3.5 font-medium text-sm font-medium hover:bg-[#D4CEC5] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {loading ? (
                 <>

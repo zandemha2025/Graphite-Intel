@@ -264,25 +264,25 @@ export function Landing() {
       <header className="fixed top-0 left-0 right-0 px-6 md:px-10 py-4 flex items-center justify-between border-b border-white/[0.06] z-50 bg-[#0D0C0B]/80 backdrop-blur-xl">
         <div className="flex items-center gap-3">
           <div className="h-7 w-7 border border-[#E8E4DC]/30 flex items-center justify-center">
-            <span className="font-serif font-semibold text-[#E8E4DC] text-sm leading-none">
+            <span className="font-sans font-semibold text-[#E8E4DC] text-sm leading-none">
               S
             </span>
           </div>
-          <span className="font-serif font-semibold text-lg tracking-tight text-[#E8E4DC] uppercase">
+          <span className="font-sans font-semibold text-lg tracking-tight text-[#E8E4DC]">
             Stratix
           </span>
         </div>
         <nav className="flex items-center gap-5">
           <Link
             href="/security"
-            className="hidden md:inline text-xs font-medium text-[#E8E4DC]/40 hover:text-[#E8E4DC]/70 transition-colors tracking-widest uppercase"
+            className="hidden md:inline text-xs font-medium text-[#E8E4DC]/40 hover:text-[#E8E4DC]/70 transition-colors font-medium"
           >
             Security
           </Link>
           {auth?.user ? (
             <Link
               href="/dashboard"
-              className="text-sm font-medium text-[#E8E4DC]/70 hover:text-[#E8E4DC] transition-colors tracking-wide"
+              className="text-sm font-medium text-[#E8E4DC]/70 hover:text-[#E8E4DC] transition-colors"
               data-testid="link-dashboard"
             >
               Dashboard
@@ -290,7 +290,7 @@ export function Landing() {
           ) : (
             <Link
               href="/login"
-              className="text-sm font-medium bg-[#E8E4DC] text-[#0D0C0B] px-5 py-2 hover:bg-[#D4CEC5] transition-colors tracking-wide uppercase"
+              className="text-sm font-medium bg-[#E8E4DC] text-[#0D0C0B] px-5 py-2 hover:bg-[#D4CEC5] transition-colors font-medium"
               data-testid="button-signin-nav"
             >
               Sign In
@@ -325,7 +325,7 @@ export function Landing() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.7, delay: 0.1 }}
           >
-            <span className="inline-block text-[10px] font-medium uppercase tracking-[0.3em] text-[#E8E4DC]/35 border border-[#E8E4DC]/10 px-4 py-1.5 mb-8">
+            <span className="inline-block text-xs font-medium text-[#E8E4DC]/35 border border-[#E8E4DC]/10 px-4 py-1.5 mb-8">
               Executive Intelligence Platform
             </span>
           </motion.div>
@@ -334,7 +334,7 @@ export function Landing() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.2 }}
-            className="font-serif text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-light tracking-tight text-[#E8E4DC] leading-[0.95] mb-8"
+            className="font-sans text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-light tracking-tight text-[#E8E4DC] leading-[0.95] mb-8"
           >
             Strategic Intelligence
             <br />
@@ -361,7 +361,7 @@ export function Landing() {
             {auth?.user ? (
               <Link
                 href="/dashboard"
-                className="inline-flex items-center gap-2 bg-[#E8E4DC] text-[#0D0C0B] px-8 py-3.5 font-medium hover:bg-[#D4CEC5] transition-colors text-sm uppercase tracking-widest"
+                className="inline-flex items-center gap-2 bg-[#E8E4DC] text-[#0D0C0B] px-8 py-3.5 font-medium hover:bg-[#D4CEC5] transition-colors text-sm font-medium"
                 data-testid="button-enter-app"
               >
                 Enter Dashboard
@@ -371,7 +371,7 @@ export function Landing() {
               <>
                 <Link
                   href="/login"
-                  className="inline-flex items-center gap-2 bg-[#E8E4DC] text-[#0D0C0B] px-8 py-3.5 font-medium hover:bg-[#D4CEC5] transition-all text-sm uppercase tracking-widest group"
+                  className="inline-flex items-center gap-2 bg-[#E8E4DC] text-[#0D0C0B] px-8 py-3.5 font-medium hover:bg-[#D4CEC5] transition-all text-sm font-medium group"
                   data-testid="button-signin-hero"
                 >
                   Get Started Free
@@ -379,7 +379,7 @@ export function Landing() {
                 </Link>
                 <a
                   href="mailto:hello@stratix.ai?subject=Demo%20Request"
-                  className="inline-flex items-center gap-2 border border-[#E8E4DC]/15 text-[#E8E4DC]/60 px-8 py-3.5 font-medium hover:border-[#E8E4DC]/30 hover:text-[#E8E4DC]/80 transition-all text-sm uppercase tracking-widest"
+                  className="inline-flex items-center gap-2 border border-[#E8E4DC]/15 text-[#E8E4DC]/60 px-8 py-3.5 font-medium hover:border-[#E8E4DC]/30 hover:text-[#E8E4DC]/80 transition-all text-sm font-medium"
                 >
                   Book a Demo
                 </a>
@@ -408,10 +408,10 @@ export function Landing() {
         <div className="max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-3 divide-y md:divide-y-0 md:divide-x divide-white/[0.06]">
           {METRICS.map((m, i) => (
             <FadeIn key={m.label} delay={i * 0.1} className="px-8 md:px-10 py-8 text-center">
-              <p className="font-serif text-3xl md:text-4xl font-light text-[#E8E4DC] mb-2">
+              <p className="font-sans text-3xl md:text-4xl font-light text-[#E8E4DC] mb-2">
                 {m.value}
               </p>
-              <p className="text-xs text-[#E8E4DC]/35 uppercase tracking-widest">
+              <p className="text-xs text-[#E8E4DC]/35 font-medium">
                 {m.label}
               </p>
             </FadeIn>
@@ -422,7 +422,7 @@ export function Landing() {
       {/* ---- Trusted By ---- */}
       <section className="border-t border-white/[0.06] px-6 md:px-12 py-12">
         <FadeIn>
-          <p className="text-[10px] uppercase tracking-[0.3em] text-[#E8E4DC]/25 text-center mb-8">
+          <p className="text-xs font-medium text-[#E8E4DC]/25 text-center mb-8">
             Trusted by leading firms
           </p>
         </FadeIn>
@@ -433,7 +433,7 @@ export function Landing() {
               variants={staggerChild}
               className="border border-white/[0.06] px-4 py-4 flex items-center justify-center opacity-30 hover:opacity-50 transition-opacity"
             >
-              <span className="text-[10px] font-medium uppercase tracking-widest text-[#E8E4DC]/70 text-center leading-tight">
+              <span className="text-xs font-medium text-[#E8E4DC]/70 text-center leading-tight">
                 {name}
               </span>
             </motion.div>
@@ -445,10 +445,10 @@ export function Landing() {
       <section className="border-t border-white/[0.06] px-6 md:px-12 py-20 md:py-28">
         <div className="max-w-6xl mx-auto">
           <FadeIn className="mb-16 max-w-2xl">
-            <span className="text-[10px] font-medium uppercase tracking-[0.3em] text-[#E8E4DC]/30 border border-[#E8E4DC]/10 px-3 py-1 inline-block mb-6">
+            <span className="text-xs font-medium text-[#E8E4DC]/30 border border-[#E8E4DC]/10 px-3 py-1 inline-block mb-6">
               Capabilities
             </span>
-            <h2 className="font-serif text-3xl md:text-5xl font-light tracking-tight text-[#E8E4DC] leading-[1.1] mb-4">
+            <h2 className="font-sans text-3xl md:text-5xl font-light tracking-tight text-[#E8E4DC] leading-[1.1] mb-4">
               Everything your team needs
               <br />
               <span className="text-[#E8E4DC]/40">to move with conviction</span>
@@ -471,7 +471,7 @@ export function Landing() {
                   <div className="w-10 h-10 border border-[#E8E4DC]/10 flex items-center justify-center mb-6 group-hover:border-[#E8E4DC]/20 transition-colors">
                     <Icon className="w-5 h-5 text-[#E8E4DC]/40 group-hover:text-[#E8E4DC]/60 transition-colors" />
                   </div>
-                  <h3 className="font-serif text-lg font-normal text-[#E8E4DC]/85 mb-3">
+                  <h3 className="font-sans text-lg font-normal text-[#E8E4DC]/85 mb-3">
                     {f.title}
                   </h3>
                   <p className="text-sm text-[#E8E4DC]/35 leading-relaxed font-light">
@@ -488,10 +488,10 @@ export function Landing() {
       <section className="border-t border-white/[0.06] px-6 md:px-12 py-20 md:py-28 bg-[#0A0908]">
         <div className="max-w-6xl mx-auto">
           <FadeIn className="mb-16 text-center max-w-3xl mx-auto">
-            <span className="text-[10px] font-medium uppercase tracking-[0.3em] text-[#E8E4DC]/30 border border-[#E8E4DC]/10 px-3 py-1 inline-block mb-6">
+            <span className="text-xs font-medium text-[#E8E4DC]/30 border border-[#E8E4DC]/10 px-3 py-1 inline-block mb-6">
               Why Stratix
             </span>
-            <h2 className="font-serif text-3xl md:text-5xl font-light tracking-tight text-[#E8E4DC] leading-[1.1] mb-4">
+            <h2 className="font-sans text-3xl md:text-5xl font-light tracking-tight text-[#E8E4DC] leading-[1.1] mb-4">
               AI tools answer questions.
               <br />
               <span className="text-[#E8E4DC]/40">Stratix answers YOUR questions.</span>
@@ -521,14 +521,14 @@ export function Landing() {
                     <div className="p-6 md:p-8">
                       <div className="flex items-center gap-2 mb-4">
                         <Globe className="w-4 h-4 text-[#E8E4DC]/25" />
-                        <span className="text-[10px] font-medium uppercase tracking-[0.2em] text-[#E8E4DC]/25">
+                        <span className="text-xs font-medium text-[#E8E4DC]/25">
                           {c.generic.label}
                         </span>
                       </div>
                       <p className="text-sm text-[#E8E4DC]/35 font-light leading-relaxed mb-3">
                         {c.generic.answer}
                       </p>
-                      <p className="text-[10px] uppercase tracking-widest text-[#E8E4DC]/20">
+                      <p className="text-xs font-medium text-[#E8E4DC]/20">
                         {c.generic.tone}
                       </p>
                     </div>
@@ -537,14 +537,14 @@ export function Landing() {
                     <div className="p-6 md:p-8 bg-[#0F0E0D]">
                       <div className="flex items-center gap-2 mb-4">
                         <Database className="w-4 h-4 text-[#E8E4DC]/50" />
-                        <span className="text-[10px] font-medium uppercase tracking-[0.2em] text-[#E8E4DC]/50">
+                        <span className="text-xs font-medium text-[#E8E4DC]/50">
                           {c.stratix.label}
                         </span>
                       </div>
                       <p className="text-sm text-[#E8E4DC]/70 font-light leading-relaxed mb-3">
                         {c.stratix.answer}
                       </p>
-                      <p className="text-[10px] uppercase tracking-widest text-[#E8E4DC]/40">
+                      <p className="text-xs font-medium text-[#E8E4DC]/40">
                         {c.stratix.tone}
                       </p>
                     </div>
@@ -556,7 +556,7 @@ export function Landing() {
 
           {/* Closing line */}
           <FadeIn delay={0.3} className="mt-12 text-center">
-            <p className="font-serif text-xl md:text-2xl font-light text-[#E8E4DC]/60 tracking-tight">
+            <p className="font-sans text-xl md:text-2xl font-light text-[#E8E4DC]/60 tracking-tight">
               Same AI models. Your data.{" "}
               <span className="text-[#E8E4DC]">Completely different answers.</span>
             </p>
@@ -568,10 +568,10 @@ export function Landing() {
       <section className="border-t border-white/[0.06] px-6 md:px-12 py-20 md:py-28">
         <div className="max-w-5xl mx-auto">
           <FadeIn className="mb-12 text-center">
-            <span className="text-[10px] font-medium uppercase tracking-[0.3em] text-[#E8E4DC]/30 border border-[#E8E4DC]/10 px-3 py-1 inline-block mb-6">
+            <span className="text-xs font-medium text-[#E8E4DC]/30 border border-[#E8E4DC]/10 px-3 py-1 inline-block mb-6">
               Integrations
             </span>
-            <h2 className="font-serif text-3xl md:text-5xl font-light tracking-tight text-[#E8E4DC] leading-[1.1] mb-4">
+            <h2 className="font-sans text-3xl md:text-5xl font-light tracking-tight text-[#E8E4DC] leading-[1.1] mb-4">
               Connects to the tools
               <br />
               <span className="text-[#E8E4DC]/40">you already use</span>
@@ -586,7 +586,7 @@ export function Landing() {
                 className="bg-[#0D0C0B] p-6 text-center group hover:bg-[#0F0E0D] transition-colors"
               >
                 <Plug className="w-5 h-5 text-[#E8E4DC]/25 mx-auto mb-4 group-hover:text-[#E8E4DC]/40 transition-colors" />
-                <h3 className="text-xs font-medium text-[#E8E4DC]/60 uppercase tracking-wider mb-2">
+                <h3 className="text-xs font-medium text-[#E8E4DC]/60 mb-2">
                   {cat.label}
                 </h3>
                 <p className="text-[10px] text-[#E8E4DC]/25 leading-relaxed font-light">
@@ -599,7 +599,7 @@ export function Landing() {
           <FadeIn className="text-center">
             <div className="inline-flex items-center gap-2 border border-[#E8E4DC]/10 px-5 py-2.5">
               <Zap className="w-3.5 h-3.5 text-[#E8E4DC]/35" />
-              <span className="text-xs text-[#E8E4DC]/40 uppercase tracking-widest font-medium">
+              <span className="text-xs text-[#E8E4DC]/40 font-medium">
                 600+ integrations via Pipedream Connect
               </span>
             </div>
@@ -611,10 +611,10 @@ export function Landing() {
       <section className="border-t border-white/[0.06] px-6 md:px-12 py-20 md:py-28 bg-[#0A0908]">
         <div className="max-w-5xl mx-auto">
           <FadeIn className="mb-16 text-center">
-            <span className="text-[10px] font-medium uppercase tracking-[0.3em] text-[#E8E4DC]/30 border border-[#E8E4DC]/10 px-3 py-1 inline-block mb-6">
+            <span className="text-xs font-medium text-[#E8E4DC]/30 border border-[#E8E4DC]/10 px-3 py-1 inline-block mb-6">
               How It Works
             </span>
-            <h2 className="font-serif text-3xl md:text-5xl font-light tracking-tight text-[#E8E4DC] leading-[1.1]">
+            <h2 className="font-sans text-3xl md:text-5xl font-light tracking-tight text-[#E8E4DC] leading-[1.1]">
               Three steps to clarity
             </h2>
           </FadeIn>
@@ -636,11 +636,11 @@ export function Landing() {
                   <div className="flex flex-col items-center md:items-start">
                     <div className="w-14 h-14 border border-[#E8E4DC]/10 flex items-center justify-center mb-6 relative">
                       <Icon className="w-6 h-6 text-[#E8E4DC]/40" />
-                      <span className="absolute -top-2 -right-2 text-[9px] font-medium text-[#E8E4DC]/25 tracking-wider">
+                      <span className="absolute -top-2 -right-2 text-[9px] font-medium text-[#E8E4DC]/25 tracking-normal">
                         {s.number}
                       </span>
                     </div>
-                    <h3 className="font-serif text-xl font-normal text-[#E8E4DC]/80 mb-3">
+                    <h3 className="font-sans text-xl font-normal text-[#E8E4DC]/80 mb-3">
                       {s.title}
                     </h3>
                     <p className="text-sm text-[#E8E4DC]/35 leading-relaxed font-light max-w-xs">
@@ -658,10 +658,10 @@ export function Landing() {
       <section className="border-t border-white/[0.06] px-6 md:px-12 py-20 md:py-28">
         <div className="max-w-5xl mx-auto">
           <FadeIn className="mb-16 text-center">
-            <span className="text-[10px] font-medium uppercase tracking-[0.3em] text-[#E8E4DC]/30 border border-[#E8E4DC]/10 px-3 py-1 inline-block mb-6">
+            <span className="text-xs font-medium text-[#E8E4DC]/30 border border-[#E8E4DC]/10 px-3 py-1 inline-block mb-6">
               Trust & Security
             </span>
-            <h2 className="font-serif text-3xl md:text-5xl font-light tracking-tight text-[#E8E4DC] leading-[1.1] mb-4">
+            <h2 className="font-sans text-3xl md:text-5xl font-light tracking-tight text-[#E8E4DC] leading-[1.1] mb-4">
               Built for enterprise
             </h2>
             <p className="text-sm md:text-base text-[#E8E4DC]/35 font-light leading-relaxed max-w-xl mx-auto">
@@ -682,7 +682,7 @@ export function Landing() {
                   <div className="w-12 h-12 border border-[#E8E4DC]/10 flex items-center justify-center mx-auto mb-5">
                     <Icon className="w-5 h-5 text-[#E8E4DC]/35" />
                   </div>
-                  <h3 className="text-sm font-medium text-[#E8E4DC]/70 mb-2 uppercase tracking-wider">
+                  <h3 className="text-sm font-medium text-[#E8E4DC]/70 mb-2">
                     {b.title}
                   </h3>
                   <p className="text-xs text-[#E8E4DC]/30 leading-relaxed font-light">
@@ -706,7 +706,7 @@ export function Landing() {
         </div>
 
         <FadeIn className="relative z-10 max-w-3xl mx-auto text-center">
-          <h2 className="font-serif text-3xl md:text-5xl font-light tracking-tight text-[#E8E4DC] leading-[1.1] mb-6">
+          <h2 className="font-sans text-3xl md:text-5xl font-light tracking-tight text-[#E8E4DC] leading-[1.1] mb-6">
             Start making better decisions today
           </h2>
           <p className="text-sm md:text-base text-[#E8E4DC]/35 font-light leading-relaxed max-w-lg mx-auto mb-10">
@@ -717,7 +717,7 @@ export function Landing() {
             {auth?.user ? (
               <Link
                 href="/dashboard"
-                className="inline-flex items-center gap-2 bg-[#E8E4DC] text-[#0D0C0B] px-8 py-3.5 font-medium hover:bg-[#D4CEC5] transition-colors text-sm uppercase tracking-widest"
+                className="inline-flex items-center gap-2 bg-[#E8E4DC] text-[#0D0C0B] px-8 py-3.5 font-medium hover:bg-[#D4CEC5] transition-colors text-sm font-medium"
               >
                 Go to Dashboard
                 <ChevronRight className="w-4 h-4" />
@@ -726,14 +726,14 @@ export function Landing() {
               <>
                 <Link
                   href="/login"
-                  className="inline-flex items-center gap-2 bg-[#E8E4DC] text-[#0D0C0B] px-8 py-3.5 font-medium hover:bg-[#D4CEC5] transition-all text-sm uppercase tracking-widest group"
+                  className="inline-flex items-center gap-2 bg-[#E8E4DC] text-[#0D0C0B] px-8 py-3.5 font-medium hover:bg-[#D4CEC5] transition-all text-sm font-medium group"
                 >
                   Get Started Free
                   <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
                 </Link>
                 <a
                   href="mailto:hello@stratix.ai?subject=Demo%20Request"
-                  className="inline-flex items-center gap-2 border border-[#E8E4DC]/15 text-[#E8E4DC]/60 px-8 py-3.5 font-medium hover:border-[#E8E4DC]/30 hover:text-[#E8E4DC]/80 transition-all text-sm uppercase tracking-widest"
+                  className="inline-flex items-center gap-2 border border-[#E8E4DC]/15 text-[#E8E4DC]/60 px-8 py-3.5 font-medium hover:border-[#E8E4DC]/30 hover:text-[#E8E4DC]/80 transition-all text-sm font-medium"
                 >
                   Book a Demo
                 </a>
@@ -749,11 +749,11 @@ export function Landing() {
           <div>
             <div className="flex items-center gap-2.5 mb-2">
               <div className="h-5 w-5 border border-[#E8E4DC]/25 flex items-center justify-center">
-                <span className="font-serif font-semibold text-[#E8E4DC] text-[10px] leading-none">
+                <span className="font-sans font-semibold text-[#E8E4DC] text-[10px] leading-none">
                   S
                 </span>
               </div>
-              <span className="font-serif font-medium text-sm tracking-tight text-[#E8E4DC]/50 uppercase">
+              <span className="font-sans font-medium text-sm tracking-tight text-[#E8E4DC]/50">
                 Stratix
               </span>
             </div>
@@ -765,28 +765,28 @@ export function Landing() {
           <nav className="flex flex-wrap items-center gap-6">
             <Link
               href="/security"
-              className="text-xs text-[#E8E4DC]/35 hover:text-[#E8E4DC]/60 transition-colors uppercase tracking-wider"
+              className="text-xs text-[#E8E4DC]/35 hover:text-[#E8E4DC]/60 transition-colors"
               data-testid="footer-link-security"
             >
               Security
             </Link>
             <Link
               to="/security"
-              className="text-xs text-[#E8E4DC]/35 hover:text-[#E8E4DC]/60 transition-colors uppercase tracking-wider"
+              className="text-xs text-[#E8E4DC]/35 hover:text-[#E8E4DC]/60 transition-colors"
               data-testid="footer-link-privacy"
             >
               Privacy Policy
             </Link>
             <Link
               to="/security"
-              className="text-xs text-[#E8E4DC]/35 hover:text-[#E8E4DC]/60 transition-colors uppercase tracking-wider"
+              className="text-xs text-[#E8E4DC]/35 hover:text-[#E8E4DC]/60 transition-colors"
               data-testid="footer-link-terms"
             >
               Terms
             </Link>
             <Link
               to="/login"
-              className="text-xs text-[#E8E4DC]/35 hover:text-[#E8E4DC]/60 transition-colors uppercase tracking-wider"
+              className="text-xs text-[#E8E4DC]/35 hover:text-[#E8E4DC]/60 transition-colors"
             >
               Product
             </Link>

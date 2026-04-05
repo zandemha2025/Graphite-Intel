@@ -255,7 +255,7 @@ export function Integrations() {
       {/* Header */}
       <div>
         <h1
-          className="font-serif text-2xl font-light mb-2"
+          className="font-sans text-2xl font-light mb-2"
           style={{ color: "var(--workspace-fg)" }}
         >
           Integrations
@@ -283,7 +283,7 @@ export function Integrations() {
       <div>
         <div className="mb-4">
           <p
-            className="text-[10px] uppercase tracking-[0.2em]"
+            className="text-xs font-medium"
             style={{ color: "var(--workspace-muted)" }}
           >
             Available Integrations
@@ -319,7 +319,7 @@ export function Integrations() {
                 </div>
                 {!integration.isAvailable && (
                   <span
-                    className="text-[9px] uppercase tracking-wider px-2 py-0.5"
+                    className="text-[9px] px-2 py-0.5"
                     style={{
                       border: "1px solid var(--workspace-border)",
                       color: "var(--workspace-muted)",
@@ -344,7 +344,7 @@ export function Integrations() {
               {integration.isAvailable && (
                 <button
                   onClick={() => handleConnect(integration.oauthType)}
-                  className="flex items-center gap-2 px-3 py-1.5 text-xs uppercase tracking-widest transition-colors"
+                  className="flex items-center gap-2 px-3 py-1.5 text-xs font-medium transition-colors"
                   style={{
                     border: "1px solid var(--workspace-border)",
                     color: "var(--workspace-muted)",
@@ -365,7 +365,7 @@ export function Integrations() {
         <div>
           <div className="mb-4">
             <p
-              className="text-[10px] uppercase tracking-[0.2em]"
+              className="text-xs font-medium"
               style={{ color: "var(--workspace-muted)" }}
             >
               Connected Integrations
@@ -380,7 +380,7 @@ export function Integrations() {
               }}
             >
               <span
-                className="text-[10px] uppercase tracking-[0.2em]"
+                className="text-xs font-medium"
                 style={{ color: "var(--workspace-muted)" }}
               >
                 {connected.length} Connected
@@ -457,7 +457,7 @@ export function Integrations() {
                         <button
                           onClick={() => handleSync(integration.id)}
                           disabled={syncing === integration.id}
-                          className="flex items-center gap-1.5 px-3 py-1.5 text-xs uppercase tracking-widest transition-colors"
+                          className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium transition-colors"
                           style={{
                             border: "1px solid var(--workspace-border)",
                             color: "var(--workspace-muted)",
@@ -491,7 +491,7 @@ export function Integrations() {
                       {/* Sync progress */}
                       {status && (
                         <div className="mb-4">
-                          <p className="text-[10px] uppercase tracking-wider mb-2" style={{ color: "var(--workspace-muted)" }}>
+                          <p className="text-xs font-medium mb-2" style={{ color: "var(--workspace-muted)" }}>
                             Sync Progress
                           </p>
                           <div className="flex gap-4 text-xs" style={{ color: "var(--workspace-fg)" }}>
@@ -519,12 +519,12 @@ export function Integrations() {
                       {integration.type === "google_drive" && (
                         <div>
                           <div className="flex items-center justify-between mb-2">
-                            <p className="text-[10px] uppercase tracking-wider" style={{ color: "var(--workspace-muted)" }}>
+                            <p className="text-xs font-medium" style={{ color: "var(--workspace-muted)" }}>
                               Drive Folders
                             </p>
                             <button
                               onClick={() => fetchFolders(integration.id)}
-                              className="text-[10px] uppercase tracking-wider px-2 py-0.5"
+                              className="text-xs font-medium px-2 py-0.5"
                               style={{ border: "1px solid var(--workspace-border)", color: "var(--workspace-muted)" }}
                             >
                               Browse

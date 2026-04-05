@@ -176,8 +176,8 @@ export function EnrichmentSuggestions(props: Props) {
         <span
           style={{
             fontSize: "10px",
-            textTransform: "uppercase",
-            letterSpacing: "0.15em",
+            
+            letterSpacing: "0.01em",
             color: "#6B7280",
             fontWeight: 600,
           }}

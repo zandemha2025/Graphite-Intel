@@ -108,7 +108,7 @@ export function Vault() {
       >
         <div>
           <h1
-            className="font-serif text-5xl font-light mb-2"
+            className="font-sans text-2xl font-semibold tracking-tight mb-2"
             style={{ color: "var(--workspace-fg)" }}
           >
             Vault
@@ -138,7 +138,7 @@ export function Vault() {
           </div>
           <button
             onClick={() => setShowCreateForm(!showCreateForm)}
-            className="flex items-center gap-2 px-4 py-2 text-xs uppercase tracking-widest font-medium shrink-0 transition-colors"
+            className="flex items-center gap-2 px-4 py-2 text-xs font-medium shrink-0 transition-colors"
             style={{ background: "var(--workspace-fg)", color: "#FFFFFF" }}
           >
             <Plus className="h-3.5 w-3.5" />
@@ -158,7 +158,7 @@ export function Vault() {
           <form onSubmit={handleCreate} className="space-y-4">
             <div>
               <label
-                className="block text-xs uppercase tracking-widest mb-2"
+                className="block text-xs font-medium mb-2"
                 style={{ color: "var(--workspace-muted)" }}
               >
                 Project Name
@@ -180,7 +180,7 @@ export function Vault() {
             </div>
             <div>
               <label
-                className="block text-xs uppercase tracking-widest mb-2"
+                className="block text-xs font-medium mb-2"
                 style={{ color: "var(--workspace-muted)" }}
               >
                 Description
@@ -202,7 +202,7 @@ export function Vault() {
             </div>
             <div>
               <label
-                className="block text-xs uppercase tracking-widest mb-2"
+                className="block text-xs font-medium mb-2"
                 style={{ color: "var(--workspace-muted)" }}
               >
                 Matter Type
@@ -232,7 +232,7 @@ export function Vault() {
               <button
                 type="button"
                 onClick={() => setShowCreateForm(false)}
-                className="px-4 py-2 text-xs uppercase tracking-widest transition-colors"
+                className="px-4 py-2 text-xs font-medium transition-colors"
                 style={{
                   border: "1px solid var(--workspace-border)",
                   color: "var(--workspace-muted)",
@@ -244,7 +244,7 @@ export function Vault() {
               <button
                 type="submit"
                 disabled={isCreating}
-                className="flex items-center gap-2 px-4 py-2 text-xs uppercase tracking-widest transition-colors disabled:opacity-40"
+                className="flex items-center gap-2 px-4 py-2 text-xs font-medium transition-colors disabled:opacity-40"
                 style={{ background: "var(--workspace-fg)", color: "#FFFFFF" }}
               >
                 {isCreating ? (
@@ -284,7 +284,7 @@ export function Vault() {
             />
           </div>
           <h3
-            className="font-serif text-xl font-light mb-2"
+            className="font-sans text-xl font-light mb-2"
             style={{ color: "var(--workspace-fg)" }}
           >
             {searchTerm ? "No projects found" : "Create a project to organize your documents"}
@@ -300,7 +300,7 @@ export function Vault() {
           {!searchTerm && (
             <button
               onClick={() => setShowCreateForm(true)}
-              className="inline-flex items-center gap-2 px-5 py-2.5 text-xs uppercase tracking-widest font-medium transition-colors"
+              className="inline-flex items-center gap-2 px-5 py-2.5 text-xs font-medium transition-colors"
               style={{ background: "var(--workspace-fg)", color: "#FFFFFF" }}
             >
               <Plus className="h-3.5 w-3.5" />
@@ -334,7 +334,7 @@ export function Vault() {
                   />
                   <div className="min-w-0 flex-1">
                     <h3
-                      className="font-serif text-base font-light transition-colors truncate"
+                      className="font-sans text-base font-light transition-colors truncate"
                       style={{ color: "var(--workspace-fg)" }}
                     >
                       {project.name}
@@ -365,7 +365,7 @@ export function Vault() {
               <div className="flex items-center gap-3 flex-wrap mt-4">
                 {project.matterType && (
                   <span
-                    className="text-[10px] uppercase tracking-widest px-2 py-0.5"
+                    className="text-xs font-medium px-2 py-0.5"
                     style={{
                       border: "1px solid var(--workspace-border)",
                       color: "var(--workspace-muted)",

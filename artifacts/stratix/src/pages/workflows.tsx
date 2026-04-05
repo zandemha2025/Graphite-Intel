@@ -13,6 +13,11 @@ import {
   DollarSign,
   BarChart2,
 } from "lucide-react";
+import { PageHeader } from "@/components/ui/page-header";
+import { DataCard } from "@/components/ui/data-card";
+import { EmptyState } from "@/components/ui/empty-state";
+import { StatusBadge } from "@/components/ui/status-badge";
+import { CardSkeleton, TableSkeleton } from "@/components/ui/skeleton";
 
 interface WorkflowTemplate {
   key: string;
@@ -40,11 +45,11 @@ const TEMPLATE_ICONS: Record<string, React.ComponentType<{ className?: string; s
   quarterly_strategy_brief: Target,
 };
 
-const STATUS_COLORS: Record<string, string> = {
-  complete: "#16a34a",
-  generating: "#ca8a04",
-  failed: "#dc2626",
-  pending: "var(--workspace-muted)",
+const RUN_STATUS_MAP: Record<string, "complete" | "running" | "failed" | "pending"> = {
+  complete: "complete",
+  generating: "running",
+  failed: "failed",
+  pending: "pending",
 };
 
 export function Workflows() {
@@ -73,25 +78,18 @@ export function Workflows() {
 
   return (
     <div className="animate-in fade-in duration-500">
-      <div className="mb-10 pb-6 border-b" style={{ borderColor: "var(--workspace-border)" }}>
-        <div className="flex items-center gap-3 mb-2">
-          <Zap className="h-5 w-5" style={{ color: "var(--workspace-muted)" }} />
-          <h1 className="font-serif text-4xl font-light" style={{ color: "var(--workspace-fg)" }}>Workflow Agents</h1>
-        </div>
-        <p className="text-sm mt-1" style={{ color: "var(--workspace-muted)" }}>
-          Pre-built AI agents that execute structured strategic work and deliver comprehensive deliverables.
-        </p>
-      </div>
+      <PageHeader
+        title="Workflow Agents"
+        subtitle="Pre-built AI agents that execute structured strategic work and deliver comprehensive deliverables."
+      />
 
-      <div className="mb-12">
-        <h2 className="text-[10px] uppercase tracking-[0.25em] mb-5" style={{ color: "var(--workspace-muted)" }}>
-          Agent Templates
-        </h2>
+      <div className="mt-8 mb-12">
+        <h2 className="text-xs font-medium mb-5 text-[#9CA3AF]">Agent Templates</h2>
 
         {loadingTemplates ? (
           <div className="grid grid-cols-2 gap-3">
             {Array.from({ length: 6 }).map((_, i) => (
-              <div key={i} className="p-5 animate-pulse h-32" style={{ border: "1px solid var(--workspace-border)", background: "var(--workspace-muted-bg)" }} />
+              <CardSkeleton key={i} />
             ))}
           </div>
         ) : (
@@ -99,33 +97,27 @@ export function Workflows() {
             {templates.map((template) => {
               const Icon = TEMPLATE_ICONS[template.key] || Zap;
               return (
-                <Link
-                  key={template.key}
-                  href={`/workflows/new/${template.key}`}
-                  className="group flex flex-col gap-3 p-5 transition-colors"
-                  style={{ border: "1px solid var(--workspace-border)", background: "#FFFFFF" }}
-                  data-testid={`template-card-${template.key}`}
-                  onMouseEnter={e => (e.currentTarget.style.borderColor = "var(--workspace-fg)")}
-                  onMouseLeave={e => (e.currentTarget.style.borderColor = "var(--workspace-border)")}
-                >
-                  <div className="flex items-start justify-between">
-                    <div className="flex items-center gap-2.5">
-                      <Icon className="h-4 w-4 shrink-0" style={{ color: "var(--workspace-muted)" }} />
-                      <span className="font-serif text-base font-light leading-tight" style={{ color: "var(--workspace-fg)" }}>
-                        {template.name}
+                <Link key={template.key} href={`/workflows/new/${template.key}`} data-testid={`template-card-${template.key}`}>
+                  <DataCard hover className="h-full">
+                    <div className="flex items-start justify-between">
+                      <div className="flex items-center gap-2.5">
+                        <Icon className="h-4 w-4 shrink-0 text-[#9CA3AF]" />
+                        <span className="text-sm font-medium text-[#111827] leading-tight">
+                          {template.name}
+                        </span>
+                      </div>
+                      <ChevronRight className="h-3.5 w-3.5 shrink-0 mt-0.5 text-[#9CA3AF]" />
+                    </div>
+                    <p className="text-xs text-[#9CA3AF] leading-relaxed mt-3">
+                      {template.description}
+                    </p>
+                    <div className="flex items-center gap-1.5 mt-3">
+                      <Users className="h-3 w-3 text-[#9CA3AF] opacity-50" />
+                      <span className="text-xs font-medium text-[#9CA3AF] opacity-60">
+                        {template.questions.length} intake questions
                       </span>
                     </div>
-                    <ChevronRight className="h-3.5 w-3.5 shrink-0 mt-0.5 transition-colors" style={{ color: "var(--workspace-muted)" }} />
-                  </div>
-                  <p className="text-xs leading-relaxed" style={{ color: "var(--workspace-muted)" }}>
-                    {template.description}
-                  </p>
-                  <div className="flex items-center gap-1.5 mt-auto">
-                    <Users className="h-3 w-3" style={{ color: "var(--workspace-muted)", opacity: 0.5 }} />
-                    <span className="text-[10px] uppercase tracking-wider" style={{ color: "var(--workspace-muted)", opacity: 0.6 }}>
-                      {template.questions.length} intake questions
-                    </span>
-                  </div>
+                  </DataCard>
                 </Link>
               );
             })}
@@ -134,28 +126,18 @@ export function Workflows() {
       </div>
 
       <div>
-        <h2 className="text-[10px] uppercase tracking-[0.25em] mb-5" style={{ color: "var(--workspace-muted)" }}>
-          Recent Runs
-        </h2>
+        <h2 className="text-xs font-medium mb-5 text-[#9CA3AF]">Recent Runs</h2>
 
         {loadingRuns ? (
-          <div className="space-y-2">
-            {Array.from({ length: 3 }).map((_, i) => (
-              <div key={i} className="p-4 animate-pulse h-14" style={{ border: "1px solid var(--workspace-border)", background: "var(--workspace-muted-bg)" }} />
-            ))}
-          </div>
+          <TableSkeleton rows={3} />
         ) : runs.length === 0 ? (
-          <div className="p-10 text-center" style={{ border: "1px dashed var(--workspace-border)", background: "#FFFFFF" }}>
-            <div className="w-12 h-12 mx-auto mb-4 flex items-center justify-center" style={{ background: "var(--workspace-muted-bg)", border: "1px solid var(--workspace-border)" }}>
-              <Clock className="h-5 w-5" style={{ color: "var(--workspace-muted)" }} />
-            </div>
-            <h3 className="text-sm font-medium mb-1" style={{ color: "var(--workspace-fg)" }}>No workflow runs yet</h3>
-            <p className="text-xs max-w-xs mx-auto" style={{ color: "var(--workspace-muted)" }}>
-              Select a template above to launch your first AI workflow agent.
-            </p>
-          </div>
+          <EmptyState
+            icon={Clock}
+            title="No workflow runs yet"
+            description="Select a template above to launch your first AI workflow agent."
+          />
         ) : (
-          <div style={{ border: "1px solid var(--workspace-border)" }}>
+          <div className="border border-[#E5E5E3] rounded-xl overflow-hidden">
             {runs.map((run, i) => {
               const Icon = TEMPLATE_ICONS[run.templateKey] || Zap;
               const templateName =
@@ -164,29 +146,22 @@ export function Workflows() {
                 <Link
                   key={run.id}
                   href={`/workflows/${run.id}`}
-                  className="flex items-center gap-4 px-4 py-3.5 transition-colors group"
-                  style={{
-                    borderTop: i > 0 ? `1px solid var(--workspace-border)` : undefined,
-                    background: "#FFFFFF",
-                  }}
+                  className="flex items-center gap-4 px-4 py-3.5 bg-white hover:bg-[#FAFAF9] transition-colors group"
+                  style={{ borderTop: i > 0 ? "1px solid #E5E5E3" : undefined }}
                   data-testid={`run-row-${run.id}`}
-                  onMouseEnter={e => (e.currentTarget.style.background = "var(--workspace-muted-bg)")}
-                  onMouseLeave={e => (e.currentTarget.style.background = "#FFFFFF")}
                 >
-                  <Icon className="h-3.5 w-3.5 shrink-0" style={{ color: "var(--workspace-muted)" }} />
+                  <Icon className="h-3.5 w-3.5 shrink-0 text-[#9CA3AF]" />
                   <div className="flex-1 min-w-0">
-                    <span className="text-sm font-medium" style={{ color: "var(--workspace-fg)" }}>{templateName}</span>
-                    <span className="text-xs ml-2" style={{ color: "var(--workspace-muted)" }}>
+                    <span className="text-sm font-medium text-[#111827]">{templateName}</span>
+                    <span className="text-xs ml-2 text-[#9CA3AF]">
                       {Object.values(run.inputs).filter(Boolean)[0]?.toString().substring(0, 50) || ""}
                     </span>
                   </div>
-                  <span className={`text-[10px] uppercase tracking-wider shrink-0 ${run.status === 'generating' ? 'animate-pulse' : ''}`} style={{ color: STATUS_COLORS[run.status] || "var(--workspace-muted)" }}>
-                    {run.status}
-                  </span>
-                  <span className="text-[10px] shrink-0" style={{ color: "var(--workspace-muted)" }}>
+                  <StatusBadge status={RUN_STATUS_MAP[run.status] ?? "pending"} />
+                  <span className="text-[10px] shrink-0 text-[#9CA3AF]">
                     {format(new Date(run.createdAt), "MMM d, yyyy")}
                   </span>
-                  <ChevronRight className="h-3.5 w-3.5 shrink-0" style={{ color: "var(--workspace-muted)" }} />
+                  <ChevronRight className="h-3.5 w-3.5 shrink-0 text-[#9CA3AF]" />
                 </Link>
               );
             })}

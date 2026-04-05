@@ -103,7 +103,7 @@ export function NotebookList() {
       <div className="flex items-center justify-between">
         <div>
           <h1
-            className="text-xl font-serif font-medium tracking-tight"
+            className="text-xl font-sans font-medium tracking-tight"
             style={{ color: "var(--workspace-fg)" }}
           >
             Notebooks
@@ -117,7 +117,7 @@ export function NotebookList() {
         </div>
         <button
           onClick={handleCreate}
-          className="flex items-center gap-2 px-4 py-2 text-xs font-medium uppercase tracking-wider transition-colors"
+          className="flex items-center gap-2 px-4 py-2 text-xs font-medium transition-colors"
           style={{
             background: "var(--workspace-fg)",
             color: "var(--workspace-bg)",
@@ -171,7 +171,7 @@ export function NotebookList() {
                   </div>
                   {nb.isPublished && (
                     <span
-                      className="flex items-center gap-1 text-[10px] uppercase tracking-wider px-1.5 py-0.5 shrink-0"
+                      className="flex items-center gap-1 text-xs font-medium px-1.5 py-0.5 shrink-0"
                       style={{
                         background: "rgba(34,197,94,0.1)",
                         color: "rgb(34,197,94)",
@@ -193,7 +193,7 @@ export function NotebookList() {
                 )}
 
                 <div
-                  className="flex items-center gap-4 text-[10px] uppercase tracking-wider"
+                  className="flex items-center gap-4 text-xs font-medium"
                   style={{ color: "var(--workspace-muted)" }}
                 >
                   <span className="flex items-center gap-1">

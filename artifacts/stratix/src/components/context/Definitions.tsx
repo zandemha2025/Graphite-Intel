@@ -260,8 +260,8 @@ export function Definitions({ onCountChange, definitions, onDefinitionsChange }:
               gap: "6px",
               padding: "8px 14px",
               fontSize: "11px",
-              textTransform: "uppercase",
-              letterSpacing: "0.1em",
+              
+              letterSpacing: "0.01em",
               background: "#4F46E5",
               color: "#FFFFFF",
               border: "none",
@@ -375,8 +375,8 @@ export function Definitions({ onCountChange, definitions, onDefinitionsChange }:
                       style={{
                         padding: "2px 8px",
                         fontSize: "10px",
-                        textTransform: "uppercase",
-                        letterSpacing: "0.08em",
+                        
+                        letterSpacing: "0.01em",
                         background: colors.bg,
                         color: colors.text,
                         border: `1px solid ${colors.border}`,

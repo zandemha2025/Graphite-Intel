@@ -116,7 +116,7 @@ export function AdsReports() {
           <div className="space-y-6">
             {selectedReport.generatedContent.summary && (
               <div className="p-6 border border-[#E8E4DC]/10">
-                <h2 className="text-xs font-medium text-[#E8E4DC]/40 uppercase mb-3">Executive Summary</h2>
+                <h2 className="text-xs font-medium text-[#E8E4DC]/40 mb-3">Executive Summary</h2>
                 <p className="text-sm text-[#E8E4DC]/70 leading-relaxed whitespace-pre-wrap">
                   {selectedReport.generatedContent.summary}
                 </p>
@@ -125,7 +125,7 @@ export function AdsReports() {
 
             {selectedReport.generatedContent.insights && selectedReport.generatedContent.insights.length > 0 && (
               <div className="p-6 border border-[#E8E4DC]/10">
-                <h2 className="text-xs font-medium text-[#E8E4DC]/40 uppercase mb-3">Key Insights</h2>
+                <h2 className="text-xs font-medium text-[#E8E4DC]/40 mb-3">Key Insights</h2>
                 <div className="space-y-3">
                   {selectedReport.generatedContent.insights.map((insight, i) => (
                     <div key={i} className="flex gap-3">
@@ -139,7 +139,7 @@ export function AdsReports() {
 
             {selectedReport.generatedContent.recommendations && selectedReport.generatedContent.recommendations.length > 0 && (
               <div className="p-6 border border-[#C9A55A]/20 bg-[#C9A55A]/5">
-                <h2 className="text-xs font-medium text-[#C9A55A] uppercase mb-3">Recommendations</h2>
+                <h2 className="text-xs font-medium text-[#C9A55A] mb-3">Recommendations</h2>
                 <div className="space-y-3">
                   {selectedReport.generatedContent.recommendations.map((rec, i) => (
                     <div key={i} className="flex gap-3">

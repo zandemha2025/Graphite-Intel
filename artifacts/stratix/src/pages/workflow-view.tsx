@@ -65,7 +65,7 @@ export function WorkflowView() {
     <div className="max-w-3xl mx-auto pb-20 animate-in fade-in duration-500">
       <Link
         href="/workflows"
-        className="inline-flex items-center text-xs mb-8 uppercase tracking-widest transition-colors"
+        className="inline-flex items-center text-xs mb-8 font-medium transition-colors"
         style={{ color: "var(--workspace-muted)" }}
       >
         <ChevronLeft className="w-3 h-3 mr-1" /> Workflow Agents
@@ -76,10 +76,10 @@ export function WorkflowView() {
           <div className="flex items-start gap-3">
             <Zap className="h-5 w-5 mt-1 shrink-0" style={{ color: "var(--workspace-muted)" }} />
             <div>
-              <div className="text-[10px] uppercase tracking-[0.25em] inline-block px-2 py-0.5 mb-3" style={{ color: "var(--workspace-muted)", border: "1px solid var(--workspace-border)" }}>
+              <div className="text-xs font-medium inline-block px-2 py-0.5 mb-3" style={{ color: "var(--workspace-muted)", border: "1px solid var(--workspace-border)" }}>
                 {run.templateKey.replace(/_/g, " ")}
               </div>
-              <h1 className="font-serif text-4xl font-light leading-tight" style={{ color: "var(--workspace-fg)" }}>
+              <h1 className="font-sans text-2xl font-semibold tracking-tight leading-tight" style={{ color: "var(--workspace-fg)" }}>
                 {template?.name || run.title}
               </h1>
             </div>
@@ -88,29 +88,29 @@ export function WorkflowView() {
 
         <div className="grid grid-cols-3 border-b" style={{ borderColor: "var(--workspace-border)" }}>
           <div className="px-5 py-3.5 border-r" style={{ borderColor: "var(--workspace-border)" }}>
-            <p className="text-[9px] uppercase tracking-[0.2em] mb-1" style={{ color: "var(--workspace-muted)" }}>Executed</p>
+            <p className="text-[11px] font-medium mb-1" style={{ color: "var(--workspace-muted)" }}>Executed</p>
             <p className="text-sm" style={{ color: "var(--workspace-fg)" }}>{format(new Date(run.createdAt), "MMM d, yyyy")}</p>
           </div>
           <div className="px-5 py-3.5 border-r" style={{ borderColor: "var(--workspace-border)" }}>
-            <p className="text-[9px] uppercase tracking-[0.2em] mb-1" style={{ color: "var(--workspace-muted)" }}>Status</p>
+            <p className="text-[11px] font-medium mb-1" style={{ color: "var(--workspace-muted)" }}>Status</p>
             <p className="text-sm capitalize" style={{ color: "var(--workspace-fg)" }}>{run.status}</p>
           </div>
           <div className="px-5 py-3.5">
-            <p className="text-[9px] uppercase tracking-[0.2em] mb-1" style={{ color: "var(--workspace-muted)" }}>Template</p>
+            <p className="text-[11px] font-medium mb-1" style={{ color: "var(--workspace-muted)" }}>Template</p>
             <p className="text-sm" style={{ color: "var(--workspace-fg)" }}>{template?.name || run.templateKey}</p>
           </div>
         </div>
 
         {Object.keys(run.inputs).length > 0 && (
           <div className="px-8 py-5 border-b" style={{ borderColor: "var(--workspace-border)" }}>
-            <p className="text-[10px] uppercase tracking-[0.2em] mb-3" style={{ color: "var(--workspace-muted)" }}>Inputs Provided</p>
+            <p className="text-xs font-medium mb-3" style={{ color: "var(--workspace-muted)" }}>Inputs Provided</p>
             <div className="space-y-3">
               {template?.questions.map((q) => {
                 const val = run.inputs[q.key];
                 if (!val) return null;
                 return (
                   <div key={q.key}>
-                    <p className="text-[9px] uppercase tracking-[0.15em] mb-1" style={{ color: "var(--workspace-muted)" }}>{q.label}</p>
+                    <p className="text-[11px] font-medium mb-1" style={{ color: "var(--workspace-muted)" }}>{q.label}</p>
                     <p className="text-xs leading-relaxed line-clamp-3" style={{ color: "var(--workspace-fg)" }}>{val}</p>
                   </div>
                 );

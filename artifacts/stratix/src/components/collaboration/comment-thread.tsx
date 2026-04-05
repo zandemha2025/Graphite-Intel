@@ -105,7 +105,7 @@ export function CommentThread({ resourceType, resourceId }: CommentThreadProps) 
     <div className="space-y-4">
       <div className="flex items-center gap-2 mb-2">
         <MessageSquare className="h-4 w-4" style={{ color: "var(--workspace-fg)" }} />
-        <span className="text-[10px] uppercase tracking-[0.2em]" style={{ color: "var(--workspace-muted)" }}>
+        <span className="text-xs font-medium" style={{ color: "var(--workspace-muted)" }}>
           Comments ({comments.length})
         </span>
       </div>

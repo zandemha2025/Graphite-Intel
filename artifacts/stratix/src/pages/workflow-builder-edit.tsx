@@ -389,7 +389,7 @@ export function WorkflowBuilderEdit() {
       {/* Back Link */}
       <button
         onClick={() => navigate("/workflow-builder")}
-        className="flex items-center gap-1 text-xs uppercase tracking-widest transition-colors"
+        className="flex items-center gap-1 text-xs font-medium transition-colors"
         style={{ color: "var(--workspace-muted)" }}
       >
         <ArrowLeft className="h-3.5 w-3.5" />
@@ -399,14 +399,14 @@ export function WorkflowBuilderEdit() {
       {/* Header */}
       <div className="pb-6 border-b space-y-6" style={{ borderColor: "var(--workspace-border)" }}>
         <div>
-          <label className="text-[10px] uppercase tracking-[0.2em] mb-2 block" style={{ color: "var(--workspace-muted)" }}>
+          <label className="text-xs font-medium mb-2 block" style={{ color: "var(--workspace-muted)" }}>
             Workflow Name
           </label>
           <input
             type="text"
             value={workflow.name}
             onChange={(e) => setWorkflow({ ...workflow, name: e.target.value })}
-            className="w-full text-3xl font-light font-serif mb-2 focus:outline-none"
+            className="w-full text-xl font-semibold tracking-tight font-sans mb-2 focus:outline-none"
             style={{ color: "var(--workspace-fg)", background: "transparent", borderBottom: "1px solid transparent", transition: "border-color 0.2s" }}
             onFocus={(e) => (e.currentTarget.style.borderBottomColor = "var(--workspace-border)")}
             onBlur={(e) => (e.currentTarget.style.borderBottomColor = "transparent")}
@@ -414,7 +414,7 @@ export function WorkflowBuilderEdit() {
         </div>
 
         <div>
-          <label className="text-[10px] uppercase tracking-[0.2em] mb-2 block" style={{ color: "var(--workspace-muted)" }}>
+          <label className="text-xs font-medium mb-2 block" style={{ color: "var(--workspace-muted)" }}>
             Description
           </label>
           <textarea
@@ -433,7 +433,7 @@ export function WorkflowBuilderEdit() {
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <span
-              className="text-[10px] uppercase tracking-wide px-2 py-0.5"
+              className="text-[11px] font-medium px-2 py-0.5"
               style={{ border: "1px solid var(--workspace-border)", color: STATUS_COLORS[workflow.status] || "var(--workspace-muted)" }}
             >
               {STATUS_LABELS[workflow.status] || workflow.status}
@@ -452,7 +452,7 @@ export function WorkflowBuilderEdit() {
             <button
               onClick={handleSave}
               disabled={saving}
-              className="flex items-center gap-2 px-4 py-2 text-xs uppercase tracking-widest font-medium transition-colors"
+              className="flex items-center gap-2 px-4 py-2 text-xs font-medium transition-colors"
               style={{ background: "var(--workspace-fg)", color: "#FFFFFF", opacity: saving ? 0.6 : 1 }}
             >
               <Save className="h-3.5 w-3.5" />
@@ -462,7 +462,7 @@ export function WorkflowBuilderEdit() {
             {!isNew && (
               <button
                 onClick={handlePublish}
-                className="flex items-center gap-2 px-4 py-2 text-xs uppercase tracking-widest transition-colors"
+                className="flex items-center gap-2 px-4 py-2 text-xs font-medium transition-colors"
                 style={{ border: "1px solid var(--workspace-border)", color: "var(--workspace-fg)", background: "#FFFFFF" }}
               >
                 {workflow.status === "draft" ? "Publish" : "Published"}
@@ -472,7 +472,7 @@ export function WorkflowBuilderEdit() {
             {!isNew && workflow.isPublished && (
               <button
                 onClick={handleExecute}
-                className="flex items-center gap-2 px-4 py-2 text-xs uppercase tracking-widest font-medium transition-colors"
+                className="flex items-center gap-2 px-4 py-2 text-xs font-medium transition-colors"
                 style={{ background: "#16a34a", color: "#FFFFFF" }}
               >
                 <Play className="h-3.5 w-3.5" />
@@ -498,7 +498,7 @@ export function WorkflowBuilderEdit() {
 
           {/* Steps List */}
           <div className="space-y-6">
-            <h2 className="text-[10px] uppercase tracking-[0.25em]" style={{ color: "var(--workspace-muted)" }}>
+            <h2 className="text-xs font-medium" style={{ color: "var(--workspace-muted)" }}>
               Workflow Steps ({workflow.steps.length})
             </h2>
 
@@ -538,7 +538,7 @@ export function WorkflowBuilderEdit() {
                         <Icon className="h-4 w-4 shrink-0" style={{ color: "var(--workspace-muted)" }} />
 
                         <span
-                          className="text-[10px] uppercase tracking-wide px-2 py-0.5 shrink-0"
+                          className="text-[11px] font-medium px-2 py-0.5 shrink-0"
                           style={{ border: "1px solid var(--workspace-border)", color: "var(--workspace-muted)" }}
                         >
                           {typeInfo?.label || step.type}
@@ -590,7 +590,7 @@ export function WorkflowBuilderEdit() {
                         >
                           {/* Step Type Selector */}
                           <div>
-                            <label className="text-xs uppercase tracking-widest mb-1.5 block" style={{ color: "var(--workspace-muted)" }}>
+                            <label className="text-xs font-medium mb-1.5 block" style={{ color: "var(--workspace-muted)" }}>
                               Step Type
                             </label>
                             <select
@@ -615,7 +615,7 @@ export function WorkflowBuilderEdit() {
 
                           {/* Step Name */}
                           <div>
-                            <label className="text-xs uppercase tracking-widest mb-1.5 block" style={{ color: "var(--workspace-muted)" }}>
+                            <label className="text-xs font-medium mb-1.5 block" style={{ color: "var(--workspace-muted)" }}>
                               Step Name
                             </label>
                             <input
@@ -629,7 +629,7 @@ export function WorkflowBuilderEdit() {
 
                           {/* Step Description */}
                           <div>
-                            <label className="text-xs uppercase tracking-widest mb-1.5 block" style={{ color: "var(--workspace-muted)" }}>
+                            <label className="text-xs font-medium mb-1.5 block" style={{ color: "var(--workspace-muted)" }}>
                               Description
                             </label>
                             <textarea
@@ -645,7 +645,7 @@ export function WorkflowBuilderEdit() {
                           {/* Type-Specific Config Form */}
                           <div className="pt-2 border-t" style={{ borderColor: "var(--workspace-border)" }}>
                             <h3
-                              className="text-[10px] uppercase tracking-[0.2em] mb-3"
+                              className="text-xs font-medium mb-3"
                               style={{ color: "var(--workspace-muted)" }}
                             >
                               {typeInfo?.label || step.type} Configuration
@@ -668,7 +668,7 @@ export function WorkflowBuilderEdit() {
             {showStepPicker ? (
               <div style={{ border: "1px solid var(--workspace-border)", background: "#FFFFFF" }}>
                 <div className="px-4 py-3 border-b flex items-center justify-between" style={{ borderColor: "var(--workspace-border)" }}>
-                  <span className="text-[10px] uppercase tracking-[0.2em]" style={{ color: "var(--workspace-muted)" }}>
+                  <span className="text-xs font-medium" style={{ color: "var(--workspace-muted)" }}>
                     Choose Step Type
                   </span>
                   <button
@@ -714,7 +714,7 @@ export function WorkflowBuilderEdit() {
                 onMouseLeave={(e) => (e.currentTarget.style.borderColor = "var(--workspace-border)")}
               >
                 <Plus className="h-4 w-4" />
-                <span className="text-xs uppercase tracking-widest">Add Step</span>
+                <span className="text-xs font-medium">Add Step</span>
               </button>
             )}
           </div>

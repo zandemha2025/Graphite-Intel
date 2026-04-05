@@ -449,7 +449,7 @@ export function Connections() {
       <div className="flex items-start justify-between">
         <div>
           <h1
-            className="font-serif text-2xl font-light mb-2"
+            className="font-sans text-2xl font-light mb-2"
             style={{ color: "var(--workspace-fg)" }}
           >
             Connections
@@ -463,7 +463,7 @@ export function Connections() {
             const el = document.getElementById("available-section");
             if (el) el.scrollIntoView({ behavior: "smooth" });
           }}
-          className="flex items-center gap-2 px-4 py-2 text-xs uppercase tracking-widest transition-colors shrink-0"
+          className="flex items-center gap-2 px-4 py-2 text-xs font-medium transition-colors shrink-0"
           style={{
             border: "1px solid var(--workspace-fg)",
             color: "var(--workspace-fg)",
@@ -493,7 +493,7 @@ export function Connections() {
       <div>
         <div className="mb-4">
           <p
-            className="text-[10px] uppercase tracking-[0.2em] font-medium"
+            className="text-xs font-medium"
             style={{ color: "var(--workspace-muted)" }}
           >
             Connected ({connected.length})
@@ -559,7 +559,7 @@ export function Connections() {
                             {account.name}
                           </h3>
                           <span
-                            className="text-[10px] uppercase tracking-wider"
+                            className="text-xs font-medium"
                             style={{ color: "var(--workspace-muted)" }}
                           >
                             {account.category}
@@ -618,7 +618,7 @@ export function Connections() {
                         />
                       )}
                       <span
-                        className="text-[10px] font-medium uppercase tracking-wider"
+                        className="text-xs font-medium"
                         style={{
                           color: statusColor(account.status),
                         }}
@@ -656,7 +656,7 @@ export function Connections() {
                       <button
                         onClick={() => handleSync(account)}
                         disabled={isSyncing}
-                        className="flex items-center gap-1.5 px-3 py-1.5 text-[10px] uppercase tracking-widest transition-colors"
+                        className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium transition-colors"
                         style={{
                           border: "1px solid var(--workspace-border)",
                           color: "var(--workspace-muted)",
@@ -691,7 +691,7 @@ export function Connections() {
                       }}
                     >
                       <p
-                        className="text-[10px] uppercase tracking-wider mb-2 font-medium"
+                        className="text-xs font-medium mb-2 font-medium"
                         style={{ color: "var(--workspace-muted)" }}
                       >
                         Synced Data Preview
@@ -711,7 +711,7 @@ export function Connections() {
                               <FileText className="h-3 w-3 shrink-0" style={{ color: "var(--workspace-muted)" }} />
                               <span className="truncate flex-1">{doc.title}</span>
                               <span
-                                className="text-[9px] uppercase px-1.5 py-0.5"
+                                className="text-[11px] font-medium px-1.5 py-0.5"
                                 style={{
                                   color: doc.status === "ready" ? "#10b981" : "var(--workspace-muted)",
                                   border: "1px solid var(--workspace-border)",
@@ -748,7 +748,7 @@ export function Connections() {
       <div id="available-section">
         <div className="mb-4">
           <p
-            className="text-[10px] uppercase tracking-[0.2em] font-medium"
+            className="text-xs font-medium"
             style={{ color: "var(--workspace-muted)" }}
           >
             Available
@@ -780,7 +780,7 @@ export function Connections() {
         {!connectedSlugs.has("google_drive") && !searchQuery && !activeCategory && (
           <div className="mb-5">
             <p
-              className="text-[10px] uppercase tracking-wider mb-2"
+              className="text-xs font-medium mb-2"
               style={{ color: "var(--workspace-muted)" }}
             >
               File Storage
@@ -814,7 +814,7 @@ export function Connections() {
         <div className="flex flex-wrap gap-2 mb-5">
           <button
             onClick={() => setActiveCategory(null)}
-            className="px-3 py-1 text-[10px] uppercase tracking-widest transition-colors"
+            className="px-3 py-1 text-xs font-medium transition-colors"
             style={{
               border: `1px solid ${!activeCategory ? "var(--workspace-fg)" : "var(--workspace-border)"}`,
               color: !activeCategory ? "var(--workspace-fg)" : "var(--workspace-muted)",
@@ -827,7 +827,7 @@ export function Connections() {
             <button
               key={cat.key}
               onClick={() => setActiveCategory(activeCategory === cat.key ? null : cat.key)}
-              className="px-3 py-1 text-[10px] uppercase tracking-widest transition-colors"
+              className="px-3 py-1 text-xs font-medium transition-colors"
               style={{
                 border: `1px solid ${activeCategory === cat.key ? "var(--workspace-fg)" : "var(--workspace-border)"}`,
                 color: activeCategory === cat.key ? "var(--workspace-fg)" : "var(--workspace-muted)",

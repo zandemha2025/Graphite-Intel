@@ -65,7 +65,7 @@ export function Dashboard() {
       {profile && (
         <div className="px-5 py-3.5 flex items-center justify-between" style={{ border: "1px solid var(--workspace-border)", background: "#FFFFFF" }}>
           <div className="flex items-center gap-4 text-xs" style={{ color: "var(--workspace-muted)" }}>
-            <span className="text-[10px] uppercase tracking-[0.2em]">Context</span>
+            <span className="text-xs font-medium">Context</span>
             <span className="font-medium" style={{ color: "var(--workspace-fg)" }}>{profile.companyName}</span>
             <span style={{ color: "var(--workspace-border)" }}>·</span>
             <span>{profile.industry}</span>
@@ -76,7 +76,7 @@ export function Dashboard() {
           </div>
           <Link
             href="/profile"
-            className="text-[10px] uppercase tracking-[0.2em] transition-colors"
+            className="text-xs font-medium transition-colors"
             style={{ color: "var(--workspace-muted)" }}
           >
             Edit
@@ -87,7 +87,7 @@ export function Dashboard() {
       {/* Header */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4 pb-6 border-b" style={{ borderColor: "var(--workspace-border)" }}>
         <div>
-          <h1 className="font-serif text-5xl font-light tracking-tight leading-none mb-2" style={{ color: "var(--workspace-fg)" }}>
+          <h1 className="font-sans text-2xl font-semibold tracking-tight leading-none mb-2" style={{ color: "var(--workspace-fg)" }}>
             {profile ? `Good morning, ${profile.companyName}.` : "Intelligence Briefing"}
           </h1>
           <p className="text-sm" style={{ color: "var(--workspace-muted)" }}>
@@ -99,7 +99,7 @@ export function Dashboard() {
         <div className="flex items-center gap-3 shrink-0">
           <Link
             href="/chat"
-            className="flex items-center gap-2 px-4 py-2 text-xs uppercase tracking-widest transition-colors"
+            className="flex items-center gap-2 px-4 py-2 text-xs font-medium transition-colors"
             style={{ border: "1px solid var(--workspace-border)", color: "var(--workspace-muted)", background: "#FFFFFF" }}
             data-testid="btn-new-chat"
           >
@@ -108,7 +108,7 @@ export function Dashboard() {
           </Link>
           <Link
             href="/reports/new"
-            className="flex items-center gap-2 px-4 py-2 text-xs uppercase tracking-widest font-medium transition-colors"
+            className="flex items-center gap-2 px-4 py-2 text-xs font-medium transition-colors"
             style={{ background: "var(--workspace-fg)", color: "#FFFFFF" }}
             data-testid="btn-new-report"
           >
@@ -120,7 +120,7 @@ export function Dashboard() {
 
       {/* Quick launch */}
       <div>
-        <p className="text-[10px] uppercase tracking-[0.2em] mb-4" style={{ color: "var(--workspace-muted)" }}>Quick Launch</p>
+        <p className="text-xs font-medium mb-4" style={{ color: "var(--workspace-muted)" }}>Quick Launch</p>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           {QUICK_LAUNCHES.map((item) => (
             <Link
@@ -144,10 +144,10 @@ export function Dashboard() {
         {/* Recent Reports */}
         <div className="lg:col-span-2 space-y-4">
           <div className="flex items-center justify-between">
-            <p className="text-[10px] uppercase tracking-[0.2em]" style={{ color: "var(--workspace-muted)" }}>Recent Intelligence</p>
+            <p className="text-xs font-medium" style={{ color: "var(--workspace-muted)" }}>Recent Intelligence</p>
             <Link
               href="/reports"
-              className="text-[10px] uppercase tracking-[0.2em] transition-colors flex items-center gap-1"
+              className="text-xs font-medium transition-colors flex items-center gap-1"
               style={{ color: "var(--workspace-muted)" }}
             >
               View All <ArrowRight className="h-3 w-3" />
@@ -166,7 +166,7 @@ export function Dashboard() {
               <p className="text-sm" style={{ color: "var(--workspace-muted)" }}>No reports generated yet.</p>
               <Link
                 href="/reports/new"
-                className="inline-block mt-4 text-xs uppercase tracking-widest pb-0.5 transition-colors"
+                className="inline-block mt-4 text-xs font-medium pb-0.5 transition-colors"
                 style={{ color: "var(--workspace-fg)", borderBottom: "1px solid var(--workspace-border)" }}
               >
                 Commission First Report
@@ -193,7 +193,7 @@ export function Dashboard() {
                       <p className="text-sm font-medium truncate" style={{ color: "var(--workspace-fg)" }}>
                         {report.company}
                       </p>
-                      <p className="text-[10px] uppercase tracking-wide" style={{ color: "var(--workspace-muted)" }}>
+                      <p className="text-[11px] font-medium" style={{ color: "var(--workspace-muted)" }}>
                         {report.reportType.replace(/_/g, ' ')}
                       </p>
                     </div>
@@ -202,7 +202,7 @@ export function Dashboard() {
                     <span className="text-[10px]" style={{ color: "var(--workspace-muted)" }}>
                       {format(new Date(report.createdAt), "MMM d")}
                     </span>
-                    <span className={`text-[10px] uppercase tracking-wide px-2 py-0.5 ${
+                    <span className={`text-[11px] font-medium px-2 py-0.5 ${
                       report.status === 'generating' ? 'animate-pulse' : ''
                     }`} style={{
                       border: "1px solid var(--workspace-border)",
@@ -219,23 +219,23 @@ export function Dashboard() {
 
         {/* Summary stats */}
         <div className="space-y-4">
-          <p className="text-[10px] uppercase tracking-[0.2em]" style={{ color: "var(--workspace-muted)" }}>Activity</p>
+          <p className="text-xs font-medium" style={{ color: "var(--workspace-muted)" }}>Activity</p>
           <div className="space-y-2">
             <div className="px-4 py-4" style={{ border: "1px solid var(--workspace-border)", background: "#FFFFFF" }}>
-              <p className="text-[10px] uppercase tracking-[0.15em] mb-1" style={{ color: "var(--workspace-muted)" }}>Total Reports</p>
-              <p className="font-serif text-4xl font-light" style={{ color: "var(--workspace-fg)" }} data-testid="stat-total-reports">
+              <p className="text-xs font-medium mb-1" style={{ color: "var(--workspace-muted)" }}>Total Reports</p>
+              <p className="font-sans text-2xl font-semibold" style={{ color: "var(--workspace-fg)" }} data-testid="stat-total-reports">
                 {loadingSummary ? "—" : summary?.totalReports ?? 0}
               </p>
             </div>
             <div className="px-4 py-4" style={{ border: "1px solid var(--workspace-border)", background: "#FFFFFF" }}>
-              <p className="text-[10px] uppercase tracking-[0.15em] mb-1" style={{ color: "var(--workspace-muted)" }}>Conversations</p>
-              <p className="font-serif text-4xl font-light" style={{ color: "var(--workspace-fg)" }} data-testid="stat-total-conversations">
+              <p className="text-xs font-medium mb-1" style={{ color: "var(--workspace-muted)" }}>Conversations</p>
+              <p className="font-sans text-2xl font-semibold" style={{ color: "var(--workspace-fg)" }} data-testid="stat-total-conversations">
                 {loadingSummary ? "—" : summary?.totalConversations ?? 0}
               </p>
             </div>
             <div className="px-4 py-4" style={{ border: "1px solid var(--workspace-border)", background: "#FFFFFF" }}>
-              <p className="text-[10px] uppercase tracking-[0.15em] mb-1" style={{ color: "var(--workspace-muted)" }}>This Month</p>
-              <p className="font-serif text-4xl font-light" style={{ color: "var(--workspace-fg)" }} data-testid="stat-monthly-reports">
+              <p className="text-xs font-medium mb-1" style={{ color: "var(--workspace-muted)" }}>This Month</p>
+              <p className="font-sans text-2xl font-semibold" style={{ color: "var(--workspace-fg)" }} data-testid="stat-monthly-reports">
                 {loadingSummary ? "—" : summary?.reportsThisMonth ?? 0}
               </p>
             </div>

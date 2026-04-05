@@ -49,8 +49,8 @@ function StatusBadge({
             alignItems: "center",
             gap: "4px",
             fontSize: "10px",
-            textTransform: "uppercase",
-            letterSpacing: "0.1em",
+            
+            letterSpacing: "0.01em",
             color: "#16a34a",
           }}
         >
@@ -72,8 +72,8 @@ function StatusBadge({
           alignItems: "center",
           gap: "4px",
           fontSize: "10px",
-          textTransform: "uppercase",
-          letterSpacing: "0.1em",
+          
+          letterSpacing: "0.01em",
           color: "#D97706",
         }}
       >
@@ -88,8 +88,8 @@ function StatusBadge({
         alignItems: "center",
         gap: "4px",
         fontSize: "10px",
-        textTransform: "uppercase",
-        letterSpacing: "0.1em",
+        
+        letterSpacing: "0.01em",
         color: "#DC2626",
       }}
     >
@@ -278,8 +278,8 @@ export function KnowledgeBase({ onDocCountChange }: Props) {
             gap: "6px",
             padding: "10px 16px",
             fontSize: "11px",
-            textTransform: "uppercase",
-            letterSpacing: "0.1em",
+            
+            letterSpacing: "0.01em",
             background: "#4F46E5",
             color: "#FFFFFF",
             border: "none",
@@ -378,7 +378,7 @@ export function KnowledgeBase({ onDocCountChange }: Props) {
                     <span
                       style={{
                         fontSize: "10px",
-                        textTransform: "uppercase",
+                        
                         color: "#9CA3AF",
                       }}
                     >

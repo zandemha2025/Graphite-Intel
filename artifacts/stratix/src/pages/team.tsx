@@ -106,7 +106,7 @@ function RoleBadge({ role }: { role: string }) {
 
   return (
     <span
-      className="flex items-center gap-1 text-[10px] uppercase tracking-wider px-2 py-0.5"
+      className="flex items-center gap-1 text-xs font-medium px-2 py-0.5"
       style={{ border: `1px solid ${c.borderColor}`, color: c.color, background: c.bg }}
     >
       {c.icon}
@@ -132,7 +132,7 @@ function RoleDropdown({
       <button
         onClick={() => !disabled && setOpen(!open)}
         disabled={disabled}
-        className="flex items-center gap-1 text-[10px] uppercase tracking-wider px-2 py-1 transition-colors"
+        className="flex items-center gap-1 text-xs font-medium px-2 py-1 transition-colors"
         style={{
           border: "1px solid var(--workspace-border)",
           color: "var(--workspace-muted)",
@@ -315,8 +315,8 @@ export function Team() {
     <div className="space-y-10 max-w-2xl">
       {/* Header */}
       <div>
-        <h1 className="font-serif text-2xl font-light mb-1" style={{ color: "var(--workspace-fg)" }}>{org.name}</h1>
-        <p className="text-xs uppercase tracking-wider" style={{ color: "var(--workspace-muted)" }}>
+        <h1 className="font-sans text-2xl font-light mb-1" style={{ color: "var(--workspace-fg)" }}>{org.name}</h1>
+        <p className="text-xs font-medium" style={{ color: "var(--workspace-muted)" }}>
           {org.slug} &middot; {members.length} member{members.length !== 1 ? "s" : ""}
         </p>
       </div>
@@ -325,7 +325,7 @@ export function Team() {
       {isAdmin && (
         <div style={{ border: "1px solid var(--workspace-border)" }}>
           <div className="px-5 py-3" style={{ background: "var(--workspace-muted-bg)", borderBottom: "1px solid var(--workspace-border)" }}>
-            <span className="text-[10px] uppercase tracking-[0.2em] flex items-center gap-2" style={{ color: "var(--workspace-muted)" }}>
+            <span className="text-xs font-medium flex items-center gap-2" style={{ color: "var(--workspace-muted)" }}>
               <UserPlus className="h-3.5 w-3.5" />
               Invite Team Member
             </span>
@@ -333,7 +333,7 @@ export function Team() {
           <div className="px-5 py-4" style={{ background: "#FFFFFF" }}>
             <div className="flex items-end gap-3">
               <div className="flex-1">
-                <label className="text-[10px] uppercase tracking-wider mb-1.5 block" style={{ color: "var(--workspace-muted)" }}>
+                <label className="text-xs font-medium mb-1.5 block" style={{ color: "var(--workspace-muted)" }}>
                   Email Address <span className="normal-case tracking-normal opacity-60">(optional)</span>
                 </label>
                 <div className="flex items-center gap-2 px-3 py-2" style={{ border: "1px solid var(--workspace-border)", background: "#FFFFFF" }}>
@@ -356,7 +356,7 @@ export function Team() {
                 </div>
               </div>
               <div>
-                <label className="text-[10px] uppercase tracking-wider mb-1.5 block" style={{ color: "var(--workspace-muted)" }}>
+                <label className="text-xs font-medium mb-1.5 block" style={{ color: "var(--workspace-muted)" }}>
                   Role
                 </label>
                 <select
@@ -380,7 +380,7 @@ export function Team() {
               <button
                 onClick={createInvite}
                 disabled={inviteLoading}
-                className="flex items-center gap-2 px-4 py-2 text-xs uppercase tracking-widest font-medium transition-colors disabled:opacity-40"
+                className="flex items-center gap-2 px-4 py-2 text-xs font-medium transition-colors disabled:opacity-40"
                 style={{ background: "var(--workspace-fg)", color: "#FFFFFF", height: "36px", whiteSpace: "nowrap" }}
                 data-testid="btn-invite-team"
               >
@@ -398,7 +398,7 @@ export function Team() {
       {/* Team Members */}
       <div style={{ border: "1px solid var(--workspace-border)" }}>
         <div className="px-5 py-3" style={{ background: "var(--workspace-muted-bg)", borderBottom: "1px solid var(--workspace-border)" }}>
-          <span className="text-[10px] uppercase tracking-[0.2em]" style={{ color: "var(--workspace-muted)" }}>Team Members</span>
+          <span className="text-xs font-medium" style={{ color: "var(--workspace-muted)" }}>Team Members</span>
         </div>
         {members.length === 0 ? (
           <div className="px-5 py-8 text-center" style={{ background: "#FFFFFF" }}>
@@ -429,7 +429,7 @@ export function Team() {
                         : member.email || "Unknown"}
                     </span>
                     {member.userId === currentUserId && (
-                      <span className="text-[9px] uppercase tracking-wider px-1.5 py-0.5" style={{ color: "var(--workspace-muted)", opacity: 0.6 }}>
+                      <span className="text-[9px] px-1.5 py-0.5" style={{ color: "var(--workspace-muted)", opacity: 0.6 }}>
                         You
                       </span>
                     )}
@@ -457,14 +457,14 @@ export function Team() {
                           <button
                             onClick={() => removeMember(member.userId)}
                             disabled={removingId === member.userId}
-                            className="px-2 py-1 text-[10px] uppercase tracking-wider transition-colors"
+                            className="px-2 py-1 text-xs font-medium transition-colors"
                             style={{ background: "#DC2626", color: "#FFFFFF", border: "none" }}
                           >
                             {removingId === member.userId ? "..." : "Remove"}
                           </button>
                           <button
                             onClick={() => setShowConfirmRemove(null)}
-                            className="px-2 py-1 text-[10px] uppercase tracking-wider transition-colors"
+                            className="px-2 py-1 text-xs font-medium transition-colors"
                             style={{ border: "1px solid var(--workspace-border)", color: "var(--workspace-muted)", background: "#FFFFFF" }}
                           >
                             Cancel
@@ -495,7 +495,7 @@ export function Team() {
         <div>
           <div style={{ border: "1px solid var(--workspace-border)" }}>
             <div className="px-5 py-3" style={{ background: "var(--workspace-muted-bg)", borderBottom: "1px solid var(--workspace-border)" }}>
-              <span className="text-[10px] uppercase tracking-[0.2em]" style={{ color: "var(--workspace-muted)" }}>
+              <span className="text-xs font-medium" style={{ color: "var(--workspace-muted)" }}>
                 Pending Invites ({invites.length})
               </span>
             </div>

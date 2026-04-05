@@ -168,7 +168,7 @@ export function WorkflowBuilder() {
       <div className="mb-10 pb-6 border-b" style={{ borderColor: "var(--workspace-border)" }}>
         <div className="flex items-center gap-3 mb-2">
           <Zap className="h-5 w-5" style={{ color: "var(--workspace-muted)" }} />
-          <h1 className="font-serif text-4xl font-light" style={{ color: "var(--workspace-fg)" }}>
+          <h1 className="font-sans text-2xl font-semibold tracking-tight" style={{ color: "var(--workspace-fg)" }}>
             Workflow Builder
           </h1>
         </div>
@@ -208,7 +208,7 @@ export function WorkflowBuilder() {
           <div className="flex justify-end">
             <button
               onClick={() => navigate("/workflow-builder/new")}
-              className="flex items-center gap-2 px-4 py-2 text-xs uppercase tracking-widest font-medium transition-colors"
+              className="flex items-center gap-2 px-4 py-2 text-xs font-medium transition-colors"
               style={{ background: "var(--workspace-fg)", color: "#FFFFFF" }}
             >
               <Plus className="h-3.5 w-3.5" />
@@ -230,7 +230,7 @@ export function WorkflowBuilder() {
           ) : workflows.length === 0 ? (
             <div className="py-16 text-center border-dashed" style={{ border: "1px dashed var(--workspace-border)" }}>
               <Zap className="h-8 w-8 mx-auto mb-4" style={{ color: "var(--workspace-muted)" }} />
-              <h3 className="font-serif text-xl font-light mb-2" style={{ color: "var(--workspace-muted)" }}>
+              <h3 className="font-sans text-xl font-light mb-2" style={{ color: "var(--workspace-muted)" }}>
                 No workflows yet
               </h3>
               <p className="text-sm mb-6" style={{ color: "var(--workspace-muted)" }}>
@@ -238,7 +238,7 @@ export function WorkflowBuilder() {
               </p>
               <button
                 onClick={() => navigate("/workflow-builder/new")}
-                className="inline-block text-xs uppercase tracking-widest pb-0.5 transition-colors"
+                className="inline-block text-xs font-medium pb-0.5 transition-colors"
                 style={{ color: "var(--workspace-fg)", borderBottom: "1px solid var(--workspace-border)" }}
               >
                 Create First Workflow
@@ -259,7 +259,7 @@ export function WorkflowBuilder() {
                     <div className="flex items-center gap-2">
                       <Zap className="h-4 w-4 shrink-0" style={{ color: "var(--workspace-muted)" }} />
                       <span
-                        className="font-serif text-base font-light transition-colors"
+                        className="font-sans text-base font-light transition-colors"
                         style={{ color: "var(--workspace-fg)" }}
                       >
                         {workflow.name}
@@ -285,7 +285,7 @@ export function WorkflowBuilder() {
                   {/* Status, Trigger & Version */}
                   <div className="flex items-center gap-2 pt-2 border-t" style={{ borderColor: "var(--workspace-border)" }}>
                     <span
-                      className="text-[10px] uppercase tracking-wide px-2 py-0.5"
+                      className="text-[11px] font-medium px-2 py-0.5"
                       style={{
                         border: "1px solid var(--workspace-border)",
                         color: STATUS_COLORS[workflow.status],
@@ -299,7 +299,7 @@ export function WorkflowBuilder() {
                       const TriggerIcon = badge.icon;
                       return (
                         <span
-                          className="flex items-center gap-1 text-[10px] uppercase tracking-wide px-2 py-0.5"
+                          className="flex items-center gap-1 text-[11px] font-medium px-2 py-0.5"
                           style={{ border: `1px solid ${badge.color}33`, color: badge.color }}
                         >
                           <TriggerIcon className="h-2.5 w-2.5" />
@@ -316,7 +316,7 @@ export function WorkflowBuilder() {
                   <div className="flex items-center gap-2 pt-2 border-t opacity-0 group-hover:opacity-100 transition-opacity" style={{ borderColor: "var(--workspace-border)" }}>
                     <button
                       onClick={() => navigate(`/workflow-builder/${workflow.id}`)}
-                      className="flex-1 px-3 py-1.5 text-xs uppercase tracking-widest transition-colors"
+                      className="flex-1 px-3 py-1.5 text-xs font-medium transition-colors"
                       style={{ background: "var(--workspace-fg)", color: "#FFFFFF" }}
                     >
                       Edit
@@ -366,7 +366,7 @@ export function WorkflowBuilder() {
       {/* Executions Tab */}
       {activeTab === "executions" && (
         <div className="space-y-6">
-          <h2 className="text-[10px] uppercase tracking-[0.25em]" style={{ color: "var(--workspace-muted)" }}>
+          <h2 className="text-xs font-medium" style={{ color: "var(--workspace-muted)" }}>
             Recent Executions
           </h2>
 
@@ -407,7 +407,7 @@ export function WorkflowBuilder() {
                     </span>
                   </div>
                   <span
-                    className={`text-[10px] uppercase tracking-wider shrink-0 ${
+                    className={`text-xs font-medium shrink-0 ${
                       execution.status === "in-progress" ? "animate-pulse" : ""
                     }`}
                     style={{ color: STATUS_COLORS[execution.status] || "var(--workspace-muted)" }}

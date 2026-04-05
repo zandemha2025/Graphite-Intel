@@ -7,9 +7,9 @@ function Logo() {
   return (
     <div className="flex items-center gap-2.5">
       <div className="h-6 w-6 border border-[#E8E4DC]/30 flex items-center justify-center">
-        <span className="font-serif font-semibold text-[#E8E4DC] text-xs leading-none">S</span>
+        <span className="font-sans font-semibold text-[#E8E4DC] text-xs leading-none">S</span>
       </div>
-      <span className="font-serif font-medium text-base uppercase tracking-tight text-[#E8E4DC]">Stratix</span>
+      <span className="font-sans font-medium text-base tracking-tight text-[#E8E4DC]">Stratix</span>
     </div>
   );
 }
@@ -61,7 +61,7 @@ export function OrgSetup() {
           {/* Progress indicator */}
           <div className="mb-10">
             <div className="flex items-center gap-3 mb-6">
-              <span className="text-[10px] font-medium uppercase tracking-[0.25em] text-[#E8E4DC]/40 border border-[#E8E4DC]/15 px-3 py-1">
+              <span className="text-xs font-medium text-[#E8E4DC]/40 border border-[#E8E4DC]/15 px-3 py-1">
                 Step 2 of 3
               </span>
               <div className="flex items-center gap-1.5">
@@ -70,7 +70,7 @@ export function OrgSetup() {
                 <div className="h-1 w-6 bg-[#E8E4DC]/15" />
               </div>
             </div>
-            <h1 className="font-serif text-5xl font-light text-[#E8E4DC] mb-4 leading-tight">
+            <h1 className="font-sans text-2xl font-semibold tracking-tight text-[#E8E4DC] mb-4 leading-tight">
               Create your organization.
             </h1>
             <p className="text-sm text-[#E8E4DC]/45 leading-relaxed">
@@ -80,14 +80,14 @@ export function OrgSetup() {
 
           <form onSubmit={handleCreate} className="space-y-8">
             <div className="space-y-2">
-              <label className="text-[10px] uppercase tracking-[0.2em] text-[#E8E4DC]/40">Organization Name</label>
+              <label className="text-xs font-medium text-[#E8E4DC]/40">Organization Name</label>
               <input
                 autoFocus
                 type="text"
                 value={orgName}
                 onChange={(e) => setOrgName(e.target.value)}
                 placeholder="e.g. Acme Corp"
-                className="w-full bg-transparent border-b border-white/20 py-3 text-[#E8E4DC] text-xl font-serif placeholder:text-[#E8E4DC]/20 focus:outline-none focus:border-[#E8E4DC]/60 transition-colors"
+                className="w-full bg-transparent border-b border-white/20 py-3 text-[#E8E4DC] text-xl font-sans placeholder:text-[#E8E4DC]/20 focus:outline-none focus:border-[#E8E4DC]/60 transition-colors"
                 data-testid="input-org-name"
               />
             </div>
@@ -96,7 +96,7 @@ export function OrgSetup() {
               <button
                 type="submit"
                 disabled={!orgName.trim() || loading}
-                className="bg-[#E8E4DC] text-[#0D0C0B] px-8 py-3 text-xs uppercase tracking-widest font-medium hover:bg-[#D4CEC5] transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                className="bg-[#E8E4DC] text-[#0D0C0B] px-8 py-3 text-xs font-medium hover:bg-[#D4CEC5] transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
                 data-testid="btn-create-org"
               >
                 {loading ? "Creating..." : "Create Organization"}

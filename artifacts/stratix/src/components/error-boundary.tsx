@@ -56,7 +56,7 @@ function DefaultErrorFallback({ error, reset }: { error: Error; reset: () => voi
         </div>
 
         <h2
-          className="font-serif text-lg font-medium uppercase tracking-wider mb-2"
+          className="font-sans text-lg font-medium mb-2"
           style={{ color: "#E8E4DC" }}
         >
           Something went wrong
@@ -86,7 +86,7 @@ function DefaultErrorFallback({ error, reset }: { error: Error; reset: () => voi
         <div className="flex items-center justify-center gap-3">
           <button
             onClick={reset}
-            className="px-4 py-2 text-xs font-medium uppercase tracking-wider border transition-colors hover:bg-white/5"
+            className="px-4 py-2 text-xs font-medium border transition-colors hover:bg-white/5"
             style={{
               color: "#E8E4DC",
               borderColor: "rgba(232,228,220,0.20)",
@@ -97,7 +97,7 @@ function DefaultErrorFallback({ error, reset }: { error: Error; reset: () => voi
           </button>
           <button
             onClick={() => window.location.assign("/")}
-            className="px-4 py-2 text-xs font-medium uppercase tracking-wider transition-colors hover:bg-white/5"
+            className="px-4 py-2 text-xs font-medium transition-colors hover:bg-white/5"
             style={{ color: "rgba(232,228,220,0.50)" }}
           >
             Go Home
@@ -115,7 +115,7 @@ export function SectionErrorFallback({ error, reset }: { error: Error; reset: ()
       className="flex flex-col items-center justify-center py-12 px-6"
       style={{ color: "rgba(232,228,220,0.50)" }}
     >
-      <p className="text-xs uppercase tracking-wider mb-1 font-medium" style={{ color: "#E8E4DC" }}>
+      <p className="text-xs font-medium mb-1 font-medium" style={{ color: "#E8E4DC" }}>
         Failed to load this section
       </p>
       <p className="text-[11px] mb-4" style={{ color: "rgba(232,228,220,0.40)" }}>
@@ -123,7 +123,7 @@ export function SectionErrorFallback({ error, reset }: { error: Error; reset: ()
       </p>
       <button
         onClick={reset}
-        className="px-3 py-1.5 text-[10px] font-medium uppercase tracking-wider border transition-colors hover:bg-white/5"
+        className="px-3 py-1.5 text-xs font-medium border transition-colors hover:bg-white/5"
         style={{
           color: "rgba(232,228,220,0.60)",
           borderColor: "rgba(232,228,220,0.15)",

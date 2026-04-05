@@ -146,7 +146,7 @@ export function AuditLogs() {
       {/* Header */}
       <div className="flex flex-col gap-4 pb-6 border-b" style={{ borderColor: "var(--workspace-border)" }}>
         <div>
-          <h1 className="font-serif text-5xl font-light mb-2" style={{ color: "var(--workspace-fg)" }}>
+          <h1 className="font-sans text-2xl font-semibold tracking-tight mb-2" style={{ color: "var(--workspace-fg)" }}>
             Audit Log
           </h1>
           <p className="text-sm" style={{ color: "var(--workspace-muted)" }}>
@@ -159,7 +159,7 @@ export function AuditLogs() {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-3">
         {/* Resource Type Filter */}
         <div>
-          <label className="text-[10px] uppercase tracking-[0.2em] block mb-2" style={{ color: "var(--workspace-muted)" }}>
+          <label className="text-xs font-medium block mb-2" style={{ color: "var(--workspace-muted)" }}>
             Resource Type
           </label>
           <select
@@ -183,7 +183,7 @@ export function AuditLogs() {
 
         {/* Action Filter */}
         <div>
-          <label className="text-[10px] uppercase tracking-[0.2em] block mb-2" style={{ color: "var(--workspace-muted)" }}>
+          <label className="text-xs font-medium block mb-2" style={{ color: "var(--workspace-muted)" }}>
             Action
           </label>
           <input
@@ -202,7 +202,7 @@ export function AuditLogs() {
 
         {/* User ID Filter */}
         <div>
-          <label className="text-[10px] uppercase tracking-[0.2em] block mb-2" style={{ color: "var(--workspace-muted)" }}>
+          <label className="text-xs font-medium block mb-2" style={{ color: "var(--workspace-muted)" }}>
             User ID
           </label>
           <input
@@ -221,7 +221,7 @@ export function AuditLogs() {
 
         {/* Start Date Filter */}
         <div>
-          <label className="text-[10px] uppercase tracking-[0.2em] block mb-2" style={{ color: "var(--workspace-muted)" }}>
+          <label className="text-xs font-medium block mb-2" style={{ color: "var(--workspace-muted)" }}>
             From Date
           </label>
           <input
@@ -239,7 +239,7 @@ export function AuditLogs() {
 
         {/* End Date Filter */}
         <div>
-          <label className="text-[10px] uppercase tracking-[0.2em] block mb-2" style={{ color: "var(--workspace-muted)" }}>
+          <label className="text-xs font-medium block mb-2" style={{ color: "var(--workspace-muted)" }}>
             To Date
           </label>
           <input
@@ -286,7 +286,7 @@ export function AuditLogs() {
       {!loading && !error && logs.length === 0 && (
         <div className="py-16 text-center border-dashed" style={{ border: "1px dashed var(--workspace-border)" }}>
           <Shield className="h-6 w-6 mx-auto mb-4" style={{ color: "var(--workspace-muted)" }} />
-          <h3 className="font-serif text-xl font-light mb-2" style={{ color: "var(--workspace-muted)" }}>
+          <h3 className="font-sans text-xl font-light mb-2" style={{ color: "var(--workspace-muted)" }}>
             No audit logs found
           </h3>
           <p className="text-sm" style={{ color: "var(--workspace-muted)" }}>
@@ -341,7 +341,7 @@ export function AuditLogs() {
                         <p className="text-xs truncate" style={{ color: "var(--workspace-fg)" }}>
                           {log.userName || log.userId}
                         </p>
-                        <p className="text-[10px] uppercase tracking-[0.15em] mt-0.5" style={{ color: "var(--workspace-muted)" }}>
+                        <p className="text-xs font-medium mt-0.5" style={{ color: "var(--workspace-muted)" }}>
                           User
                         </p>
                       </div>
@@ -352,7 +352,7 @@ export function AuditLogs() {
                       <p className="text-xs" style={{ color: "var(--workspace-fg)" }}>
                         {log.action}
                       </p>
-                      <p className="text-[10px] uppercase tracking-[0.15em] mt-0.5" style={{ color: "var(--workspace-muted)" }}>
+                      <p className="text-xs font-medium mt-0.5" style={{ color: "var(--workspace-muted)" }}>
                         Action
                       </p>
                     </div>
@@ -362,7 +362,7 @@ export function AuditLogs() {
                       <p className="text-xs capitalize" style={{ color: "var(--workspace-fg)" }}>
                         {log.resourceType}
                       </p>
-                      <p className="text-[10px] uppercase tracking-[0.15em] mt-0.5" style={{ color: "var(--workspace-muted)" }}>
+                      <p className="text-xs font-medium mt-0.5" style={{ color: "var(--workspace-muted)" }}>
                         Type
                       </p>
                     </div>
@@ -372,7 +372,7 @@ export function AuditLogs() {
                       <p className="text-xs truncate" style={{ color: "var(--workspace-fg)" }}>
                         {log.resourceName}
                       </p>
-                      <p className="text-[10px] uppercase tracking-[0.15em] mt-0.5" style={{ color: "var(--workspace-muted)" }}>
+                      <p className="text-xs font-medium mt-0.5" style={{ color: "var(--workspace-muted)" }}>
                         Resource
                       </p>
                     </div>
@@ -381,7 +381,7 @@ export function AuditLogs() {
                     <div className="flex items-start justify-between">
                       <div>
                         <span
-                          className="text-[10px] uppercase tracking-wide px-2 py-0.5 inline-block"
+                          className="text-[11px] font-medium px-2 py-0.5 inline-block"
                           style={{
                             border: "1px solid var(--workspace-border)",
                             color: log.status === "success" ? "var(--workspace-muted)" : "#dc2626",
@@ -412,7 +412,7 @@ export function AuditLogs() {
                   >
                     <div className="space-y-3">
                       <div>
-                        <p className="text-[10px] uppercase tracking-[0.2em] mb-2" style={{ color: "var(--workspace-muted)" }}>
+                        <p className="text-xs font-medium mb-2" style={{ color: "var(--workspace-muted)" }}>
                           Details
                         </p>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -441,7 +441,7 @@ export function AuditLogs() {
 
                       {log.metadata && Object.keys(log.metadata).length > 0 && (
                         <div>
-                          <p className="text-[10px] uppercase tracking-[0.2em] mb-2" style={{ color: "var(--workspace-muted)" }}>
+                          <p className="text-xs font-medium mb-2" style={{ color: "var(--workspace-muted)" }}>
                             Metadata
                           </p>
                           <div
@@ -469,7 +469,7 @@ export function AuditLogs() {
               <button
                 onClick={handlePrevious}
                 disabled={offset === 0}
-                className="flex items-center gap-2 px-3 py-2 text-xs uppercase tracking-widest transition-colors disabled:opacity-40"
+                className="flex items-center gap-2 px-3 py-2 text-xs font-medium transition-colors disabled:opacity-40"
                 style={{
                   border: "1px solid var(--workspace-border)",
                   color: "var(--workspace-fg)",
@@ -487,7 +487,7 @@ export function AuditLogs() {
               <button
                 onClick={handleNext}
                 disabled={offset + limit >= total}
-                className="flex items-center gap-2 px-3 py-2 text-xs uppercase tracking-widest transition-colors disabled:opacity-40"
+                className="flex items-center gap-2 px-3 py-2 text-xs font-medium transition-colors disabled:opacity-40"
                 style={{
                   border: "1px solid var(--workspace-border)",
                   color: "var(--workspace-fg)",

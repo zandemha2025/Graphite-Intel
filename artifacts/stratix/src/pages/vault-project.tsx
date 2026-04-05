@@ -281,7 +281,7 @@ export function VaultProject() {
       <div>
         <Link
           href="/vault"
-          className="inline-flex items-center gap-2 text-xs uppercase tracking-widest mb-4 transition-colors"
+          className="inline-flex items-center gap-2 text-xs font-medium mb-4 transition-colors"
           style={{ color: "var(--workspace-muted)" }}
         >
           <ArrowLeft className="h-3 w-3" />
@@ -294,7 +294,7 @@ export function VaultProject() {
               type="text"
               value={editData.name}
               onChange={(e) => setEditData({ ...editData, name: e.target.value })}
-              className="block w-full font-serif text-4xl font-light focus:outline-none transition-colors mb-2"
+              className="block w-full font-sans text-2xl font-semibold tracking-tight focus:outline-none transition-colors mb-2"
               style={{
                 color: "var(--workspace-fg)",
                 borderBottom: "1px solid var(--workspace-border)",
@@ -316,7 +316,7 @@ export function VaultProject() {
               <button
                 type="button"
                 onClick={() => setEditingProject(false)}
-                className="px-3 py-1 text-xs uppercase tracking-widest transition-colors"
+                className="px-3 py-1 text-xs font-medium transition-colors"
                 style={{
                   border: "1px solid var(--workspace-border)",
                   color: "var(--workspace-muted)",
@@ -328,7 +328,7 @@ export function VaultProject() {
               <button
                 type="submit"
                 disabled={isSaving}
-                className="px-3 py-1 text-xs uppercase tracking-widest transition-colors disabled:opacity-40"
+                className="px-3 py-1 text-xs font-medium transition-colors disabled:opacity-40"
                 style={{ background: "var(--workspace-fg)", color: "#FFFFFF" }}
               >
                 {isSaving ? "Saving..." : "Save"}
@@ -338,7 +338,7 @@ export function VaultProject() {
         ) : (
           <>
             <h1
-              className="font-serif text-4xl font-light mb-2"
+              className="font-sans text-2xl font-semibold tracking-tight mb-2"
               style={{ color: "var(--workspace-fg)" }}
             >
               {project.name}
@@ -349,7 +349,7 @@ export function VaultProject() {
             <div className="flex items-center gap-3 flex-wrap mb-4">
               {project.matterType && (
                 <span
-                  className="text-[10px] uppercase tracking-widest px-2 py-0.5"
+                  className="text-xs font-medium px-2 py-0.5"
                   style={{
                     border: "1px solid var(--workspace-border)",
                     color: "var(--workspace-muted)",
@@ -365,7 +365,7 @@ export function VaultProject() {
             <div className="flex gap-2">
               <button
                 onClick={() => setEditingProject(true)}
-                className="px-3 py-1 text-xs uppercase tracking-widest transition-colors"
+                className="px-3 py-1 text-xs font-medium transition-colors"
                 style={{
                   border: "1px solid var(--workspace-border)",
                   color: "var(--workspace-muted)",
@@ -376,7 +376,7 @@ export function VaultProject() {
               </button>
               <button
                 onClick={handleDeleteProject}
-                className="px-3 py-1 text-xs uppercase tracking-widest transition-colors"
+                className="px-3 py-1 text-xs font-medium transition-colors"
                 style={{
                   border: "1px solid #dc2626",
                   color: "#dc2626",
@@ -396,7 +396,7 @@ export function VaultProject() {
           <button
             key={tab}
             onClick={() => setActiveTab(tab)}
-            className="px-0 py-3 text-xs uppercase tracking-widest font-medium transition-colors relative"
+            className="px-0 py-3 text-xs font-medium transition-colors relative"
             style={{
               color:
                 activeTab === tab
@@ -419,7 +419,7 @@ export function VaultProject() {
           {!showDocumentPicker ? (
             <button
               onClick={() => setShowDocumentPicker(true)}
-              className="flex items-center gap-2 px-4 py-2 text-xs uppercase tracking-widest transition-colors"
+              className="flex items-center gap-2 px-4 py-2 text-xs font-medium transition-colors"
               style={{ background: "var(--workspace-fg)", color: "#FFFFFF" }}
             >
               <Plus className="h-3.5 w-3.5" />
@@ -477,7 +477,7 @@ export function VaultProject() {
                         {doc.title}
                       </span>
                       <span
-                        className="text-[10px] uppercase ml-auto shrink-0"
+                        className="text-[11px] font-medium ml-auto shrink-0"
                         style={{ color: "var(--workspace-muted)" }}
                       >
                         {doc.fileType}
@@ -490,7 +490,7 @@ export function VaultProject() {
                 <button
                   type="button"
                   onClick={() => setShowDocumentPicker(false)}
-                  className="px-3 py-1 text-xs uppercase tracking-widest transition-colors"
+                  className="px-3 py-1 text-xs font-medium transition-colors"
                   style={{
                     border: "1px solid var(--workspace-border)",
                     color: "var(--workspace-muted)",
@@ -503,7 +503,7 @@ export function VaultProject() {
                   type="button"
                   onClick={handleAddDocuments}
                   disabled={isSaving || selectedDocuments.length === 0}
-                  className="px-3 py-1 text-xs uppercase tracking-widest transition-colors disabled:opacity-40"
+                  className="px-3 py-1 text-xs font-medium transition-colors disabled:opacity-40"
                   style={{ background: "var(--workspace-fg)", color: "#FFFFFF" }}
                 >
                   Add Selected
@@ -556,7 +556,7 @@ export function VaultProject() {
                       </p>
                       <div className="flex items-center gap-3 mt-1 flex-wrap">
                         <span
-                          className="text-[10px] uppercase tracking-widest"
+                          className="text-xs font-medium"
                           style={{ color: "var(--workspace-muted)" }}
                         >
                           {doc.fileType.toUpperCase()}
@@ -571,7 +571,7 @@ export function VaultProject() {
                           {format(new Date(doc.createdAt), "MMM d, yyyy")}
                         </span>
                         <span
-                          className={`text-[10px] uppercase tracking-widest flex items-center gap-1 ${
+                          className={`text-xs font-medium flex items-center gap-1 ${
                             doc.status === "processing" ? "animate-pulse" : ""
                           }`}
                           style={{
@@ -615,7 +615,7 @@ export function VaultProject() {
               }}
             >
               <label
-                className="block text-xs uppercase tracking-widest mb-2"
+                className="block text-xs font-medium mb-2"
                 style={{ color: "var(--workspace-muted)" }}
               >
                 Extraction Template
@@ -693,7 +693,7 @@ export function VaultProject() {
                         <button
                           onClick={() => handleExtractData(doc.id)}
                           disabled={!selectedTemplate || extractingDocId === doc.id}
-                          className="flex items-center gap-2 px-3 py-1 text-xs uppercase tracking-widest transition-colors disabled:opacity-40"
+                          className="flex items-center gap-2 px-3 py-1 text-xs font-medium transition-colors disabled:opacity-40"
                           style={{
                             border: "1px solid var(--workspace-border)",
                             color: "var(--workspace-muted)",
@@ -717,7 +717,7 @@ export function VaultProject() {
                           {docExtracts.map((ext) => (
                             <div key={ext.id}>
                               <p
-                                className="text-[10px] uppercase tracking-widest mb-1"
+                                className="text-xs font-medium mb-1"
                                 style={{ color: "var(--workspace-muted)" }}
                               >
                                 {ext.templateName}
@@ -765,7 +765,7 @@ export function VaultProject() {
               <form onSubmit={handleCompare} className="space-y-4">
                 <div>
                   <label
-                    className="block text-xs uppercase tracking-widest mb-2"
+                    className="block text-xs font-medium mb-2"
                     style={{ color: "var(--workspace-muted)" }}
                   >
                     Extraction Template
@@ -791,7 +791,7 @@ export function VaultProject() {
                 <button
                   type="submit"
                   disabled={isComparing || !selectedTemplate}
-                  className="flex items-center gap-2 px-4 py-2 text-xs uppercase tracking-widest transition-colors disabled:opacity-40"
+                  className="flex items-center gap-2 px-4 py-2 text-xs font-medium transition-colors disabled:opacity-40"
                   style={{ background: "var(--workspace-fg)", color: "#FFFFFF" }}
                 >
                   {isComparing ? (

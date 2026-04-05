@@ -78,7 +78,7 @@ function StatBody({ card }: { card: BoardCard }) {
 
   return (
     <div className="flex flex-col justify-center h-full px-2">
-      <div className="text-3xl font-bold" style={{ color: "#111827" }}>{value}</div>
+      <div className="text-2xl font-bold" style={{ color: "#111827" }}>{value}</div>
       <div className="text-sm mt-1" style={{ color: "#6B7280" }}>{label}</div>
       {change && (
         <div className="text-xs mt-1 font-medium" style={{ color: positive ? "#059669" : "#DC2626" }}>

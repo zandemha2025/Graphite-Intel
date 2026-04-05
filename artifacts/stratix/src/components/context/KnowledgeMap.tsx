@@ -74,8 +74,8 @@ function SectionCard({
               fontSize: "12px",
               fontWeight: 600,
               color: "#111827",
-              textTransform: "uppercase",
-              letterSpacing: "0.08em",
+              
+              letterSpacing: "0.01em",
             }}
           >
             {title}
@@ -118,7 +118,7 @@ function DocGroup({ type, docs }: { type: string; docs: KBDocument[] }) {
   return (
     <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "6px 0" }}>
       <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-        <span style={{ fontSize: "10px", textTransform: "uppercase", color: "#6B7280", background: "#F3F4F6", padding: "2px 6px", letterSpacing: "0.05em", minWidth: "36px", textAlign: "center" }}>
+        <span style={{ fontSize: "10px", color: "#6B7280", background: "#F3F4F6", padding: "2px 6px", letterSpacing: "0.05em", minWidth: "36px", textAlign: "center" }}>
           {type}
         </span>
         <span style={{ fontSize: "12px", color: "#374151" }}>
@@ -150,8 +150,8 @@ function CoverageIndicator({
       <div
         style={{
           fontSize: "10px",
-          textTransform: "uppercase",
-          letterSpacing: "0.15em",
+          
+          letterSpacing: "0.01em",
           color: "#6B7280",
           marginBottom: "10px",
           fontWeight: 600,
@@ -390,7 +390,7 @@ export function KnowledgeMap({ documents, connections, definitions }: Props) {
                   style={{
                     fontSize: "10px",
                     color: "#6B7280",
-                    textTransform: "uppercase",
+                    
                     letterSpacing: "0.05em",
                     marginBottom: "3px",
                   }}

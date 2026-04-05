@@ -20,10 +20,10 @@ export function StatCard({ cell }: Props) {
       className="rounded-lg border p-5 flex flex-col gap-1"
       style={{ backgroundColor: CHART_COLORS.background, borderColor: CHART_COLORS.grid }}
     >
-      <p className="text-xs font-medium uppercase tracking-wider" style={{ color: CHART_COLORS.mutedText }}>
+      <p className="text-xs font-medium" style={{ color: CHART_COLORS.mutedText }}>
         {title}
       </p>
-      <p className="text-4xl font-semibold tracking-tight" style={{ color: CHART_COLORS.text }}>
+      <p className="text-2xl font-semibold tracking-tight" style={{ color: CHART_COLORS.text }}>
         {formattedValue}
       </p>
       {label && (

@@ -232,7 +232,7 @@ export function AdsCampaignDetail() {
           {/* Campaign Details */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="p-4 border border-[#E8E4DC]/10">
-              <h3 className="text-xs font-medium text-[#E8E4DC]/40 uppercase mb-3">Budget</h3>
+              <h3 className="text-xs font-medium text-[#E8E4DC]/40 mb-3">Budget</h3>
               <div className="space-y-2 text-sm text-[#E8E4DC]/70">
                 {campaign.budgetDaily && <div>Daily: {formatCurrency(campaign.budgetDaily)}</div>}
                 {campaign.budgetTotal && <div>Total: {formatCurrency(campaign.budgetTotal)}</div>}
@@ -242,7 +242,7 @@ export function AdsCampaignDetail() {
             </div>
 
             <div className="p-4 border border-[#E8E4DC]/10">
-              <h3 className="text-xs font-medium text-[#E8E4DC]/40 uppercase mb-3">Targeting</h3>
+              <h3 className="text-xs font-medium text-[#E8E4DC]/40 mb-3">Targeting</h3>
               {campaign.targeting ? (
                 <div className="space-y-1 text-sm text-[#E8E4DC]/70">
                   {Array.isArray(campaign.targeting.locations) && (
@@ -264,7 +264,7 @@ export function AdsCampaignDetail() {
           {/* AI Suggestions */}
           <div className="p-4 border border-[#E8E4DC]/10">
             <div className="flex items-center justify-between mb-3">
-              <h3 className="text-xs font-medium text-[#E8E4DC]/40 uppercase">AI Suggestions</h3>
+              <h3 className="text-xs font-medium text-[#E8E4DC]/40">AI Suggestions</h3>
               <button
                 onClick={generateSuggestions}
                 disabled={aiLoading}

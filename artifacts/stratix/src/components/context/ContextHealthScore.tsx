@@ -119,8 +119,8 @@ function BreakdownBar({
         <span
           style={{
             fontSize: "10px",
-            textTransform: "uppercase",
-            letterSpacing: "0.1em",
+            
+            letterSpacing: "0.01em",
             color: "#6B7280",
             whiteSpace: "nowrap",
             overflow: "hidden",
@@ -234,8 +234,8 @@ export function ContextHealthScore(props: Props) {
           <div
             style={{
               fontSize: "10px",
-              textTransform: "uppercase",
-              letterSpacing: "0.15em",
+              
+              letterSpacing: "0.01em",
               color: "#6B7280",
               marginBottom: "6px",
             }}

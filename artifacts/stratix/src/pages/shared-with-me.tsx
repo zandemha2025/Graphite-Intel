@@ -138,7 +138,7 @@ export function SharedWithMe() {
       {/* Header */}
       <div className="flex flex-col gap-4 pb-6 border-b" style={{ borderColor: "var(--workspace-border)" }}>
         <div>
-          <h1 className="font-serif text-5xl font-light mb-2" style={{ color: "var(--workspace-fg)" }}>
+          <h1 className="font-sans text-2xl font-semibold tracking-tight mb-2" style={{ color: "var(--workspace-fg)" }}>
             Shared Items
           </h1>
           <p className="text-sm" style={{ color: "var(--workspace-muted)" }}>
@@ -153,7 +153,7 @@ export function SharedWithMe() {
         <div className="flex" style={{ border: "1px solid var(--workspace-border)" }}>
           <button
             onClick={() => setViewMode("shared-with-me")}
-            className="px-4 py-2 text-xs uppercase tracking-widest transition-colors"
+            className="px-4 py-2 text-xs font-medium transition-colors"
             style={{
               background: viewMode === "shared-with-me" ? "var(--workspace-fg)" : "#FFFFFF",
               color: viewMode === "shared-with-me" ? "#FFFFFF" : "var(--workspace-muted)",
@@ -163,7 +163,7 @@ export function SharedWithMe() {
           </button>
           <button
             onClick={() => setViewMode("shared-by-me")}
-            className="px-4 py-2 text-xs uppercase tracking-widest transition-colors"
+            className="px-4 py-2 text-xs font-medium transition-colors"
             style={{
               background: viewMode === "shared-by-me" ? "var(--workspace-fg)" : "#FFFFFF",
               color: viewMode === "shared-by-me" ? "#FFFFFF" : "var(--workspace-muted)",
@@ -197,7 +197,7 @@ export function SharedWithMe() {
           {/* Sort toggle */}
           <button
             onClick={() => toggleSort("date")}
-            className="flex items-center gap-1.5 px-3 py-2 text-xs uppercase tracking-widest transition-colors"
+            className="flex items-center gap-1.5 px-3 py-2 text-xs font-medium transition-colors"
             style={{
               border: "1px solid var(--workspace-border)",
               color: sortField === "date" ? "var(--workspace-fg)" : "var(--workspace-muted)",
@@ -245,7 +245,7 @@ export function SharedWithMe() {
         >
           <Share2 className="h-6 w-6 mx-auto mb-4" style={{ color: "var(--workspace-muted)" }} />
           <h3
-            className="font-serif text-xl font-light mb-2"
+            className="font-sans text-xl font-light mb-2"
             style={{ color: "var(--workspace-muted)" }}
           >
             {viewMode === "shared-with-me"
@@ -271,7 +271,7 @@ export function SharedWithMe() {
             }}
           >
             <span
-              className="text-[10px] uppercase tracking-[0.2em]"
+              className="text-xs font-medium"
               style={{ color: "var(--workspace-muted)" }}
             >
               {filteredShares.length} Shared{" "}
@@ -318,7 +318,7 @@ export function SharedWithMe() {
                         `${share.resourceType.replace(/_/g, " ")} #${share.resourceId}`}
                     </span>
                     <span
-                      className="text-[10px] uppercase tracking-wide px-1.5 py-0.5 shrink-0"
+                      className="text-[11px] font-medium px-1.5 py-0.5 shrink-0"
                       style={{
                         border: "1px solid var(--workspace-border)",
                         color: "var(--workspace-muted)",

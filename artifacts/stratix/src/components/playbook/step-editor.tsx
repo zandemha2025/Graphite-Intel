@@ -76,7 +76,7 @@ export function StepEditor({ step, index, total, isExpanded, onToggle, onUpdate,
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2">
             <span className="text-sm" style={{ color: "var(--workspace-fg)" }}>{step.title || "Untitled Step"}</span>
-            <span className="text-[9px] uppercase tracking-wider px-1 py-0.5" style={{ border: "1px solid var(--workspace-border)", color: "var(--workspace-muted)" }}>
+            <span className="text-[9px] px-1 py-0.5" style={{ border: "1px solid var(--workspace-border)", color: "var(--workspace-muted)" }}>
               {typeInfo?.label ?? step.type}
             </span>
             {step.isRequired && (
@@ -102,7 +102,7 @@ export function StepEditor({ step, index, total, isExpanded, onToggle, onUpdate,
         <div className="px-4 pb-4 space-y-3" style={{ borderTop: "1px solid var(--workspace-border)" }}>
           {/* Title */}
           <div className="mt-3">
-            <label className="text-[10px] uppercase tracking-widest block mb-1" style={{ color: "var(--workspace-muted)" }}>Title</label>
+            <label className="text-xs font-medium block mb-1" style={{ color: "var(--workspace-muted)" }}>Title</label>
             <input
               value={step.title}
               onChange={(e) => onUpdate({ title: e.target.value })}
@@ -113,7 +113,7 @@ export function StepEditor({ step, index, total, isExpanded, onToggle, onUpdate,
 
           {/* Type */}
           <div>
-            <label className="text-[10px] uppercase tracking-widest block mb-1" style={{ color: "var(--workspace-muted)" }}>Type</label>
+            <label className="text-xs font-medium block mb-1" style={{ color: "var(--workspace-muted)" }}>Type</label>
             <div className="flex flex-wrap gap-1">
               {STEP_TYPES.map((t) => (
                 <button
@@ -135,7 +135,7 @@ export function StepEditor({ step, index, total, isExpanded, onToggle, onUpdate,
 
           {/* Description */}
           <div>
-            <label className="text-[10px] uppercase tracking-widest block mb-1" style={{ color: "var(--workspace-muted)" }}>Description</label>
+            <label className="text-xs font-medium block mb-1" style={{ color: "var(--workspace-muted)" }}>Description</label>
             <textarea
               value={step.description}
               onChange={(e) => onUpdate({ description: e.target.value })}
@@ -175,7 +175,7 @@ function StepConfigEditor({ step, onUpdate }: { step: PlaybookStep; onUpdate: (u
     case "review":
       return (
         <div>
-          <label className="text-[10px] uppercase tracking-widest block mb-1" style={{ color: "var(--workspace-muted)" }}>AI Prompt</label>
+          <label className="text-xs font-medium block mb-1" style={{ color: "var(--workspace-muted)" }}>AI Prompt</label>
           <textarea
             value={step.config.aiPrompt ?? ""}
             onChange={(e) => updateConfig({ aiPrompt: e.target.value })}
@@ -190,7 +190,7 @@ function StepConfigEditor({ step, onUpdate }: { step: PlaybookStep; onUpdate: (u
     case "extract":
       return (
         <div>
-          <label className="text-[10px] uppercase tracking-widest block mb-1" style={{ color: "var(--workspace-muted)" }}>
+          <label className="text-xs font-medium block mb-1" style={{ color: "var(--workspace-muted)" }}>
             Extraction Fields (one per line)
           </label>
           <textarea
@@ -207,7 +207,7 @@ function StepConfigEditor({ step, onUpdate }: { step: PlaybookStep; onUpdate: (u
     case "compare":
       return (
         <div>
-          <label className="text-[10px] uppercase tracking-widest block mb-1" style={{ color: "var(--workspace-muted)" }}>
+          <label className="text-xs font-medium block mb-1" style={{ color: "var(--workspace-muted)" }}>
             Document Types to Compare (one per line)
           </label>
           <textarea
@@ -224,7 +224,7 @@ function StepConfigEditor({ step, onUpdate }: { step: PlaybookStep; onUpdate: (u
     case "flag":
       return (
         <div>
-          <label className="text-[10px] uppercase tracking-widest block mb-1" style={{ color: "var(--workspace-muted)" }}>
+          <label className="text-xs font-medium block mb-1" style={{ color: "var(--workspace-muted)" }}>
             Flag Conditions (one per line)
           </label>
           <textarea

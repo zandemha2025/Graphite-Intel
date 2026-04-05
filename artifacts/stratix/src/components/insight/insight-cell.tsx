@@ -294,7 +294,7 @@ function InsightTable({ columns, rows }: { columns: string[]; rows: Record<strin
               {columns.map((col) => (
                 <th
                   key={col}
-                  className="text-left px-3 py-2 font-medium uppercase tracking-wider"
+                  className="text-left px-3 py-2 font-medium"
                   style={{ color: "var(--insight-muted, #6B7280)", fontSize: 10 }}
                 >
                   {col}
@@ -482,7 +482,7 @@ export function InsightCell({
         {parsed.findings.length > 0 && (
           <div className="space-y-1.5">
             <p
-              className="text-xs font-semibold uppercase tracking-wider"
+              className="text-xs font-semibold"
               style={{ color: "var(--insight-muted, #6B7280)" }}
             >
               Key Findings
