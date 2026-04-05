@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,500&family=Inter:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 @import "tailwindcss";
 @import "tw-animate-css";
 @plugin "@tailwindcss/typography";
@@ -64,81 +64,79 @@
   --font-serif: var(--app-font-sans);
   --font-mono: var(--app-font-mono);
 
-  --radius-sm: 0px;
-  --radius-md: 0px;
-  --radius-lg: 0px;
-  --radius-xl: 0px;
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
 }
 
 :root {
-  /* Sidebar stays dark — #0D0C0B */
-  --background: 30 5% 6%;
-  --foreground: 40 15% 90%;
+  --background: 40 4% 96%;
+  --foreground: 0 0% 4%;
 
-  /* Workspace (main content) colors */
-  --workspace-bg: #F9F8F6;
-  --workspace-topbar: #F2F0ED;
-  --workspace-fg: #1A1917;
+  --workspace-bg: #F6F5F4;
+  --workspace-topbar: #FAFAF9;
+  --workspace-fg: #0A0A0A;
   --workspace-card: #FFFFFF;
-  --workspace-border: #E5E3DF;
-  --workspace-muted: #6B6763;
-  --workspace-muted-bg: #F2F0ED;
+  --workspace-border: #E5E5E3;
+  --workspace-muted: #9CA3AF;
+  --workspace-muted-bg: #F0EFED;
 
-  --card: 30 5% 8%;
-  --card-foreground: 40 15% 90%;
-  --card-border: 30 5% 14%;
+  --card: 0 0% 100%;
+  --card-foreground: 0 0% 4%;
+  --card-border: 40 4% 90%;
 
   --popover: 0 0% 100%;
-  --popover-foreground: 20 5% 10%;
-  --popover-border: 30 5% 88%;
+  --popover-foreground: 0 0% 4%;
+  --popover-border: 40 4% 90%;
 
-  --primary: 40 15% 90%;
-  --primary-foreground: 30 5% 6%;
+  --primary: 0 0% 4%;
+  --primary-foreground: 0 0% 100%;
 
-  --secondary: 30 5% 12%;
-  --secondary-foreground: 40 15% 80%;
+  --secondary: 40 4% 94%;
+  --secondary-foreground: 0 0% 25%;
 
-  --muted: 30 5% 12%;
-  --muted-foreground: 40 8% 50%;
+  --muted: 40 4% 94%;
+  --muted-foreground: 0 0% 45%;
 
-  --accent: 30 5% 14%;
-  --accent-foreground: 40 15% 90%;
+  --accent: 40 4% 94%;
+  --accent-foreground: 0 0% 4%;
 
-  --brand: 40 15% 90%;
-  --brand-foreground: 30 5% 6%;
+  --brand: 0 0% 4%;
+  --brand-foreground: 0 0% 100%;
 
-  --destructive: 0 62% 40%;
-  --destructive-foreground: 40 15% 90%;
+  --destructive: 0 72% 51%;
+  --destructive-foreground: 0 0% 100%;
 
-  --border: 30 5% 14%;
-  --input: 30 5% 12%;
-  --ring: 40 15% 90%;
+  --border: 40 4% 90%;
+  --input: 40 4% 90%;
+  --ring: 0 0% 4%;
 
-  --sidebar: 30 5% 6%;
-  --sidebar-foreground: 40 15% 90%;
-  --sidebar-border: 30 5% 12%;
-  --sidebar-primary: 40 15% 90%;
-  --sidebar-primary-foreground: 30 5% 6%;
-  --sidebar-accent: 30 5% 10%;
-  --sidebar-accent-foreground: 40 15% 80%;
-  --sidebar-ring: 40 15% 90%;
+  --sidebar: 40 4% 98%;
+  --sidebar-foreground: 0 0% 25%;
+  --sidebar-border: 40 4% 90%;
+  --sidebar-primary: 0 0% 4%;
+  --sidebar-primary-foreground: 0 0% 100%;
+  --sidebar-accent: 40 4% 94%;
+  --sidebar-accent-foreground: 0 0% 15%;
+  --sidebar-ring: 0 0% 4%;
 
-  --chart-1: 40 15% 90%;
-  --chart-2: 40 8% 60%;
-  --chart-3: 40 5% 40%;
-  --chart-4: 30 5% 20%;
-  --chart-5: 0 0% 100%;
+  --chart-1: 220 70% 50%;
+  --chart-2: 160 60% 45%;
+  --chart-3: 30 80% 55%;
+  --chart-4: 280 65% 60%;
+  --chart-5: 340 75% 55%;
 
   --app-font-sans: 'Inter', sans-serif;
-  --app-font-serif: 'Cormorant Garamond', serif;
+  --app-font-serif: 'Inter', sans-serif;
   --app-font-mono: 'Courier New', monospace;
-  --radius: 0px;
+  --radius: 8px;
 
-  --button-outline: rgba(255,255,255, .08);
-  --badge-outline: rgba(255,255,255, .04);
-  --opaque-button-border-intensity: 8;
-  --elevate-1: rgba(255,255,255, .03);
-  --elevate-2: rgba(255,255,255, .06);
+  --button-outline: rgba(0,0,0, .08);
+  --badge-outline: rgba(0,0,0, .04);
+  --opaque-button-border-intensity: -8;
+  --elevate-1: rgba(0,0,0, .02);
+  --elevate-2: rgba(0,0,0, .04);
 
   --sidebar-primary-border: hsl(from hsl(var(--sidebar-primary)) h s calc(l + var(--opaque-button-border-intensity)) / alpha);
   --sidebar-accent-border: hsl(from hsl(var(--sidebar-accent)) h s calc(l + var(--opaque-button-border-intensity)) / alpha);
