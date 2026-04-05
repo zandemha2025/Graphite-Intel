@@ -346,16 +346,16 @@ export default function ExplorePage() {
     )}>
       <div className="max-w-2xl mx-auto">
         {/* Mode toggle pills */}
-        <div className="flex justify-center gap-1 mb-2">
+        <div className="flex justify-center gap-0.5 mb-2.5">
           {(["Quick", "Standard", "Deep"] as Depth[]).map((d) => (
             <button
               key={d}
               onClick={() => setDepth(d)}
               className={cn(
-                "px-3 py-1 rounded-full text-xs font-medium transition-all",
+                "px-3.5 py-1.5 rounded-full text-xs font-medium transition-all",
                 depth === d
-                  ? "bg-[#1A1A1A] text-white"
-                  : "text-[#A3A3A3] hover:text-[#525252]",
+                  ? "bg-[#1A1A1A] text-white shadow-sm"
+                  : "text-[#8A8A8A] hover:text-[#404040] hover:bg-[#F5F5F4]",
               )}
             >
               {d}
@@ -366,7 +366,7 @@ export default function ExplorePage() {
         {/* Input pill */}
         <form
           onSubmit={handleSubmit}
-          className="flex items-center gap-3 bg-[#FAFAF9] rounded-2xl border border-[#E5E5E3] px-4 py-3 focus-within:border-[#1A1A1A]/20 focus-within:shadow-md transition-all"
+          className="flex items-center gap-3 bg-white rounded-2xl border border-[#D4D4D4]/80 px-4 py-3 focus-within:border-[#1A1A1A]/30 focus-within:shadow-lg transition-all shadow-[0_2px_8px_rgba(0,0,0,0.04)]"
         >
           <button
             type="button"
@@ -459,15 +459,17 @@ export default function ExplorePage() {
             )}
 
             {/* Suggestion pills — 2x2 grid */}
-            <div className="grid grid-cols-2 gap-2">
+            <div className="grid grid-cols-2 gap-2.5 mt-2">
               {SUGGESTIONS.map((s) => (
                 <button
                   key={s.label}
                   onClick={() => sendMessage(s.label)}
-                  className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white border border-[#E5E5E3] text-sm text-[#525252] hover:shadow-md hover:border-[#D4D4D4] transition-all shadow-sm text-left"
+                  className="flex items-center gap-2.5 px-4 py-3 rounded-2xl bg-white border border-[#E5E5E3]/80 text-sm text-[#404040] hover:shadow-lg hover:border-[#C4C4C2] hover:-translate-y-0.5 transition-all shadow-[0_2px_8px_rgba(0,0,0,0.04)] text-left"
                 >
-                  <s.icon className="w-4 h-4 text-[#A3A3A3] shrink-0" />
-                  <span className="truncate">{s.label}</span>
+                  <span className="w-8 h-8 rounded-lg bg-[#F5F5F4] flex items-center justify-center shrink-0">
+                    <s.icon className="w-4 h-4 text-[#525252]" />
+                  </span>
+                  <span className="text-[13px] leading-snug">{s.label}</span>
                 </button>
               ))}
             </div>

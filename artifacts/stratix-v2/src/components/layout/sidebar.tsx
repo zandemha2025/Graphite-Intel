@@ -248,42 +248,8 @@ export function Sidebar({ user, onNavigate, forceExpanded }: SidebarProps) {
           })}
         </nav>
 
-        {/* Footer: user + help */}
+        {/* Footer: user */}
         <div className="flex-shrink-0 p-1.5">
-          {/* Help button */}
-          {!expanded ? (
-            <Tooltip.Root>
-              <Tooltip.Trigger asChild>
-                <button
-                  className="flex items-center justify-center w-full p-1.5 rounded-lg text-[#8A8A8A] hover:bg-[#F5F5F4] hover:text-[#525252] transition-colors mb-1"
-                  onClick={() => handleNav("/help")}
-                >
-                  <div className="w-7 h-7 rounded-full bg-[#F5F5F4] flex items-center justify-center">
-                    <span className="text-[12px] font-medium text-[#8A8A8A]">?</span>
-                  </div>
-                </button>
-              </Tooltip.Trigger>
-              <Tooltip.Portal>
-                <Tooltip.Content
-                  side="right"
-                  sideOffset={8}
-                  className="bg-[#1A1A1A] text-white text-[11px] px-2.5 py-1.5 rounded-md shadow-lg z-50"
-                >
-                  Help
-                  <Tooltip.Arrow className="fill-[#1A1A1A]" />
-                </Tooltip.Content>
-              </Tooltip.Portal>
-            </Tooltip.Root>
-          ) : (
-            <button
-              className="flex items-center w-full px-2.5 py-1.5 gap-2.5 rounded-lg text-[#8A8A8A] hover:bg-[#F5F5F4] hover:text-[#525252] transition-colors mb-1"
-              onClick={() => handleNav("/help")}
-            >
-              <HelpCircle size={18} strokeWidth={1.75} className="flex-shrink-0" />
-              <span className="text-[13px]">Help</span>
-            </button>
-          )}
-
           {/* User avatar / dropdown */}
           <DropdownMenu.Root>
             <DropdownMenu.Trigger asChild>
