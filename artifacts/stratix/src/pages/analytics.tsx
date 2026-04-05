@@ -65,20 +65,20 @@ interface SummaryCard {
 }
 
 // Utility functions
-const formatCurrency = (val: number | null | undefined) => {
-  const num = val ?? 0;
-  return `$${(num as number).toFixed(2)}`;
+const formatCurrency = (val: number | string | null | undefined) => {
+  const num = Number(val) || 0;
+  return `$${num.toFixed(2)}`;
 };
 
-const formatNumber = (val: number | null | undefined) => {
-  const num = val ?? 0;
+const formatNumber = (val: number | string | null | undefined) => {
+  const num = Number(val) || 0;
   if (num >= 1000000) return `${(num / 1000000).toFixed(1)}M`;
   if (num >= 1000) return `${(num / 1000).toFixed(1)}K`;
   return num.toString();
 };
 
-const formatTokens = (val: number | null | undefined) => {
-  const num = val ?? 0;
+const formatTokens = (val: number | string | null | undefined) => {
+  const num = Number(val) || 0;
   return `${(num / 1000).toFixed(1)}K`;
 };
 
