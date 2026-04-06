@@ -15,7 +15,7 @@ export default function OrgSetupPage() {
     mutationFn: () => apiPost<{ org: unknown }>("/org", { name: orgName }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["auth", "user"] });
-      setLocation("/explore");
+      setLocation("/onboarding");
     },
     onError: (err: Error) => {
       setError(err.message || "Could not create organization");

@@ -41,34 +41,40 @@ interface NotebookTemplate {
 
 const TEMPLATES: NotebookTemplate[] = [
   {
-    id: "competitive-intel",
-    name: "Competitive Intelligence Brief",
-    description: "Structured analysis of competitor positioning, strengths, and weaknesses.",
-    icon: Target,
-  },
-  {
-    id: "market-entry",
-    name: "Market Entry Analysis",
-    description: "Evaluate new market opportunities with TAM, risks, and go-to-market strategies.",
+    id: "campaign-performance",
+    name: "Campaign Performance Deep-Dive",
+    description: "Analyze campaign ROI, attribution, and performance across all channels.",
     icon: BarChart3,
   },
   {
+    id: "channel-attribution",
+    name: "Channel Attribution Analysis",
+    description: "Understand which channels drive pipeline and revenue with multi-touch attribution.",
+    icon: Target,
+  },
+  {
     id: "board-deck",
-    name: "Board Deck Prep",
-    description: "Compile key metrics, strategic updates, and talking points for board meetings.",
+    name: "Board Deck: Growth Metrics",
+    description: "Compile ARR, CAC, LTV, and other key metrics for board-ready presentations.",
     icon: Briefcase,
   },
   {
-    id: "due-diligence",
-    name: "Due Diligence Report",
-    description: "Deep-dive research on companies, markets, or partnerships.",
+    id: "market-entry",
+    name: "Market Entry Playbook",
+    description: "Evaluate new market opportunities with TAM, competitive landscape, and GTM strategy.",
     icon: Search,
   },
   {
-    id: "quarterly-review",
-    name: "Quarterly Strategy Review",
-    description: "Review quarterly performance, market shifts, and strategic priorities.",
+    id: "customer-segmentation",
+    name: "Customer Segmentation Report",
+    description: "Segment your customer base by behavior, value, and churn risk for targeted campaigns.",
     icon: CalendarDays,
+  },
+  {
+    id: "competitive-positioning",
+    name: "Competitive Positioning Analysis",
+    description: "Map your positioning vs competitors on messaging, pricing, and feature differentiation.",
+    icon: Target,
   },
   {
     id: "blank",

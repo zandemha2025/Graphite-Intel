@@ -13,6 +13,10 @@ import {
   BookOpen,
   X,
   Loader2,
+  Mail,
+  Presentation,
+  ClipboardList,
+  TableProperties,
 } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
@@ -26,12 +30,21 @@ export type CellType =
   | "chart"
   | "comparison";
 
+export type SourceType = "1p" | "3p" | "synthesized";
+
+export interface SourceWithType {
+  name: string;
+  type: SourceType;
+  url?: string;
+}
+
 export interface ResultCellData {
   id: string;
   type: CellType;
   title: string;
   content: string;
   sources?: string[];
+  sourceDetails?: SourceWithType[];
 }
 
 const cellIcons: Record<CellType, typeof Lightbulb> = {
@@ -269,6 +282,217 @@ function RichContent({ content, cellType }: { content: string; cellType: CellTyp
   return (
     <div className="prose-narrative max-w-none">
       <ReactMarkdown>{content}</ReactMarkdown>
+    </div>
+  );
+}
+
+/* ---------- Source type classification ---------- */
+
+function classifySource(name: string, url?: string): SourceType {
+  const lower = name.toLowerCase();
+  // First-party sources
+  if (
+    lower.includes("salesforce") ||
+    lower.includes("hubspot") ||
+    lower.includes("gong") ||
+    lower.includes("your ") ||
+    lower.includes("google drive") ||
+    lower.includes("company") ||
+    lower.includes("crm") ||
+    lower.includes("internal")
+  ) {
+    return "1p";
+  }
+  // Third-party sources
+  if (
+    lower.includes("perplexity") ||
+    lower.includes("serpapi") ||
+    lower.includes("firecrawl") ||
+    lower.includes("web") ||
+    (url && url.startsWith("http"))
+  ) {
+    return "3p";
+  }
+  // AI synthesis
+  return "synthesized";
+}
+
+function SourceTypeBadge({ source }: { source: SourceWithType }) {
+  switch (source.type) {
+    case "1p":
+      return (
+        <span className="inline-flex items-center gap-1 rounded-full bg-[#EEF2FF] px-2 py-0.5 text-[10px] font-semibold text-[#4F46E5]">
+          {source.name}
+        </span>
+      );
+    case "3p":
+      return (
+        <span className="inline-flex items-center gap-1 rounded-full bg-[#F3F4F6] px-2 py-0.5 text-[10px] font-semibold text-[#6B7280]">
+          {source.name}
+        </span>
+      );
+    case "synthesized":
+      return (
+        <span className="inline-flex items-center gap-1 rounded-full border border-[#E5E7EB] bg-white px-2 py-0.5 text-[10px] font-semibold text-[#9CA3AF]">
+          {source.name}
+        </span>
+      );
+  }
+}
+
+function SourcesFooter({ sources, sourceDetails }: { sources?: string[]; sourceDetails?: SourceWithType[] }) {
+  const typedSources: SourceWithType[] = sourceDetails ??
+    (sources ?? []).map((s) => ({
+      name: s,
+      type: classifySource(s),
+    }));
+
+  if (typedSources.length === 0) return null;
+
+  const has1p = typedSources.some((s) => s.type === "1p");
+  const has3p = typedSources.some((s) => s.type === "3p");
+
+  return (
+    <div className="mt-3 flex flex-wrap items-center gap-1">
+      <span className="text-[10px] font-medium uppercase tracking-wider text-[#9CA3AF]">
+        Sources:
+      </span>
+      {typedSources.map((source, i) => (
+        <SourceTypeBadge key={`${source.name}-${i}`} source={source} />
+      ))}
+      {(has1p || has3p) && (
+        <>
+          <span className="text-[10px] text-[#D1D5DB]">&rarr;</span>
+          <SourceTypeBadge
+            source={{ name: "Synthesized", type: "synthesized" }}
+          />
+        </>
+      )}
+    </div>
+  );
+}
+
+/* ---------- Export As dropdown (Feature 5) ---------- */
+
+function ExportAsDropdown({ content, title }: { content: string; title: string }) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    function handleClickOutside(e: MouseEvent) {
+      if (ref.current && !ref.current.contains(e.target as Node)) {
+        setOpen(false);
+      }
+    }
+    if (open) {
+      document.addEventListener("mousedown", handleClickOutside);
+      return () => document.removeEventListener("mousedown", handleClickOutside);
+    }
+  }, [open]);
+
+  function exportAsEmail() {
+    const email = `Hi team,\n\n${content.replace(/^#+\s/gm, "").replace(/\*\*/g, "").slice(0, 1500)}\n\nBest regards`;
+    navigator.clipboard.writeText(email);
+    toast.success("Email draft copied to clipboard");
+    setOpen(false);
+  }
+
+  function exportAsSlide() {
+    const lines = content.split("\n").filter((l) => l.trim());
+    const bullets: string[] = [];
+    for (const line of lines) {
+      const cleaned = line.replace(/^[#*\-\s]+/, "").replace(/\*\*/g, "").trim();
+      if (cleaned.length > 10 && bullets.length < 5) {
+        bullets.push("- " + cleaned);
+      }
+    }
+    const slide = `${title}\n\n${bullets.join("\n")}`;
+    navigator.clipboard.writeText(slide);
+    toast.success("Slide summary copied to clipboard");
+    setOpen(false);
+  }
+
+  function exportAsBrief() {
+    const sections = content.split(/\n(?=##?\s)/).filter((s) => s.trim());
+    const findings = sections
+      .map((s) => s.replace(/^#+\s+/, "").trim())
+      .slice(0, 4);
+    const brief = `EXECUTIVE BRIEF: ${title}\n${"=".repeat(40)}\n\nKEY FINDINGS:\n${findings.map((f, i) => `${i + 1}. ${f.split("\n")[0]}`).join("\n")}\n\nDETAIL:\n${content.slice(0, 2000)}\n\nRECOMMENDATION:\nReview the findings above and discuss next steps with the leadership team.`;
+    navigator.clipboard.writeText(brief);
+    toast.success("Executive brief copied to clipboard");
+    setOpen(false);
+  }
+
+  function exportAsCSV() {
+    // Extract tables from markdown
+    const tableMatch = content.match(/(\|[^\n]+\|[\s\S]*?\n)(?=\n[^|]|\n?$)/);
+    if (!tableMatch) {
+      toast.error("No table data found in this cell");
+      setOpen(false);
+      return;
+    }
+    const rows = tableMatch[0]
+      .trim()
+      .split("\n")
+      .filter((r) => !r.match(/^\|[\s\-:]+\|$/));
+    const csv = rows
+      .map((row) =>
+        row
+          .split("|")
+          .map((c) => c.trim())
+          .filter(Boolean)
+          .map((c) => `"${c.replace(/"/g, '""')}"`)
+          .join(","),
+      )
+      .join("\n");
+    navigator.clipboard.writeText(csv);
+    toast.success("Table data copied as CSV");
+    setOpen(false);
+  }
+
+  return (
+    <div ref={ref} className="relative">
+      <button
+        onClick={() => setOpen(!open)}
+        className="flex items-center gap-1.5 rounded-md px-2 py-1 text-xs text-[#6B7280] hover:bg-[#F3F4F6] hover:text-[#111827]"
+      >
+        <ClipboardList className="h-3.5 w-3.5" />
+        Export As
+        <ChevronDown className="h-3 w-3" />
+      </button>
+      {open && (
+        <div className="absolute bottom-full left-0 z-10 mb-1 w-44 rounded-lg border border-[#E5E7EB] bg-white py-1 shadow-lg">
+          <button
+            onClick={exportAsEmail}
+            className="flex w-full items-center gap-2 px-3 py-2 text-left text-xs text-[#374151] hover:bg-[#F9FAFB]"
+          >
+            <Mail className="h-3.5 w-3.5 text-[#6B7280]" />
+            Email Draft
+          </button>
+          <button
+            onClick={exportAsSlide}
+            className="flex w-full items-center gap-2 px-3 py-2 text-left text-xs text-[#374151] hover:bg-[#F9FAFB]"
+          >
+            <Presentation className="h-3.5 w-3.5 text-[#6B7280]" />
+            Slide Summary
+          </button>
+          <button
+            onClick={exportAsBrief}
+            className="flex w-full items-center gap-2 px-3 py-2 text-left text-xs text-[#374151] hover:bg-[#F9FAFB]"
+          >
+            <FileText className="h-3.5 w-3.5 text-[#6B7280]" />
+            Executive Brief
+          </button>
+          <div className="mx-2 my-1 border-t border-[#E5E7EB]" />
+          <button
+            onClick={exportAsCSV}
+            className="flex w-full items-center gap-2 px-3 py-2 text-left text-xs text-[#374151] hover:bg-[#F9FAFB]"
+          >
+            <TableProperties className="h-3.5 w-3.5 text-[#6B7280]" />
+            Data Table (CSV)
+          </button>
+        </div>
+      )}
     </div>
   );
 }
@@ -591,16 +815,8 @@ export function ResultCell({ cell, onSave, className }: ResultCellProps) {
       {/* Rich content rendering */}
       <RichContent content={cell.content} cellType={cell.type} />
 
-      {/* Sources */}
-      {cell.sources && cell.sources.length > 0 && (
-        <div className="mt-3 flex flex-wrap gap-1.5">
-          {cell.sources.map((source) => (
-            <Badge key={source} variant="indigo">
-              {source}
-            </Badge>
-          ))}
-        </div>
-      )}
+      {/* Sources footer with 1P/3P/Synthesized labels */}
+      <SourcesFooter sources={cell.sources} sourceDetails={cell.sourceDetails} />
 
       {/* Actions */}
       <div className="mt-3 flex items-center gap-1 border-t border-[#E5E7EB] pt-3">
@@ -610,6 +826,7 @@ export function ResultCell({ cell, onSave, className }: ResultCellProps) {
           onCopy={handleCopy}
           copied={copied}
         />
+        <ExportAsDropdown content={cell.content} title={cell.title} />
         <button
           onClick={handleShare}
           className="flex items-center gap-1.5 rounded-md px-2 py-1 text-xs text-[#6B7280] hover:bg-[#F3F4F6] hover:text-[#111827]"

@@ -21,6 +21,7 @@ import SettingsPage from "@/pages/settings";
 import PlaybooksPage from "@/pages/playbooks";
 import PlaybookEditPage from "@/pages/playbook-edit";
 import PlaybookRunPage from "@/pages/playbook-run";
+import OnboardingPage from "@/pages/onboarding";
 
 // Error Boundary
 class ErrorBoundary extends Component<
@@ -149,6 +150,7 @@ export function App() {
         <Route path="/" component={LandingPage} />
         <Route path="/login" component={LoginPage} />
         <Route path="/org-setup" component={OrgSetupPage} />
+        <Route path="/onboarding" component={OnboardingPage} />
         <Route>
           <AuthenticatedRoutes />
         </Route>

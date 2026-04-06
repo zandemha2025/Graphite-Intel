@@ -20,6 +20,10 @@ import {
   BookOpen,
   List,
   ChevronRight,
+  ChevronDown,
+  Presentation,
+  ClipboardList,
+  TableProperties,
 } from "lucide-react";
 
 /* ---------- Types ---------- */
@@ -198,6 +202,118 @@ function extractText(children: React.ReactNode): string {
     return extractText((children as { props: { children: React.ReactNode } }).props.children);
   }
   return String(children ?? "");
+}
+
+/* ---------- Export As Dropdown ---------- */
+
+function ReportExportAs({ content, title }: { content: string; title: string }) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    function handleClickOutside(e: MouseEvent) {
+      if (ref.current && !ref.current.contains(e.target as Node)) {
+        setOpen(false);
+      }
+    }
+    if (open) {
+      document.addEventListener("mousedown", handleClickOutside);
+      return () => document.removeEventListener("mousedown", handleClickOutside);
+    }
+  }, [open]);
+
+  function exportSlideDeck() {
+    const sections = content.split(/\n(?=##\s)/).filter((s) => s.trim());
+    const slides = sections.map((section) => {
+      const titleMatch = section.match(/^##\s+(.+)/);
+      const heading = titleMatch?.[1] ?? "Slide";
+      const bullets = section
+        .split("\n")
+        .filter((l) => l.trim() && !l.startsWith("#"))
+        .map((l) => l.replace(/^[*\-]\s*/, "").replace(/\*\*/g, "").trim())
+        .filter((l) => l.length > 10)
+        .slice(0, 4);
+      return `--- ${heading} ---\n${bullets.map((b) => `  - ${b}`).join("\n")}`;
+    });
+    navigator.clipboard.writeText(`SLIDE DECK: ${title}\n\n${slides.join("\n\n")}`);
+    toast.success("Slide deck copied to clipboard");
+    setOpen(false);
+  }
+
+  function exportExecutiveSummary() {
+    const summary = content.slice(0, 2000).replace(/\n{3,}/g, "\n\n");
+    navigator.clipboard.writeText(`EXECUTIVE SUMMARY: ${title}\n${"=".repeat(40)}\n\n${summary}`);
+    toast.success("Executive summary copied to clipboard");
+    setOpen(false);
+  }
+
+  function exportCSV() {
+    const tableBlocks = content.match(/(\|[^\n]+\|(?:\n\|[^\n]+\|)*)/g);
+    if (!tableBlocks || tableBlocks.length === 0) {
+      toast.error("No table data found in this report");
+      setOpen(false);
+      return;
+    }
+    const csvParts = tableBlocks.map((block) => {
+      const rows = block
+        .trim()
+        .split("\n")
+        .filter((r) => !r.match(/^\|[\s\-:]+\|$/));
+      return rows
+        .map((row) =>
+          row
+            .split("|")
+            .map((c) => c.trim())
+            .filter(Boolean)
+            .map((c) => `"${c.replace(/"/g, '""')}"`)
+            .join(","),
+        )
+        .join("\n");
+    });
+    navigator.clipboard.writeText(csvParts.join("\n\n"));
+    toast.success("All tables copied as CSV");
+    setOpen(false);
+  }
+
+  return (
+    <div ref={ref} className="relative">
+      <Button
+        variant="secondary"
+        size="sm"
+        onClick={() => setOpen(!open)}
+      >
+        <ClipboardList className="h-4 w-4" />
+        Export As
+        <ChevronDown className="h-3 w-3" />
+      </Button>
+      {open && (
+        <div className="absolute right-0 top-full z-10 mt-1 w-48 rounded-lg border border-[#E5E7EB] bg-white py-1 shadow-lg">
+          <button
+            onClick={exportSlideDeck}
+            className="flex w-full items-center gap-2 px-3 py-2 text-left text-xs text-[#374151] hover:bg-[#F9FAFB]"
+          >
+            <Presentation className="h-3.5 w-3.5 text-[#6B7280]" />
+            Slide Deck
+          </button>
+          <button
+            onClick={exportExecutiveSummary}
+            className="flex w-full items-center gap-2 px-3 py-2 text-left text-xs text-[#374151] hover:bg-[#F9FAFB]"
+          >
+            <FileText className="h-3.5 w-3.5 text-[#6B7280]" />
+            Executive Summary
+          </button>
+          <div className="mx-2 my-1 border-t border-[#E5E7EB]" />
+          <button
+            onClick={exportCSV}
+            className="flex w-full items-center gap-2 px-3 py-2 text-left text-xs text-[#374151] hover:bg-[#F9FAFB]"
+          >
+            <TableProperties className="h-3.5 w-3.5 text-[#6B7280]" />
+            CSV (all tables)
+          </button>
+        </div>
+      )}
+    </div>
+  );
 }
 
 /* ---------- Main Component ---------- */
@@ -409,6 +525,12 @@ export default function ReportViewPage() {
                 <Share2 className="h-4 w-4" />
                 Share
               </Button>
+              {report.content && (
+                <ReportExportAs
+                  content={report.content}
+                  title={report.title}
+                />
+              )}
             </>
           )}
         </div>

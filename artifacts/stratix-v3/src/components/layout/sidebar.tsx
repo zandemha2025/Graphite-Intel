@@ -14,11 +14,11 @@ import { cn } from "@/lib/utils";
 import { useAuth, useLogout, type User } from "@/hooks/use-auth";
 
 const navItems = [
-  { path: "/explore", label: "Explore", icon: Compass },
-  { path: "/notebooks", label: "Notebooks", icon: BookOpen },
-  { path: "/context", label: "Context", icon: Brain },
-  { path: "/boards", label: "Boards", icon: LayoutGrid },
-  { path: "/playbooks", label: "Playbooks", icon: BookMarked },
+  { path: "/explore", label: "Explore", icon: Compass, alert: false },
+  { path: "/notebooks", label: "Notebooks", icon: BookOpen, alert: false },
+  { path: "/context", label: "Context", icon: Brain, alert: false },
+  { path: "/boards", label: "Boards", icon: LayoutGrid, alert: true },
+  { path: "/playbooks", label: "Playbooks", icon: BookMarked, alert: false },
 ] as const;
 
 const utilItems = [
@@ -97,7 +97,12 @@ export function Sidebar({ open, onClose }: SidebarProps) {
                     {active && (
                       <span className="absolute left-0 top-1.5 bottom-1.5 w-0.5 rounded-r bg-[#4F46E5]" />
                     )}
-                    <item.icon className="h-[18px] w-[18px]" />
+                    <span className="relative">
+                      <item.icon className="h-[18px] w-[18px]" />
+                      {item.alert && !active && (
+                        <span className="absolute -right-0.5 -top-0.5 h-2 w-2 rounded-full bg-amber-500" />
+                      )}
+                    </span>
                     {item.label}
                   </div>
                 </Link>

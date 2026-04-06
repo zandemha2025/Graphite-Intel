@@ -185,7 +185,7 @@ export function ChatInput({ onSend, disabled, className }: ChatInputProps) {
             onChange={(e) => setValue(e.target.value)}
             onKeyDown={handleKeyDown}
             onInput={handleInput}
-            placeholder="Ask a question about your intelligence..."
+            placeholder="Ask about pipeline, competitors, channels, or growth..."
             rows={1}
             className="flex-1 resize-none bg-transparent text-sm text-[#111827] placeholder:text-[#9CA3AF] focus:outline-none"
             disabled={disabled}

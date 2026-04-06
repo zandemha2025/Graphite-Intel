@@ -844,13 +844,13 @@ interface Report {
 }
 
 const REPORT_TYPES = [
-  "Competitive Intelligence Brief",
-  "Market Entry Analysis",
-  "Board Deck Prep",
-  "Due Diligence Report",
-  "Quarterly Strategy Review",
-  "Industry Landscape",
-  "Customer Segmentation",
+  "CMO Monthly Brief",
+  "Campaign ROI Analysis",
+  "Competitive Landscape Report",
+  "Market Sizing & TAM Analysis",
+  "Customer Journey Analysis",
+  "Channel Performance Dashboard",
+  "Brand Health Report",
   "Growth Opportunity Assessment",
 ] as const;
 
@@ -1174,13 +1174,13 @@ function ReportsTab() {
 
   function getTypeBadgeColor(type: string) {
     const map: Record<string, BadgeProps["variant"]> = {
-      "Competitive Intelligence Brief": "indigo",
-      "Market Entry Analysis": "info",
-      "Board Deck Prep": "warning",
-      "Due Diligence Report": "error",
-      "Quarterly Strategy Review": "success",
-      "Industry Landscape": "default",
-      "Customer Segmentation": "info",
+      "CMO Monthly Brief": "indigo",
+      "Campaign ROI Analysis": "info",
+      "Competitive Landscape Report": "warning",
+      "Market Sizing & TAM Analysis": "error",
+      "Customer Journey Analysis": "success",
+      "Channel Performance Dashboard": "default",
+      "Brand Health Report": "info",
       "Growth Opportunity Assessment": "success",
     };
     return map[type] ?? "default";

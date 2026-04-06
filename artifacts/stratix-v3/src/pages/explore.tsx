@@ -581,10 +581,10 @@ export default function ExplorePage() {
                 <div className="flex h-full flex-col items-center justify-center">
                   <div className="text-center">
                     <p className="text-sm text-[#6B7280]">
-                      Results will appear here as you explore.
+                      Your intelligence results will appear here.
                     </p>
                     <p className="mt-1 text-xs text-[#9CA3AF]">
-                      Each insight becomes a saveable, composable cell.
+                      Each insight becomes a saveable cell you can export, share, or add to a board.
                     </p>
                   </div>
 

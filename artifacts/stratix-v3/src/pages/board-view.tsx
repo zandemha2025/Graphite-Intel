@@ -266,12 +266,84 @@ function EditMonitorsDialog({
 
 /* ---------- Monitoring Alerts Section ---------- */
 
+interface ProactiveAlert {
+  id: string;
+  icon: "warning" | "chart" | "trending";
+  title: string;
+  description: string;
+  sourceType: "1p" | "3p";
+  sourceLabel: string;
+  timestamp: string;
+  query: string;
+}
+
+const SAMPLE_ALERTS: ProactiveAlert[] = [
+  {
+    id: "alert-1",
+    icon: "warning",
+    title: "3 high-value accounts inactive 14+ days",
+    description:
+      "Enterprise accounts Acme Corp, Globex, and Initech haven't had a sales touch in over two weeks. Pipeline value at risk: $420K.",
+    sourceType: "1p",
+    sourceLabel: "Your Salesforce",
+    timestamp: "2 hours ago",
+    query: "Which high-value accounts have had no contact in the last 14 days? Show pipeline value at risk.",
+  },
+  {
+    id: "alert-2",
+    icon: "chart",
+    title: "Competitor updated pricing page",
+    description:
+      "Your monitored competitor appears to have restructured their pricing tiers yesterday. New enterprise tier detected.",
+    sourceType: "3p",
+    sourceLabel: "Web Monitoring",
+    timestamp: "6 hours ago",
+    query: "What changes did our main competitor make to their pricing recently? Analyze competitive implications.",
+  },
+  {
+    id: "alert-3",
+    icon: "trending",
+    title: "Market sentiment shifted positive",
+    description:
+      "Industry sentiment in your sector moved from neutral to positive this week, driven by strong earnings across peers.",
+    sourceType: "3p",
+    sourceLabel: "Perplexity Research",
+    timestamp: "1 day ago",
+    query: "What's driving the positive market sentiment shift in our industry this week? What should we capitalize on?",
+  },
+];
+
+function AlertIconBadge({ type }: { type: ProactiveAlert["icon"] }) {
+  switch (type) {
+    case "warning":
+      return (
+        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-amber-50 text-amber-600">
+          <Bell className="h-4 w-4" />
+        </div>
+      );
+    case "chart":
+      return (
+        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-blue-50 text-blue-600">
+          <Eye className="h-4 w-4" />
+        </div>
+      );
+    case "trending":
+      return (
+        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-emerald-50 text-emerald-600">
+          <Activity className="h-4 w-4" />
+        </div>
+      );
+  }
+}
+
 function MonitoringAlertsSection({
   config,
   onEditClick,
+  onInvestigate,
 }: {
   config?: MonitorConfig;
   onEditClick: () => void;
+  onInvestigate?: (query: string) => void;
 }) {
   return (
     <div className="mb-6 rounded-lg border border-[#E5E7EB] bg-white">
@@ -280,6 +352,9 @@ function MonitoringAlertsSection({
         <div className="flex items-center gap-2">
           <Bell className="h-4 w-4 text-[#4F46E5]" />
           <span className="text-sm font-semibold text-[#111827]">Alerts</span>
+          <span className="flex items-center gap-1.5 rounded-full bg-amber-50 px-2 py-0.5 text-xs font-medium text-amber-700">
+            {SAMPLE_ALERTS.length} new
+          </span>
           {/* Active monitoring indicator */}
           <span className="flex items-center gap-1.5 rounded-full bg-emerald-50 px-2 py-0.5 text-xs font-medium text-emerald-700">
             <span className="relative flex h-2 w-2">
@@ -313,13 +388,43 @@ function MonitoringAlertsSection({
         </div>
       )}
 
-      {/* Alerts list - empty state */}
-      <div className="flex flex-col items-center justify-center py-8">
-        <Bell className="mb-2 h-6 w-6 text-[#D1D5DB]" />
-        <p className="text-sm font-medium text-[#111827]">No alerts yet</p>
-        <p className="mt-0.5 text-xs text-[#6B7280]">
-          Monitoring is active. Alerts will appear here when conditions are met.
-        </p>
+      {/* Alert list */}
+      <div className="divide-y divide-[#E5E7EB]">
+        {SAMPLE_ALERTS.map((alert) => (
+          <div key={alert.id} className="flex items-start gap-3 px-4 py-3">
+            <AlertIconBadge type={alert.icon} />
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-2">
+                <p className="text-sm font-medium text-[#111827]">
+                  {alert.title}
+                </p>
+                <span
+                  className={`inline-flex shrink-0 rounded-full px-1.5 py-0.5 text-[9px] font-bold uppercase ${
+                    alert.sourceType === "1p"
+                      ? "bg-[#EEF2FF] text-[#4F46E5]"
+                      : "bg-[#F3F4F6] text-[#6B7280]"
+                  }`}
+                >
+                  {alert.sourceType === "1p" ? "1P" : "3P"}
+                </span>
+              </div>
+              <p className="mt-0.5 text-xs text-[#6B7280]">
+                {alert.description}
+              </p>
+              <div className="mt-2 flex items-center gap-3">
+                <span className="text-[10px] text-[#9CA3AF]">
+                  {alert.sourceLabel} &middot; {alert.timestamp}
+                </span>
+                <button
+                  onClick={() => onInvestigate?.(alert.query)}
+                  className="rounded-md bg-[#EEF2FF] px-2 py-0.5 text-[10px] font-semibold text-[#4F46E5] hover:bg-[#4F46E5] hover:text-white transition-colors"
+                >
+                  Investigate
+                </button>
+              </div>
+            </div>
+          </div>
+        ))}
       </div>
     </div>
   );
@@ -546,6 +651,9 @@ export default function BoardViewPage() {
         <MonitoringAlertsSection
           config={board.config}
           onEditClick={() => setShowEditMonitors(true)}
+          onInvestigate={(query) => {
+            navigate(`/explore?q=${encodeURIComponent(query)}`);
+          }}
         />
       )}
 
