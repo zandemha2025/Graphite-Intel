@@ -240,8 +240,8 @@ function CompanyProfileTab() {
     industry: profile?.industry ?? "",
     stage: profile?.stage ?? "",
     revenueRange: profile?.revenueRange ?? "",
-    keyCompetitors: profile?.keyCompetitors?.join(", ") ?? "",
-    strategicPriorities: profile?.strategicPriorities?.join(", ") ?? "",
+    keyCompetitors: Array.isArray(profile?.keyCompetitors) ? profile.keyCompetitors.join(", ") : (profile?.keyCompetitors ?? ""),
+    strategicPriorities: Array.isArray(profile?.strategicPriorities) ? profile.strategicPriorities.join(", ") : (profile?.strategicPriorities ?? ""),
   };
 
   return (
