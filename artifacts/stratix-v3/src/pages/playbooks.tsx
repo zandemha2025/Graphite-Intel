@@ -211,16 +211,16 @@ function MyPlaybooksTab() {
   const { data: playbooks, isLoading } = useQuery<Playbook[]>({
     queryKey: ["playbooks"],
     queryFn: () =>
-      api<{ playbooks: Playbook[] }>("/playbooks").then((r) => r.playbooks),
+      api<Playbook[]>("/playbooks"),
   });
 
   const createMutation = useMutation({
     mutationFn: (payload: { title: string; description: string }) =>
-      apiPost<{ playbook: Playbook }>("/playbooks", payload),
+      apiPost<Playbook>("/playbooks", { name: (payload as any).title || (payload as any).name, description: (payload as any).description }),
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ["playbooks"] });
       setCreateOpen(false);
-      navigate(`/playbooks/${data.playbook.id}`);
+      navigate(`/playbooks/${data.id}`);
       toast.success("Playbook created");
     },
     onError: () => {
@@ -374,7 +374,7 @@ function TemplatesTab() {
       }),
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ["playbooks"] });
-      navigate(`/playbooks/${data.playbook.id}`);
+      navigate(`/playbooks/${data.id}`);
       toast.success("Playbook created from template");
     },
     onError: () => {
@@ -449,11 +449,11 @@ export default function PlaybooksPage() {
 
   const createMutation = useMutation({
     mutationFn: (payload: { title: string; description: string }) =>
-      apiPost<{ playbook: Playbook }>("/playbooks", payload),
+      apiPost<Playbook>("/playbooks", { name: (payload as any).title || (payload as any).name, description: (payload as any).description }),
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ["playbooks"] });
       setCreateOpen(false);
-      navigate(`/playbooks/${data.playbook.id}`);
+      navigate(`/playbooks/${data.id}`);
       toast.success("Playbook created");
     },
     onError: () => {

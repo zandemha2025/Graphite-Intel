@@ -22,7 +22,7 @@ function requireAuth(req: Request, res: Response): boolean {
 router.get("/boards", async (req: Request, res: Response) => {
   if (!requireAuth(req, res)) return;
   const orgId = req.user!.orgId!;
-  const userId = Number(req.user!.id);
+  const userId = req.user!.id;
 
   try {
     const rows = await db
@@ -53,7 +53,7 @@ router.get("/boards", async (req: Request, res: Response) => {
 router.post("/boards", async (req: Request, res: Response) => {
   if (!requireAuth(req, res)) return;
   const orgId = req.user!.orgId!;
-  const userId = Number(req.user!.id);
+  const userId = req.user!.id;
 
   try {
     const { title, description, type, config, isShared } = req.body;
@@ -90,7 +90,7 @@ router.post("/boards", async (req: Request, res: Response) => {
 router.get("/boards/:id", async (req: Request, res: Response) => {
   if (!requireAuth(req, res)) return;
   const orgId = req.user!.orgId!;
-  const userId = Number(req.user!.id);
+  const userId = req.user!.id;
   const id = parseInt(req.params.id as string);
 
   if (isNaN(id)) {
@@ -132,7 +132,7 @@ router.get("/boards/:id", async (req: Request, res: Response) => {
 router.patch("/boards/:id", async (req: Request, res: Response) => {
   if (!requireAuth(req, res)) return;
   const orgId = req.user!.orgId!;
-  const userId = Number(req.user!.id);
+  const userId = req.user!.id;
   const id = parseInt(req.params.id as string);
 
   if (isNaN(id)) {
@@ -188,7 +188,7 @@ router.patch("/boards/:id", async (req: Request, res: Response) => {
 router.post("/boards/:id/refresh", async (req: Request, res: Response) => {
   if (!requireAuth(req, res)) return;
   const orgId = req.user!.orgId!;
-  const userId = Number(req.user!.id);
+  const userId = req.user!.id;
   const id = parseInt(req.params.id as string);
 
   if (isNaN(id)) {
@@ -247,7 +247,7 @@ router.post("/boards/:id/refresh", async (req: Request, res: Response) => {
 router.delete("/boards/:id", async (req: Request, res: Response) => {
   if (!requireAuth(req, res)) return;
   const orgId = req.user!.orgId!;
-  const userId = Number(req.user!.id);
+  const userId = req.user!.id;
   const id = parseInt(req.params.id as string);
 
   if (isNaN(id)) {

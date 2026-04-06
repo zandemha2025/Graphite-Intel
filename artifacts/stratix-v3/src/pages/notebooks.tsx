@@ -220,14 +220,14 @@ export default function NotebooksPage() {
   });
 
   const createMutation = useMutation({
-    mutationFn: (templateId: string) =>
-      apiPost<{ notebook: Notebook }>("/notebooks", {
-        template: templateId,
+    mutationFn: (templateName: string) =>
+      apiPost<Notebook>("/notebooks", {
+        title: templateName === "blank" ? "Untitled Notebook" : templateName,
       }),
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ["notebooks"] });
       setTemplateOpen(false);
-      navigate(`/notebooks/${data.notebook.id}`);
+      navigate(`/notebooks/${data.id}`);
       toast.success("Notebook created");
     },
     onError: () => {

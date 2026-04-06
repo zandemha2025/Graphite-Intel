@@ -151,18 +151,18 @@ function TeamTab() {
   const { data: members, isLoading: membersLoading } = useQuery<TeamMember[]>({
     queryKey: ["team", "members"],
     queryFn: () =>
-      api<{ members: TeamMember[] }>("/team/members").then((r) => r.members),
+      api<TeamMember[]>("/org/members"),
   });
 
   const { data: invites, isLoading: invitesLoading } = useQuery<TeamInvite[]>({
     queryKey: ["team", "invites"],
     queryFn: () =>
-      api<{ invites: TeamInvite[] }>("/team/invites").then((r) => r.invites),
+      api<TeamInvite[]>("/org/invites"),
   });
 
   const inviteMutation = useMutation({
     mutationFn: () =>
-      apiPost("/team/invites", { email: inviteEmail, role: inviteRole }),
+      apiPost("/org/invites", { email: inviteEmail, role: inviteRole }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["team", "invites"] });
       setInviteEmail("");
@@ -174,7 +174,7 @@ function TeamTab() {
   });
 
   const removeMemberMutation = useMutation({
-    mutationFn: (id: string) => apiDelete(`/team/members/${id}`),
+    mutationFn: (id: string) => apiDelete(`/org/members/${id}`),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["team", "members"] });
       toast.success("Member removed");
@@ -185,7 +185,7 @@ function TeamTab() {
   });
 
   const revokeInviteMutation = useMutation({
-    mutationFn: (id: string) => apiDelete(`/team/invites/${id}`),
+    mutationFn: (id: string) => apiDelete(`/org/invites/${id}`),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["team", "invites"] });
       toast.success("Invite revoked");
@@ -202,7 +202,7 @@ function TeamTab() {
     }: {
       id: string;
       role: TeamMember["role"];
-    }) => apiPatch(`/team/members/${id}`, { role }),
+    }) => apiPatch(`/org/members/${id}`, { role }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["team", "members"] });
       toast.success("Role updated");
