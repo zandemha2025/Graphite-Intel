@@ -1,4 +1,5 @@
 import { useEffect, useRef } from "react";
+import ReactMarkdown from "react-markdown";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 
@@ -50,35 +51,48 @@ export function Conversation({ messages, streaming, className }: ConversationPro
               msg.role === "user" ? "justify-end" : "justify-start",
             )}
           >
-            <div
-              className={cn(
-                "max-w-[85%] rounded-lg px-3.5 py-2.5 text-sm leading-relaxed",
-                msg.role === "user"
-                  ? "bg-[#4F46E5] text-white"
-                  : "bg-[#F3F4F6] text-[#111827]",
-              )}
-            >
-              <div className="whitespace-pre-wrap">{msg.content}</div>
-              {msg.role === "assistant" && msg.sources && msg.sources.length > 0 && (
-                <div className="mt-2 flex flex-wrap gap-1.5">
-                  {msg.sources.map((source) => (
-                    <Badge key={source} variant="info">
-                      {source}
-                    </Badge>
-                  ))}
+            {msg.role === "user" ? (
+              <div className="max-w-[85%] rounded-lg bg-[#F3F4F6] px-4 py-3 text-sm leading-relaxed text-[#111827]">
+                <div className="whitespace-pre-wrap">{msg.content}</div>
+              </div>
+            ) : (
+              <div className="w-full text-sm leading-relaxed text-[#111827]">
+                <div className="prose prose-sm max-w-none prose-headings:text-[#111827] prose-p:leading-relaxed prose-table:text-xs prose-th:bg-[#F9FAFB] prose-th:px-3 prose-th:py-1.5 prose-td:px-3 prose-td:py-1.5 prose-td:border-t prose-td:border-[#E5E7EB]">
+                  <ReactMarkdown>{msg.content}</ReactMarkdown>
                 </div>
-              )}
-            </div>
+                {msg.sources && msg.sources.length > 0 && (
+                  <div className="mt-2 flex flex-wrap gap-1.5">
+                    {msg.sources.map((source) => (
+                      <Badge
+                        key={source}
+                        variant="indigo"
+                      >
+                        {source}
+                      </Badge>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         ))}
 
-        {streaming && (
+        {streaming && !messages.some((m) => m.role === "assistant" && m.id.startsWith("a-")) && (
           <div className="flex justify-start">
             <div className="rounded-lg bg-[#F3F4F6] px-3.5 py-2.5">
               <div className="flex gap-1">
-                <span className="h-2 w-2 animate-bounce rounded-full bg-[#6B7280]" style={{ animationDelay: "0ms" }} />
-                <span className="h-2 w-2 animate-bounce rounded-full bg-[#6B7280]" style={{ animationDelay: "150ms" }} />
-                <span className="h-2 w-2 animate-bounce rounded-full bg-[#6B7280]" style={{ animationDelay: "300ms" }} />
+                <span
+                  className="h-2 w-2 animate-bounce rounded-full bg-[#6B7280]"
+                  style={{ animationDelay: "0ms" }}
+                />
+                <span
+                  className="h-2 w-2 animate-bounce rounded-full bg-[#6B7280]"
+                  style={{ animationDelay: "150ms" }}
+                />
+                <span
+                  className="h-2 w-2 animate-bounce rounded-full bg-[#6B7280]"
+                  style={{ animationDelay: "300ms" }}
+                />
               </div>
             </div>
           </div>

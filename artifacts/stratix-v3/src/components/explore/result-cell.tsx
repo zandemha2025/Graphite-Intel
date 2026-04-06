@@ -1,3 +1,5 @@
+import { useState } from "react";
+import ReactMarkdown from "react-markdown";
 import {
   Lightbulb,
   Table,
@@ -6,7 +8,9 @@ import {
   Copy,
   Share2,
   BarChart3,
+  Check,
 } from "lucide-react";
+import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 
@@ -39,16 +43,19 @@ const cellLabels: Record<CellType, string> = {
 interface ResultCellProps {
   cell: ResultCellData;
   onSave?: () => void;
-  onCopy?: () => void;
   className?: string;
 }
 
-export function ResultCell({ cell, onSave, onCopy, className }: ResultCellProps) {
+export function ResultCell({ cell, onSave, className }: ResultCellProps) {
   const Icon = cellIcons[cell.type];
+  const [copied, setCopied] = useState(false);
 
   function handleCopy() {
-    navigator.clipboard.writeText(cell.content);
-    onCopy?.();
+    navigator.clipboard.writeText(cell.content).then(() => {
+      setCopied(true);
+      toast.success("Copied to clipboard");
+      setTimeout(() => setCopied(false), 2000);
+    });
   }
 
   return (
@@ -69,16 +76,16 @@ export function ResultCell({ cell, onSave, onCopy, className }: ResultCellProps)
       {/* Title */}
       <h4 className="mb-2 text-sm font-semibold text-[#111827]">{cell.title}</h4>
 
-      {/* Content */}
-      <div className="text-sm leading-relaxed text-[#374151] whitespace-pre-wrap">
-        {cell.content}
+      {/* Content -- rendered markdown */}
+      <div className="prose prose-sm max-w-none text-[#374151] prose-headings:text-[#111827] prose-p:leading-relaxed prose-table:text-xs prose-th:bg-[#F9FAFB] prose-th:px-3 prose-th:py-1.5 prose-td:px-3 prose-td:py-1.5 prose-td:border-t prose-td:border-[#E5E7EB]">
+        <ReactMarkdown>{cell.content}</ReactMarkdown>
       </div>
 
       {/* Sources */}
       {cell.sources && cell.sources.length > 0 && (
         <div className="mt-3 flex flex-wrap gap-1.5">
           {cell.sources.map((source) => (
-            <Badge key={source} variant="default">
+            <Badge key={source} variant="indigo">
               {source}
             </Badge>
           ))}
@@ -98,8 +105,12 @@ export function ResultCell({ cell, onSave, onCopy, className }: ResultCellProps)
           onClick={handleCopy}
           className="flex items-center gap-1.5 rounded-md px-2 py-1 text-xs text-[#6B7280] hover:bg-[#F3F4F6] hover:text-[#111827]"
         >
-          <Copy className="h-3.5 w-3.5" />
-          Copy
+          {copied ? (
+            <Check className="h-3.5 w-3.5 text-green-600" />
+          ) : (
+            <Copy className="h-3.5 w-3.5" />
+          )}
+          {copied ? "Copied" : "Copy"}
         </button>
         <button className="flex items-center gap-1.5 rounded-md px-2 py-1 text-xs text-[#6B7280] hover:bg-[#F3F4F6] hover:text-[#111827]">
           <Share2 className="h-3.5 w-3.5" />

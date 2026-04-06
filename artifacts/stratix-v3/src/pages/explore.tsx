@@ -1,21 +1,199 @@
-import { useState, useCallback, useRef } from "react";
+import { useState, useCallback, useRef, useEffect } from "react";
 import { cn } from "@/lib/utils";
-import { apiSSE } from "@/lib/api";
+import { api, apiPost, apiDelete, apiSSE } from "@/lib/api";
 import { ResultCell, type ResultCellData } from "@/components/explore/result-cell";
 import { Conversation, type Message } from "@/components/explore/conversation";
 import { ChatInput } from "@/components/explore/chat-input";
+import {
+  Plus,
+  MessageSquare,
+  Trash2,
+  ChevronLeft,
+  ChevronRight,
+} from "lucide-react";
 
 type Depth = "quick" | "standard" | "deep";
 
+interface ApiConversation {
+  id: string;
+  title?: string;
+  created_at?: string;
+}
+
+interface Source {
+  name: string;
+  url?: string;
+}
+
+/* ---------- Cell parsing ---------- */
+
+function parseResponseIntoCells(
+  content: string,
+  sources?: Source[],
+): ResultCellData[] {
+  const cells: ResultCellData[] = [];
+  const sourceNames = sources?.map((s) => s.name) ?? [];
+
+  // Split by ## headings
+  const sections = content.split(/(?=^## )/m).filter((s) => s.trim());
+
+  if (sections.length > 1) {
+    for (const section of sections) {
+      const titleMatch = section.match(/^## (.+)\n?/);
+      const title = titleMatch?.[1] ?? "Analysis";
+      const body = section.replace(/^## .+\n?/, "").trim();
+      const hasTable = body.includes("|") && body.includes("---");
+      cells.push({
+        id: crypto.randomUUID(),
+        type: hasTable ? "table" : "key-finding",
+        title,
+        content: body,
+        sources: sourceNames,
+      });
+    }
+  } else {
+    const hasTable = content.includes("|") && content.includes("---");
+    cells.push({
+      id: crypto.randomUUID(),
+      type: hasTable ? "table" : "analysis",
+      title: "Analysis",
+      content,
+      sources: sourceNames,
+    });
+  }
+
+  return cells;
+}
+
+/* ---------- Main page ---------- */
+
 export default function ExplorePage() {
+  const [conversations, setConversations] = useState<ApiConversation[]>([]);
+  const [activeConvId, setActiveConvId] = useState<string | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
   const [cells, setCells] = useState<ResultCellData[]>([]);
   const [streaming, setStreaming] = useState(false);
   const [depth, setDepth] = useState<Depth>("standard");
+  const [sidebarOpen, setSidebarOpen] = useState(true);
   const abortRef = useRef<AbortController | null>(null);
 
+  /* Load conversation list on mount */
+  useEffect(() => {
+    api<ApiConversation[]>("/openai/conversations")
+      .then((list) => {
+        const items = list ?? [];
+        setConversations(items);
+        if (items.length > 0 && items[0]) {
+          setActiveConvId(items[0].id);
+        }
+      })
+      .catch(() => {
+        // API might not be available yet -- ignore
+      });
+  }, []);
+
+  /* Load messages when active conversation changes */
+  useEffect(() => {
+    if (!activeConvId) {
+      setMessages([]);
+      setCells([]);
+      return;
+    }
+    api<{ messages?: Message[] }>(`/openai/conversations/${activeConvId}`)
+      .then((conv) => {
+        const msgs = conv.messages ?? [];
+        setMessages(msgs);
+        // Rebuild cells from existing assistant messages
+        const rebuilt: ResultCellData[] = [];
+        for (const m of msgs) {
+          if (m.role === "assistant" && m.content?.trim()) {
+            rebuilt.push(
+              ...parseResponseIntoCells(
+                m.content,
+                m.sources?.map((s) => ({ name: s })),
+              ),
+            );
+          }
+        }
+        setCells(rebuilt);
+      })
+      .catch(() => {
+        setMessages([]);
+        setCells([]);
+      });
+  }, [activeConvId]);
+
+  /* Create a new conversation */
+  const handleNewConversation = useCallback(async () => {
+    try {
+      const conv = await apiPost<ApiConversation>("/openai/conversations", {});
+      setConversations((prev) => [conv, ...prev]);
+      setActiveConvId(conv.id);
+      setMessages([]);
+      setCells([]);
+    } catch {
+      // If API fails, just reset local state for offline use
+      const localId = `local-${Date.now()}`;
+      const localConv: ApiConversation = { id: localId, title: "New Explore" };
+      setConversations((prev) => [localConv, ...prev]);
+      setActiveConvId(localId);
+      setMessages([]);
+      setCells([]);
+    }
+  }, []);
+
+  /* Delete a conversation */
+  const handleDeleteConversation = useCallback(
+    async (id: string) => {
+      try {
+        await apiDelete(`/openai/conversations/${id}`);
+      } catch {
+        // ignore
+      }
+      setConversations((prev) => prev.filter((c) => c.id !== id));
+      if (activeConvId === id) {
+        setActiveConvId(null);
+        setMessages([]);
+        setCells([]);
+      }
+    },
+    [activeConvId],
+  );
+
+  /* Send a message with SSE streaming */
   const handleSend = useCallback(
     async (content: string) => {
+      // Create conversation on first message if none active
+      let convId = activeConvId;
+      if (!convId) {
+        try {
+          const conv = await apiPost<ApiConversation>(
+            "/openai/conversations",
+            {},
+          );
+          convId = conv.id;
+          setConversations((prev) => [conv, ...prev]);
+          setActiveConvId(conv.id);
+        } catch {
+          convId = `local-${Date.now()}`;
+          const localConv: ApiConversation = {
+            id: convId,
+            title: content.slice(0, 40),
+          };
+          setConversations((prev) => [localConv, ...prev]);
+          setActiveConvId(convId);
+        }
+      }
+
+      // Update conversation title if it has no title yet
+      setConversations((prev) =>
+        prev.map((c) =>
+          c.id === convId && !c.title
+            ? { ...c, title: content.slice(0, 40) }
+            : c,
+        ),
+      );
+
       const userMsg: Message = {
         id: `u-${Date.now()}`,
         role: "user",
@@ -25,86 +203,122 @@ export default function ExplorePage() {
       setStreaming(true);
 
       let assistantContent = "";
+      let collectedSources: Source[] = [];
       const assistantId = `a-${Date.now()}`;
 
       abortRef.current = new AbortController();
 
       try {
         await apiSSE(
-          "/openai/conversations",
-          {
-            messages: [{ role: "user", content }],
-            depth,
-          },
-          (_event, data) => {
+          `/openai/conversations/${convId}/messages`,
+          { content, depth },
+          (event, data) => {
+            if (event === "sources") {
+              try {
+                const parsed = JSON.parse(data);
+                if (Array.isArray(parsed)) {
+                  collectedSources = parsed;
+                } else if (parsed.sources) {
+                  collectedSources = parsed.sources;
+                }
+              } catch {
+                // ignore
+              }
+              return;
+            }
+
+            if (event === "done") {
+              return;
+            }
+
+            // Handle token events (may come as "message" or "token")
             try {
               const parsed = JSON.parse(data);
               if (parsed.choices?.[0]?.delta?.content) {
                 assistantContent += parsed.choices[0].delta.content;
-                setMessages((prev) => {
-                  const existing = prev.find((m) => m.id === assistantId);
-                  if (existing) {
-                    return prev.map((m) =>
-                      m.id === assistantId ? { ...m, content: assistantContent } : m,
-                    );
-                  }
-                  return [
-                    ...prev,
-                    {
-                      id: assistantId,
-                      role: "assistant",
-                      content: assistantContent,
-                      sources: ["Perplexity", "Web"],
-                    },
-                  ];
-                });
+              } else if (typeof parsed.content === "string") {
+                assistantContent += parsed.content;
+              } else if (typeof parsed.token === "string") {
+                assistantContent += parsed.token;
               }
             } catch {
-              // Non-JSON data, append as text
+              // Non-JSON data -- treat as raw token
               if (data && data !== "[DONE]") {
                 assistantContent += data;
               }
             }
+
+            const sourceNames = collectedSources.map((s) => s.name);
+
+            setMessages((prev) => {
+              const existing = prev.find((m) => m.id === assistantId);
+              if (existing) {
+                return prev.map((m) =>
+                  m.id === assistantId
+                    ? {
+                        ...m,
+                        content: assistantContent,
+                        sources: sourceNames.length > 0 ? sourceNames : m.sources,
+                      }
+                    : m,
+                );
+              }
+              return [
+                ...prev,
+                {
+                  id: assistantId,
+                  role: "assistant" as const,
+                  content: assistantContent,
+                  sources: sourceNames.length > 0 ? sourceNames : undefined,
+                },
+              ];
+            });
           },
           abortRef.current.signal,
         );
       } catch (err) {
         if ((err as Error).name !== "AbortError") {
-          // On error, show a fallback message
-          const errorContent = "I encountered an issue processing your request. Please try again.";
+          const errorContent =
+            "I encountered an issue processing your request. Please try again.";
           setMessages((prev) => {
             const existing = prev.find((m) => m.id === assistantId);
             if (existing) return prev;
             return [
               ...prev,
-              { id: assistantId, role: "assistant", content: errorContent },
+              { id: assistantId, role: "assistant" as const, content: errorContent },
             ];
           });
         }
       } finally {
         setStreaming(false);
 
-        // Create a cell from the response
+        // Parse finished response into cells
         if (assistantContent.trim()) {
-          const newCell: ResultCellData = {
-            id: `cell-${Date.now()}`,
-            type: "key-finding",
-            title: content.slice(0, 60) + (content.length > 60 ? "..." : ""),
-            content: assistantContent,
-            sources: ["Perplexity", "Web"],
-          };
-          setCells((prev) => [newCell, ...prev]);
+          const newCells = parseResponseIntoCells(
+            assistantContent,
+            collectedSources.length > 0 ? collectedSources : undefined,
+          );
+          setCells((prev) => [...newCells, ...prev]);
         }
       }
     },
-    [depth],
+    [activeConvId, depth],
   );
 
   return (
     <div className="flex h-full flex-col overflow-hidden">
       {/* Header */}
       <div className="flex items-center justify-between border-b border-[#E5E7EB] px-6 py-3">
-        <h1 className="text-lg font-semibold text-[#111827]">Explore</h1>
+        <div className="flex items-center gap-3">
+          <h1 className="text-lg font-semibold text-[#111827]">Explore</h1>
+          <button
+            onClick={handleNewConversation}
+            className="flex items-center gap-1.5 rounded-md border border-[#E5E7EB] bg-white px-2.5 py-1 text-xs font-medium text-[#374151] hover:bg-[#F9FAFB]"
+          >
+            <Plus className="h-3.5 w-3.5" />
+            New Explore
+          </button>
+        </div>
         <div className="flex rounded-lg border border-[#E5E7EB] bg-[#F9FAFB] p-0.5">
           {(["quick", "standard", "deep"] as const).map((d) => (
             <button
@@ -125,32 +339,96 @@ export default function ExplorePage() {
 
       {/* Split pane */}
       <div className="flex flex-1 overflow-hidden">
-        {/* Left: Results Notebook */}
-        <div className="flex w-1/2 flex-col overflow-hidden border-r border-[#E5E7EB]">
-          <div className="border-b border-[#E5E7EB] px-4 py-2.5">
-            <h2 className="text-xs font-medium uppercase tracking-wide text-[#6B7280]">
-              Results Notebook
-            </h2>
-          </div>
-          <div className="flex-1 overflow-y-auto p-4">
-            {cells.length === 0 ? (
-              <div className="flex h-full items-center justify-center">
-                <div className="text-center">
-                  <p className="text-sm text-[#6B7280]">
-                    Results will appear here as you explore.
-                  </p>
-                  <p className="mt-1 text-xs text-[#9CA3AF]">
-                    Each insight becomes a saveable, composable cell.
-                  </p>
-                </div>
-              </div>
-            ) : (
-              <div className="flex flex-col gap-3">
-                {cells.map((cell) => (
-                  <ResultCell key={cell.id} cell={cell} />
-                ))}
-              </div>
+        {/* Left panel: sidebar + cells */}
+        <div className="flex w-1/2 overflow-hidden border-r border-[#E5E7EB]">
+          {/* Conversation sidebar */}
+          <div
+            className={cn(
+              "flex flex-col border-r border-[#E5E7EB] bg-[#F9FAFB] transition-all",
+              sidebarOpen ? "w-56 min-w-[14rem]" : "w-0 min-w-0 overflow-hidden",
             )}
+          >
+            <div className="flex items-center justify-between border-b border-[#E5E7EB] px-3 py-2">
+              <span className="text-xs font-medium uppercase tracking-wide text-[#6B7280]">
+                History
+              </span>
+              <button
+                onClick={() => setSidebarOpen(false)}
+                className="rounded p-0.5 text-[#9CA3AF] hover:text-[#6B7280]"
+              >
+                <ChevronLeft className="h-3.5 w-3.5" />
+              </button>
+            </div>
+            <div className="flex-1 overflow-y-auto">
+              {conversations.map((conv) => (
+                <div
+                  key={conv.id}
+                  className={cn(
+                    "group flex cursor-pointer items-center gap-2 px-3 py-2 text-sm transition-colors",
+                    activeConvId === conv.id
+                      ? "bg-white text-[#111827]"
+                      : "text-[#6B7280] hover:bg-white/60 hover:text-[#111827]",
+                  )}
+                  onClick={() => setActiveConvId(conv.id)}
+                >
+                  <MessageSquare className="h-3.5 w-3.5 shrink-0" />
+                  <span className="flex-1 truncate text-xs">
+                    {conv.title || "Untitled"}
+                  </span>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleDeleteConversation(conv.id);
+                    }}
+                    className="hidden shrink-0 rounded p-0.5 text-[#9CA3AF] hover:text-red-500 group-hover:block"
+                  >
+                    <Trash2 className="h-3 w-3" />
+                  </button>
+                </div>
+              ))}
+              {conversations.length === 0 && (
+                <div className="px-3 py-4 text-center text-xs text-[#9CA3AF]">
+                  No conversations yet
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Results notebook */}
+          <div className="flex flex-1 flex-col overflow-hidden">
+            <div className="flex items-center gap-2 border-b border-[#E5E7EB] px-4 py-2.5">
+              {!sidebarOpen && (
+                <button
+                  onClick={() => setSidebarOpen(true)}
+                  className="rounded p-0.5 text-[#9CA3AF] hover:text-[#6B7280]"
+                >
+                  <ChevronRight className="h-3.5 w-3.5" />
+                </button>
+              )}
+              <h2 className="text-xs font-medium uppercase tracking-wide text-[#6B7280]">
+                Results Notebook
+              </h2>
+            </div>
+            <div className="flex-1 overflow-y-auto p-4">
+              {cells.length === 0 ? (
+                <div className="flex h-full items-center justify-center">
+                  <div className="text-center">
+                    <p className="text-sm text-[#6B7280]">
+                      Results will appear here as you explore.
+                    </p>
+                    <p className="mt-1 text-xs text-[#9CA3AF]">
+                      Each insight becomes a saveable, composable cell.
+                    </p>
+                  </div>
+                </div>
+              ) : (
+                <div className="flex flex-col gap-3">
+                  {cells.map((cell) => (
+                    <ResultCell key={cell.id} cell={cell} />
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
         </div>
 
