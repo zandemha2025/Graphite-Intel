@@ -7,6 +7,7 @@ export interface Source {
   name: string;
   url?: string;
   domain?: string;
+  type?: "1p" | "3p";
 }
 
 export interface Message {

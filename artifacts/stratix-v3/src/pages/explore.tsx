@@ -202,6 +202,7 @@ function generateFollowUps(content: string): string[] {
 
 interface ResearchStep {
   label: string;
+  source?: string;
   done: boolean;
 }
 
@@ -227,6 +228,7 @@ export default function ExplorePage() {
   const [sourceCount, setSourceCount] = useState(0);
   const [collectedSources, setCollectedSources] = useState<Source[]>([]);
   const [followUps, setFollowUps] = useState<string[]>([]);
+  const [liveResearchSteps, setLiveResearchSteps] = useState<ResearchStep[]>([]);
   const [inputValue, setInputValue] = useState("");
   const abortRef = useRef<AbortController | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -254,6 +256,7 @@ export default function ExplorePage() {
       setCells([]);
       setCollectedSources([]);
       setFollowUps([]);
+      setLiveResearchSteps([]);
       return;
     }
     api<{ messages?: Message[] }>(`/openai/conversations/${activeConvId}`)
@@ -295,6 +298,7 @@ export default function ExplorePage() {
       setCells([]);
       setCollectedSources([]);
       setFollowUps([]);
+      setLiveResearchSteps([]);
     } catch {
       const localId = `local-${Date.now()}`;
       const localConv: ApiConversation = { id: localId, title: "New Explore" };
@@ -304,6 +308,7 @@ export default function ExplorePage() {
       setCells([]);
       setCollectedSources([]);
       setFollowUps([]);
+      setLiveResearchSteps([]);
     }
   }, []);
 
@@ -322,6 +327,7 @@ export default function ExplorePage() {
         setCells([]);
         setCollectedSources([]);
         setFollowUps([]);
+        setLiveResearchSteps([]);
       }
     },
     [activeConvId],
@@ -372,6 +378,7 @@ export default function ExplorePage() {
       setSourceCount(0);
       setCollectedSources([]);
       setFollowUps([]);
+      setLiveResearchSteps([]);
 
       let assistantContent = "";
       let localSources: Source[] = [];
@@ -384,23 +391,54 @@ export default function ExplorePage() {
           `/openai/conversations/${convId}/messages`,
           { content, depth },
           (event, data) => {
+            if (event === "step") {
+              try {
+                const parsed = JSON.parse(data);
+                setLiveResearchSteps(prev => [...prev, { label: parsed.label, source: parsed.source, done: false }]);
+              } catch {
+                // ignore
+              }
+              return;
+            }
+
+            if (event === "step_complete") {
+              try {
+                const parsed = JSON.parse(data);
+                setLiveResearchSteps(prev => prev.map(s =>
+                  (parsed.source && s.source === parsed.source) || s.label.includes(parsed.label || "")
+                    ? { ...s, done: true }
+                    : s
+                ));
+                if (parsed.sources) {
+                  // Classification result -- which sources were selected
+                }
+              } catch {
+                // ignore
+              }
+              return;
+            }
+
+            if (event === "complete") {
+              setLiveResearchSteps(prev => prev.map(s => ({ ...s, done: true })));
+              setStreaming(false);
+              setResearchPhase("idle");
+              return;
+            }
+
             if (event === "sources") {
               try {
                 const parsed = JSON.parse(data);
-                if (Array.isArray(parsed)) {
-                  localSources = parsed.map((s: Source | string) =>
-                    typeof s === "string"
-                      ? { name: s, url: "#", domain: s.toLowerCase().replace(/\s+/g, "") + ".com" }
-                      : { name: s.name, url: s.url || "#", domain: s.domain || s.name.toLowerCase().replace(/\s+/g, "") + ".com" },
-                  );
-                } else if (parsed.sources) {
-                  localSources = parsed.sources.map(
-                    (s: Source | string) =>
-                      typeof s === "string"
-                        ? { name: s, url: "#", domain: s.toLowerCase().replace(/\s+/g, "") + ".com" }
-                        : { name: s.name, url: s.url || "#", domain: s.domain || s.name.toLowerCase().replace(/\s+/g, "") + ".com" },
-                  );
-                }
+                const sourceList = parsed.sources || (Array.isArray(parsed) ? parsed : []);
+                localSources = sourceList.map((s: Source | string) =>
+                  typeof s === "string"
+                    ? { name: s, url: "#", domain: s.toLowerCase().replace(/\s+/g, "") + ".com" }
+                    : {
+                        name: (s as Source).name,
+                        url: (s as Source).url || "#",
+                        domain: (s as Source).domain || (s as Source).name.toLowerCase().replace(/\s+/g, "") + ".com",
+                        type: (s as Source).type || undefined,
+                      },
+                );
                 setSourceCount(localSources.length);
                 setCollectedSources(localSources);
                 setResearchPhase("analyzing");
@@ -569,7 +607,9 @@ export default function ExplorePage() {
     [handleSend],
   );
 
-  const researchSteps = getResearchSteps(researchPhase, sourceCount);
+  const researchSteps = liveResearchSteps.length > 0
+    ? liveResearchSteps
+    : getResearchSteps(researchPhase, sourceCount);
 
   /* Classify source as 1P */
   function is1P(source: Source): boolean {
@@ -811,18 +851,27 @@ export default function ExplorePage() {
               Research Steps
             </h3>
             <div className="space-y-2">
-              {researchSteps.map((step, idx) => (
-                <div key={idx} className="flex items-center gap-2 text-sm">
-                  {step.done ? (
-                    <Check className="h-4 w-4 text-[#059669]" />
-                  ) : (
-                    <Loader2 className="h-4 w-4 text-[#4F46E5] animate-spin" />
-                  )}
-                  <span className={step.done ? "text-[#6B7280]" : "text-[#111827]"}>
-                    {step.label}
-                  </span>
-                </div>
-              ))}
+              {researchSteps.map((step, idx) => {
+                const isLatestActive = !step.done && researchSteps.slice(idx + 1).every(s => s.done || s === step);
+                const isActiveStep = !step.done && (idx === researchSteps.length - 1 || researchSteps.findLastIndex(s => !s.done) === idx);
+                return (
+                  <div key={idx} className="flex items-center gap-2 text-sm">
+                    {step.done ? (
+                      <Check className="h-4 w-4 text-[#059669]" />
+                    ) : isActiveStep ? (
+                      <Loader2 className="h-4 w-4 text-[#4F46E5] animate-spin" />
+                    ) : (
+                      <div className="h-4 w-4 rounded-full border-2 border-[#D1D5DB]" />
+                    )}
+                    <span className={step.done ? "text-[#6B7280]" : isActiveStep ? "text-[#111827]" : "text-[#9CA3AF]"}>
+                      {step.label}
+                    </span>
+                    {step.source && (
+                      <span className="text-[10px] text-[#9CA3AF] ml-auto">{step.source}</span>
+                    )}
+                  </div>
+                );
+              })}
             </div>
           </div>
         )}
@@ -851,9 +900,14 @@ export default function ExplorePage() {
                       <div className="text-[#9CA3AF] text-xs truncate">{s.domain}</div>
                     )}
                   </div>
-                  {is1P(s) && (
-                    <span className="text-[10px] bg-[#EEF2FF] text-[#4F46E5] px-1.5 py-0.5 rounded shrink-0">
+                  {(s.type === "1p" || (!s.type && is1P(s))) && (
+                    <span className="text-[10px] bg-[#EEF2FF] text-[#4F46E5] px-1.5 py-0.5 rounded font-medium shrink-0">
                       1P
+                    </span>
+                  )}
+                  {s.type === "3p" && (
+                    <span className="text-[10px] bg-[#F3F4F6] text-[#6B7280] px-1.5 py-0.5 rounded font-medium shrink-0">
+                      3P
                     </span>
                   )}
                 </a>
