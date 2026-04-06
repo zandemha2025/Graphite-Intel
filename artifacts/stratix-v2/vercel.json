@@ -2,7 +2,7 @@
   "framework": "vite",
   "outputDirectory": "dist/public",
   "installCommand": "cd ../.. && pnpm install --no-frozen-lockfile",
-  "buildCommand": "cd ../.. && pnpm --filter @workspace/stratix-v2 run build",
+  "buildCommand": "cd ../.. && pnpm --filter @workspace/stratix-v3 run build && cp -r artifacts/stratix-v3/dist/public artifacts/stratix-v2/dist/public",
   "rewrites": [
     { "source": "/api/:path*", "destination": "https://graphite-intel-production.up.railway.app/api/:path*" },
     { "source": "/(.*)", "destination": "/index.html" }
