@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect, type KeyboardEvent } from "react";
-import { Paperclip, ArrowUp, Loader2 } from "lucide-react";
+import { Paperclip, ArrowUp, Loader2, X } from "lucide-react";
+import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { api } from "@/lib/api";
 
@@ -105,7 +106,9 @@ interface ChatInputProps {
 
 export function ChatInput({ onSend, disabled, className }: ChatInputProps) {
   const [value, setValue] = useState("");
+  const [attachedFile, setAttachedFile] = useState<File | null>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   function handleSend() {
     const trimmed = value.trim();
@@ -138,10 +141,40 @@ export function ChatInput({ onSend, disabled, className }: ChatInputProps) {
       <DataSourcesBar />
 
       <div className="px-4 pb-3">
+        {/* Attached file chip */}
+        {attachedFile && (
+          <div className="mb-2 flex items-center gap-2">
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-[#EEF2FF] px-3 py-1 text-xs font-medium text-[#4F46E5]">
+              <Paperclip className="h-3 w-3" />
+              {attachedFile.name}
+              <button
+                onClick={() => setAttachedFile(null)}
+                className="ml-0.5 rounded-full p-0.5 hover:bg-[#4F46E5]/10"
+              >
+                <X className="h-3 w-3" />
+              </button>
+            </span>
+          </div>
+        )}
         <div className="flex items-end gap-2 rounded-lg border border-[#E5E7EB] bg-[#F9FAFB] px-3 py-2">
+          <input
+            ref={fileInputRef}
+            type="file"
+            className="hidden"
+            onChange={(e) => {
+              const file = e.target.files?.[0];
+              if (file) {
+                setAttachedFile(file);
+                toast.success(`Attached: ${file.name} — will be included as context`);
+              }
+              // Reset so the same file can be selected again
+              e.target.value = "";
+            }}
+          />
           <button
             className="mb-0.5 shrink-0 rounded-md p-1 text-[#6B7280] hover:bg-[#E5E7EB]/50 hover:text-[#111827]"
             title="Attach file"
+            onClick={() => fileInputRef.current?.click()}
           >
             <Paperclip className="h-4 w-4" />
           </button>

@@ -21,42 +21,74 @@ export interface Message {
 
 /* ---------- Follow-up generation ---------- */
 
-function generateFollowUps(content: string): string[] {
-  const lower = content.toLowerCase();
+/** Extract notable noun phrases / proper nouns from text */
+function extractTopics(text: string): string[] {
+  const topics: string[] = [];
 
-  if (lower.includes("market") || lower.includes("industry")) {
-    return [
-      "Dig deeper into the key players driving this market",
-      "Compare this with adjacent markets",
-      "What are the implications for new entrants?",
-    ];
+  // Extract capitalized multi-word terms (proper nouns / named entities)
+  const properNouns = text.match(/(?:[A-Z][a-z]+(?:\s+[A-Z][a-z]+)+)/g);
+  if (properNouns) {
+    for (const pn of properNouns) {
+      if (!topics.includes(pn) && topics.length < 3) topics.push(pn);
+    }
   }
-  if (lower.includes("competitor") || lower.includes("competitive")) {
-    return [
-      "Dig deeper into their product differentiation",
-      "Compare this with our current positioning",
-      "What are the implications for our GTM strategy?",
-    ];
+
+  // Extract single capitalized words that aren't sentence starters
+  const sentences = text.split(/[.!?]\s+/);
+  for (const sentence of sentences) {
+    const words = sentence.split(/\s+/).slice(1); // skip first word (sentence start)
+    for (const word of words) {
+      const clean = word.replace(/[^a-zA-Z]/g, "");
+      if (
+        clean.length > 3 &&
+        clean[0] === clean[0]?.toUpperCase() &&
+        clean[0] !== clean[0]?.toLowerCase() &&
+        !topics.includes(clean) &&
+        topics.length < 3
+      ) {
+        topics.push(clean);
+      }
+    }
   }
-  if (lower.includes("revenue") || lower.includes("financial") || lower.includes("growth")) {
-    return [
-      "Dig deeper into the margin structure",
-      "Compare this with industry benchmarks",
-      "What are the implications for next quarter?",
-    ];
+
+  return topics;
+}
+
+function generateFollowUps(content: string): string[] {
+  const suggestions: string[] = [];
+  const topics = extractTopics(content);
+
+  // First sentence summary question
+  const firstSentence = content.split(/[.!?]/)[0]?.trim() ?? "";
+  if (firstSentence.length > 20) {
+    const subject = firstSentence.slice(0, 60).replace(/[,;:].*/, "").trim();
+    suggestions.push(`Tell me more about ${subject}`);
   }
-  if (lower.includes("product") || lower.includes("feature")) {
-    return [
-      "Dig deeper into user adoption patterns",
-      "Compare this with competing solutions",
-      "What are the implications for our roadmap?",
-    ];
+
+  // Topic-based questions from extracted terms
+  if (topics[0]) {
+    suggestions.push(`How does ${topics[0]} compare to alternatives?`);
   }
-  return [
-    "Dig deeper into the underlying trends",
-    "Compare this with historical patterns",
-    "What are the implications for our strategy?",
-  ];
+  if (topics[1]) {
+    suggestions.push(`What are the key risks around ${topics[1]}?`);
+  }
+
+  // Content-length based contextual question
+  if (content.length > 500) {
+    suggestions.push("Summarize the key takeaways in bullet points");
+  } else if (content.length > 100) {
+    suggestions.push("Go deeper on this analysis with more data");
+  }
+
+  // Ensure we always have at least 2 suggestions
+  if (suggestions.length < 2) {
+    suggestions.push("What are the strategic implications of this?");
+  }
+  if (suggestions.length < 2) {
+    suggestions.push("How has this changed over the past year?");
+  }
+
+  return suggestions.slice(0, 3);
 }
 
 /* ---------- Source citations panel ---------- */

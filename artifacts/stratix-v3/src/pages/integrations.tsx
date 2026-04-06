@@ -35,7 +35,7 @@ interface DataSource {
   name: string;
   description: string;
   icon: React.ReactNode;
-  status: "connected" | "not_configured";
+  status: "configured" | "not_configured";
 }
 
 interface ConnectedAccount {
@@ -88,7 +88,7 @@ const DATA_SOURCES: DataSource[] = [
     description:
       "Deep research engine with web-sourced, cited answers for comprehensive intelligence.",
     icon: <Search className="h-5 w-5" />,
-    status: "connected",
+    status: "configured",
   },
   {
     id: "serpapi",
@@ -96,7 +96,7 @@ const DATA_SOURCES: DataSource[] = [
     description:
       "Real-time search data, news, trends, and competitive monitoring signals.",
     icon: <Globe className="h-5 w-5" />,
-    status: "connected",
+    status: "configured",
   },
   {
     id: "firecrawl",
@@ -104,7 +104,7 @@ const DATA_SOURCES: DataSource[] = [
     description:
       "Web scraping and structured extraction for competitor analysis and URL research.",
     icon: <Zap className="h-5 w-5" />,
-    status: "connected",
+    status: "configured",
   },
   {
     id: "openrouter",
@@ -112,7 +112,7 @@ const DATA_SOURCES: DataSource[] = [
     description:
       "AI model routing for synthesis, reasoning, and report generation across providers.",
     icon: <Cable className="h-5 w-5" />,
-    status: "connected",
+    status: "configured",
   },
 ];
 
@@ -139,10 +139,9 @@ function DataSourcesSection() {
                 <p className="text-sm font-medium text-[#111827]">
                   {source.name}
                 </p>
-                {source.status === "connected" ? (
-                  <Badge variant="success">
-                    <CheckCircle2 className="mr-1 h-3 w-3" />
-                    Connected
+                {source.status === "configured" ? (
+                  <Badge variant="default">
+                    Backend Service
                   </Badge>
                 ) : (
                   <Badge variant="default">

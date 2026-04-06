@@ -331,12 +331,27 @@ function CreateBoardDialog({
 
 function DashboardsTab() {
   const [, navigate] = useLocation();
+  const queryClient = useQueryClient();
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
 
   const { data: boards, isLoading } = useQuery<Board[]>({
     queryKey: ["boards"],
     queryFn: () =>
       api<{ boards: Board[] }>("/boards").then((r) => r.boards),
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: (id: string) => apiDelete(`/boards/${id}`),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["boards"] });
+      toast.success("Board deleted");
+      setDeletingId(null);
+    },
+    onError: () => {
+      toast.error("Failed to delete board");
+      setDeletingId(null);
+    },
   });
 
   function getTypeBadge(type: Board["type"]) {
@@ -407,15 +422,49 @@ function DashboardsTab() {
         open={createDialogOpen}
         onClose={() => setCreateDialogOpen(false)}
       />
+      {/* Delete confirmation dialog */}
+      {deletingId && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+          <div className="absolute inset-0 bg-black/30" onClick={() => setDeletingId(null)} />
+          <div className="relative z-10 w-full max-w-sm rounded-xl border border-[#E5E7EB] bg-white p-6 shadow-xl">
+            <p className="text-sm font-semibold text-[#111827]">Delete this board?</p>
+            <p className="mt-2 text-sm text-[#6B7280]">This cannot be undone.</p>
+            <div className="mt-4 flex justify-end gap-2">
+              <Button variant="secondary" size="sm" onClick={() => setDeletingId(null)}>
+                Cancel
+              </Button>
+              <Button
+                size="sm"
+                className="bg-red-600 hover:bg-red-700 text-white"
+                onClick={() => deleteMutation.mutate(deletingId)}
+                loading={deleteMutation.isPending}
+              >
+                <Trash2 className="h-3.5 w-3.5" />
+                Delete
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
         {boards.map((board) => (
           <Card
             key={board.id}
-            className="cursor-pointer transition-colors hover:border-[#4F46E5]/30"
+            className="group relative cursor-pointer transition-colors hover:border-[#4F46E5]/30"
             onClick={() => navigate(`/boards/${board.id}`)}
           >
+            {/* Delete button on hover */}
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                setDeletingId(board.id);
+              }}
+              className="absolute right-2 top-2 rounded p-1 text-[#D1D5DB] opacity-0 transition-opacity group-hover:opacity-100 hover:bg-red-50 hover:text-red-500"
+            >
+              <Trash2 className="h-3.5 w-3.5" />
+            </button>
             <div className="mb-2 flex items-center justify-between">
-              <p className="text-sm font-medium text-[#111827] truncate">
+              <p className="text-sm font-medium text-[#111827] truncate pr-6">
                 {board.title}
               </p>
               {getTypeBadge(board.type)}

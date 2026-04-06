@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useParams } from "wouter";
+import { useParams, useLocation } from "wouter";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { format } from "date-fns";
@@ -8,7 +8,7 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import { api, apiPatch, apiPost } from "@/lib/api";
+import { api, apiPatch, apiPost, apiDelete } from "@/lib/api";
 import {
   LayoutGrid,
   RefreshCw,
@@ -23,6 +23,7 @@ import {
   Bell,
   Radio,
   Pencil,
+  Trash2,
 } from "lucide-react";
 
 /* ---------- Types ---------- */
@@ -328,12 +329,14 @@ function MonitoringAlertsSection({
 
 export default function BoardViewPage() {
   const params = useParams<{ id: string }>();
+  const [, navigate] = useLocation();
   const boardId = params.id ?? "";
   const queryClient = useQueryClient();
   const [isEditing, setIsEditing] = useState(false);
   const [editTitle, setEditTitle] = useState("");
   const [showSchedule, setShowSchedule] = useState(false);
   const [showEditMonitors, setShowEditMonitors] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   const { data: board, isLoading, isError } = useQuery<Board>({
     queryKey: ["board", boardId],
@@ -361,6 +364,18 @@ export default function BoardViewPage() {
     },
     onError: () => {
       toast.error("Refresh failed");
+    },
+  });
+
+  const deleteBoardMutation = useMutation({
+    mutationFn: () => apiDelete(`/boards/${boardId}`),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["boards"] });
+      toast.success("Board deleted");
+      navigate("/boards");
+    },
+    onError: () => {
+      toast.error("Failed to delete board");
     },
   });
 
@@ -465,6 +480,15 @@ export default function BoardViewPage() {
             <RefreshCw className="h-4 w-4" />
             Refresh
           </Button>
+          <Button
+            variant="secondary"
+            size="sm"
+            className="text-red-500 hover:text-red-600 hover:bg-red-50"
+            onClick={() => setShowDeleteConfirm(true)}
+          >
+            <Trash2 className="h-3.5 w-3.5" />
+            Delete Board
+          </Button>
         </div>
       }
     >
@@ -562,6 +586,31 @@ export default function BoardViewPage() {
           }}
           onClose={() => setShowEditMonitors(false)}
         />
+      )}
+
+      {/* Delete confirmation dialog */}
+      {showDeleteConfirm && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+          <div className="absolute inset-0 bg-black/30" onClick={() => setShowDeleteConfirm(false)} />
+          <div className="relative z-10 w-full max-w-sm rounded-xl border border-[#E5E7EB] bg-white p-6 shadow-xl">
+            <p className="text-sm font-semibold text-[#111827]">Delete this board?</p>
+            <p className="mt-2 text-sm text-[#6B7280]">This cannot be undone.</p>
+            <div className="mt-4 flex justify-end gap-2">
+              <Button variant="secondary" size="sm" onClick={() => setShowDeleteConfirm(false)}>
+                Cancel
+              </Button>
+              <Button
+                size="sm"
+                className="bg-red-600 hover:bg-red-700 text-white"
+                onClick={() => deleteBoardMutation.mutate()}
+                loading={deleteBoardMutation.isPending}
+              >
+                <Trash2 className="h-3.5 w-3.5" />
+                Delete
+              </Button>
+            </div>
+          </div>
+        </div>
       )}
     </Page>
   );

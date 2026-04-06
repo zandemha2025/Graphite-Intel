@@ -1,6 +1,6 @@
 import { useState, useCallback, useRef, useEffect } from "react";
 import { cn } from "@/lib/utils";
-import { api, apiPost, apiDelete, apiSSE } from "@/lib/api";
+import { api, apiPost, apiDelete, apiSSE, ApiError } from "@/lib/api";
 import { ResultCell, type ResultCellData } from "@/components/explore/result-cell";
 import { Conversation, type Message, type Source } from "@/components/explore/conversation";
 import { ChatInput } from "@/components/explore/chat-input";
@@ -13,6 +13,7 @@ import {
   FileText,
   BarChart3,
   Layout,
+  Loader2,
 } from "lucide-react";
 
 type Depth = "quick" | "standard" | "deep";
@@ -80,12 +81,6 @@ interface RecentActivityItem {
   time: string;
 }
 
-const recentActivity: RecentActivityItem[] = [
-  { title: "Competitive Brief", type: "report", time: "Generated 2h ago" },
-  { title: "Market Dashboard", type: "board", time: "Updated today" },
-  { title: "Q1 Trend Analysis", type: "notebook", time: "Created yesterday" },
-];
-
 const activityIcons: Record<RecentActivityItem["type"], typeof FileText> = {
   report: FileText,
   notebook: BarChart3,
@@ -107,6 +102,69 @@ function RecentActivityCard({ item }: { item: RecentActivityItem }) {
   );
 }
 
+function useRecentActivity() {
+  const [items, setItems] = useState<RecentActivityItem[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let cancelled = false;
+    setLoading(true);
+
+    Promise.allSettled([
+      api<{ reports: { id: string; title: string; createdAt: string }[] }>("/reports?limit=1"),
+      api<{ notebooks: { id: string; title: string; updatedAt: string }[] }>("/notebooks?limit=1"),
+      api<{ boards: { id: string; title: string; updatedAt: string }[] }>("/boards?limit=1"),
+    ]).then((results) => {
+      if (cancelled) return;
+      const activity: RecentActivityItem[] = [];
+
+      if (results[0]?.status === "fulfilled") {
+        const reports = results[0].value.reports ?? [];
+        if (reports[0]) {
+          activity.push({
+            title: reports[0].title,
+            type: "report",
+            time: reports[0].createdAt
+              ? `Created ${new Date(reports[0].createdAt).toLocaleDateString()}`
+              : "Recent",
+          });
+        }
+      }
+      if (results[1]?.status === "fulfilled") {
+        const notebooks = results[1].value.notebooks ?? [];
+        if (notebooks[0]) {
+          activity.push({
+            title: notebooks[0].title,
+            type: "notebook",
+            time: notebooks[0].updatedAt
+              ? `Updated ${new Date(notebooks[0].updatedAt).toLocaleDateString()}`
+              : "Recent",
+          });
+        }
+      }
+      if (results[2]?.status === "fulfilled") {
+        const boards = results[2].value.boards ?? [];
+        if (boards[0]) {
+          activity.push({
+            title: boards[0].title,
+            type: "board",
+            time: boards[0].updatedAt
+              ? `Updated ${new Date(boards[0].updatedAt).toLocaleDateString()}`
+              : "Recent",
+          });
+        }
+      }
+
+      setItems(activity);
+      setLoading(false);
+    });
+
+    return () => { cancelled = true; };
+  }, []);
+
+  return { items, loading };
+}
+
 /* ---------- Research phase management ---------- */
 
 type ResearchPhase = "searching" | "analyzing" | "synthesizing" | "idle";
@@ -124,6 +182,7 @@ export default function ExplorePage() {
   const [researchPhase, setResearchPhase] = useState<ResearchPhase>("idle");
   const [sourceCount, setSourceCount] = useState(0);
   const abortRef = useRef<AbortController | null>(null);
+  const { items: recentActivity, loading: recentActivityLoading } = useRecentActivity();
 
   /* Load conversation list on mount */
   useEffect(() => {
@@ -353,8 +412,26 @@ export default function ExplorePage() {
         );
       } catch (err) {
         if ((err as Error).name !== "AbortError") {
-          const errorContent =
-            "I encountered an issue processing your request. Please try again.";
+          let errorContent: string;
+          if (err instanceof ApiError) {
+            switch (err.status) {
+              case 401:
+                errorContent = "Session expired. Please sign in again.";
+                break;
+              case 429:
+                errorContent = "Rate limit reached. Please wait a moment.";
+                break;
+              case 500:
+                errorContent = "Our servers are having trouble. Please try again.";
+                break;
+              default:
+                errorContent = "Something went wrong. Please try again.";
+            }
+          } else if (err instanceof TypeError && (err as TypeError).message.includes("fetch")) {
+            errorContent = "Connection lost. Check your internet.";
+          } else {
+            errorContent = "Something went wrong. Please try again.";
+          }
           setMessages((prev) => {
             const existing = prev.find((m) => m.id === assistantId);
             if (existing) return prev;
@@ -512,16 +589,23 @@ export default function ExplorePage() {
                   </div>
 
                   {/* Recent Activity section */}
-                  <div className="mt-8 w-full max-w-sm">
-                    <h3 className="mb-3 text-xs font-medium uppercase tracking-wide text-[#9CA3AF]">
-                      Recent Activity
-                    </h3>
-                    <div className="flex flex-col gap-2">
-                      {recentActivity.map((item) => (
-                        <RecentActivityCard key={item.title} item={item} />
-                      ))}
+                  {recentActivityLoading ? (
+                    <div className="mt-8 flex items-center gap-2 text-xs text-[#9CA3AF]">
+                      <Loader2 className="h-3 w-3 animate-spin" />
+                      Loading recent activity...
                     </div>
-                  </div>
+                  ) : recentActivity.length > 0 ? (
+                    <div className="mt-8 w-full max-w-sm">
+                      <h3 className="mb-3 text-xs font-medium uppercase tracking-wide text-[#9CA3AF]">
+                        Recent Activity
+                      </h3>
+                      <div className="flex flex-col gap-2">
+                        {recentActivity.map((item) => (
+                          <RecentActivityCard key={item.title} item={item} />
+                        ))}
+                      </div>
+                    </div>
+                  ) : null}
                 </div>
               ) : (
                 <div className="flex flex-col gap-3">

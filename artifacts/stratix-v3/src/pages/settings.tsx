@@ -138,9 +138,12 @@ function ProfileTab() {
 
 /* ---------- Team Tab ---------- */
 
+const isValidEmail = (e: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e);
+
 function TeamTab() {
   const queryClient = useQueryClient();
   const [inviteEmail, setInviteEmail] = useState("");
+  const [emailTouched, setEmailTouched] = useState(false);
   const [inviteRole, setInviteRole] = useState<"admin" | "analyst" | "viewer">(
     "analyst",
   );
@@ -235,8 +238,15 @@ function TeamTab() {
               type="email"
               placeholder="colleague@company.com"
               value={inviteEmail}
-              onChange={(e) => setInviteEmail(e.target.value)}
+              onChange={(e) => {
+                setInviteEmail(e.target.value);
+                if (!emailTouched) setEmailTouched(true);
+              }}
+              onBlur={() => setEmailTouched(true)}
             />
+            {emailTouched && inviteEmail.trim() && !isValidEmail(inviteEmail) && (
+              <p className="mt-1 text-xs text-red-500">Please enter a valid email address</p>
+            )}
           </div>
           <div className="flex flex-col gap-1.5">
             <label
@@ -264,7 +274,7 @@ function TeamTab() {
             size="sm"
             onClick={() => inviteMutation.mutate()}
             loading={inviteMutation.isPending}
-            disabled={!inviteEmail.trim()}
+            disabled={!inviteEmail.trim() || !isValidEmail(inviteEmail)}
           >
             <Mail className="h-3.5 w-3.5" />
             Send Invite

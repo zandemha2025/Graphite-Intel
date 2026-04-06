@@ -11,10 +11,13 @@ import {
   Check,
   ChevronDown,
   BookOpen,
+  X,
+  Loader2,
 } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
+import { api, apiPost } from "@/lib/api";
 
 export type CellType =
   | "key-finding"
@@ -352,6 +355,183 @@ function SaveDropdown({
   );
 }
 
+/* ---------- Save to Board Dialog ---------- */
+
+interface BoardListItem {
+  id: string;
+  title: string;
+}
+
+function SaveToBoardDialog({
+  open,
+  onClose,
+  cellContent,
+  cellTitle,
+}: {
+  open: boolean;
+  onClose: () => void;
+  cellContent: string;
+  cellTitle: string;
+}) {
+  const [boards, setBoards] = useState<BoardListItem[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!open) return;
+    setLoading(true);
+    api<{ boards: BoardListItem[] }>("/boards")
+      .then((r) => setBoards(r.boards ?? []))
+      .catch(() => setBoards([]))
+      .finally(() => setLoading(false));
+  }, [open]);
+
+  async function handleSave(board: BoardListItem) {
+    setSaving(board.id);
+    try {
+      await apiPost(`/boards/${board.id}/cards`, {
+        title: cellTitle,
+        type: "insight",
+        content: cellContent,
+      });
+      toast.success(`Saved to ${board.title}`);
+      onClose();
+    } catch {
+      toast.error("Failed to save to board");
+    } finally {
+      setSaving(null);
+    }
+  }
+
+  if (!open) return null;
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center">
+      <div className="absolute inset-0 bg-black/30" onClick={onClose} />
+      <div className="relative z-10 w-full max-w-sm rounded-xl border border-[#E5E7EB] bg-white shadow-xl">
+        <div className="flex items-center justify-between border-b border-[#E5E7EB] px-4 py-3">
+          <p className="text-sm font-semibold text-[#111827]">Save to Board</p>
+          <button onClick={onClose} className="rounded p-1 text-[#6B7280] hover:bg-[#F3F4F6]">
+            <X className="h-4 w-4" />
+          </button>
+        </div>
+        <div className="max-h-64 overflow-y-auto p-2">
+          {loading ? (
+            <div className="flex items-center justify-center py-8">
+              <Loader2 className="h-5 w-5 animate-spin text-[#9CA3AF]" />
+            </div>
+          ) : boards.length === 0 ? (
+            <div className="py-8 text-center text-sm text-[#6B7280]">
+              No boards found. Create a board first.
+            </div>
+          ) : (
+            boards.map((board) => (
+              <button
+                key={board.id}
+                onClick={() => handleSave(board)}
+                disabled={saving !== null}
+                className="flex w-full items-center gap-2 rounded-lg px-3 py-2.5 text-left text-sm text-[#374151] transition-colors hover:bg-[#F9FAFB] disabled:opacity-50"
+              >
+                <Bookmark className="h-3.5 w-3.5 text-[#6B7280]" />
+                <span className="flex-1 truncate">{board.title}</span>
+                {saving === board.id && <Loader2 className="h-3.5 w-3.5 animate-spin text-[#4F46E5]" />}
+              </button>
+            ))
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ---------- Save to Notebook Dialog ---------- */
+
+interface NotebookListItem {
+  id: string;
+  title: string;
+}
+
+function SaveToNotebookDialog({
+  open,
+  onClose,
+  cellContent,
+  cellTitle,
+}: {
+  open: boolean;
+  onClose: () => void;
+  cellContent: string;
+  cellTitle: string;
+}) {
+  const [notebooks, setNotebooks] = useState<NotebookListItem[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!open) return;
+    setLoading(true);
+    api<{ notebooks: NotebookListItem[] }>("/notebooks")
+      .then((r) => setNotebooks(r.notebooks ?? []))
+      .catch(() => setNotebooks([]))
+      .finally(() => setLoading(false));
+  }, [open]);
+
+  async function handleSave(notebook: NotebookListItem) {
+    setSaving(notebook.id);
+    try {
+      await apiPost(`/notebooks/${notebook.id}/cells`, {
+        type: "markdown",
+        content: `## ${cellTitle}\n\n${cellContent}`,
+      });
+      toast.success(`Saved to ${notebook.title}`);
+      onClose();
+    } catch {
+      toast.error("Failed to save to notebook");
+    } finally {
+      setSaving(null);
+    }
+  }
+
+  if (!open) return null;
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center">
+      <div className="absolute inset-0 bg-black/30" onClick={onClose} />
+      <div className="relative z-10 w-full max-w-sm rounded-xl border border-[#E5E7EB] bg-white shadow-xl">
+        <div className="flex items-center justify-between border-b border-[#E5E7EB] px-4 py-3">
+          <p className="text-sm font-semibold text-[#111827]">Save to Notebook</p>
+          <button onClick={onClose} className="rounded p-1 text-[#6B7280] hover:bg-[#F3F4F6]">
+            <X className="h-4 w-4" />
+          </button>
+        </div>
+        <div className="max-h-64 overflow-y-auto p-2">
+          {loading ? (
+            <div className="flex items-center justify-center py-8">
+              <Loader2 className="h-5 w-5 animate-spin text-[#9CA3AF]" />
+            </div>
+          ) : notebooks.length === 0 ? (
+            <div className="py-8 text-center text-sm text-[#6B7280]">
+              No notebooks found. Create a notebook first.
+            </div>
+          ) : (
+            notebooks.map((nb) => (
+              <button
+                key={nb.id}
+                onClick={() => handleSave(nb)}
+                disabled={saving !== null}
+                className="flex w-full items-center gap-2 rounded-lg px-3 py-2.5 text-left text-sm text-[#374151] transition-colors hover:bg-[#F9FAFB] disabled:opacity-50"
+              >
+                <BookOpen className="h-3.5 w-3.5 text-[#6B7280]" />
+                <span className="flex-1 truncate">{nb.title}</span>
+                {saving === nb.id && <Loader2 className="h-3.5 w-3.5 animate-spin text-[#4F46E5]" />}
+              </button>
+            ))
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 /* ---------- Main cell component ---------- */
 
 interface ResultCellProps {
@@ -363,6 +543,8 @@ interface ResultCellProps {
 export function ResultCell({ cell, onSave, className }: ResultCellProps) {
   const Icon = cellIcons[cell.type];
   const [copied, setCopied] = useState(false);
+  const [boardDialogOpen, setBoardDialogOpen] = useState(false);
+  const [notebookDialogOpen, setNotebookDialogOpen] = useState(false);
 
   function handleCopy() {
     navigator.clipboard.writeText(cell.content).then(() => {
@@ -372,9 +554,17 @@ export function ResultCell({ cell, onSave, className }: ResultCellProps) {
     });
   }
 
+  function handleSaveBoard() {
+    setBoardDialogOpen(true);
+  }
+
   function handleSaveNotebook() {
-    navigator.clipboard.writeText(cell.content).then(() => {
-      toast.success("Copied -- paste into any notebook");
+    setNotebookDialogOpen(true);
+  }
+
+  function handleShare() {
+    navigator.clipboard.writeText(window.location.href).then(() => {
+      toast.success("Link copied to clipboard");
     });
   }
 
@@ -415,16 +605,33 @@ export function ResultCell({ cell, onSave, className }: ResultCellProps) {
       {/* Actions */}
       <div className="mt-3 flex items-center gap-1 border-t border-[#E5E7EB] pt-3">
         <SaveDropdown
-          onSaveBoard={onSave}
+          onSaveBoard={handleSaveBoard}
           onSaveNotebook={handleSaveNotebook}
           onCopy={handleCopy}
           copied={copied}
         />
-        <button className="flex items-center gap-1.5 rounded-md px-2 py-1 text-xs text-[#6B7280] hover:bg-[#F3F4F6] hover:text-[#111827]">
+        <button
+          onClick={handleShare}
+          className="flex items-center gap-1.5 rounded-md px-2 py-1 text-xs text-[#6B7280] hover:bg-[#F3F4F6] hover:text-[#111827]"
+        >
           <Share2 className="h-3.5 w-3.5" />
           Share
         </button>
       </div>
+
+      {/* Dialogs */}
+      <SaveToBoardDialog
+        open={boardDialogOpen}
+        onClose={() => setBoardDialogOpen(false)}
+        cellContent={cell.content}
+        cellTitle={cell.title}
+      />
+      <SaveToNotebookDialog
+        open={notebookDialogOpen}
+        onClose={() => setNotebookDialogOpen(false)}
+        cellContent={cell.content}
+        cellTitle={cell.title}
+      />
     </div>
   );
 }

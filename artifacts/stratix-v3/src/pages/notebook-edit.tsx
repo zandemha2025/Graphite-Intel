@@ -299,22 +299,37 @@ function ExportDropdown({ notebook }: { notebook: Notebook }) {
     }
   }, [open]);
 
-  const handleMarkdownExport = useCallback(() => {
-    const markdown = notebook.cells
-      .map((cell) => {
-        const parts: string[] = [];
-        if (cell.content) parts.push(cell.content);
-        if (cell.output) parts.push(cell.output);
-        return parts.join("\n\n");
-      })
-      .filter(Boolean)
-      .join("\n\n---\n\n");
+  const buildMarkdown = useCallback(() => {
+    return `# ${notebook.title}\n\n` +
+      notebook.cells
+        .map((cell) => {
+          const parts: string[] = [];
+          if (cell.content) parts.push(cell.content);
+          if (cell.output) parts.push(`**Output:**\n\n${cell.output}`);
+          return parts.join("\n\n");
+        })
+        .filter(Boolean)
+        .join("\n\n---\n\n");
+  }, [notebook.title, notebook.cells]);
 
-    navigator.clipboard.writeText(markdown).then(() => {
-      toast.success("Markdown copied to clipboard");
-    });
+  const downloadFile = useCallback((content: string, filename: string, mimeType: string) => {
+    const blob = new Blob([content], { type: mimeType });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }, []);
+
+  const handleMarkdownExport = useCallback(() => {
+    const md = buildMarkdown();
+    downloadFile(md, `${notebook.title || "notebook"}.md`, "text/markdown");
+    toast.success("Markdown file downloaded");
     setOpen(false);
-  }, [notebook.cells]);
+  }, [buildMarkdown, downloadFile, notebook.title]);
 
   const handleCopyLink = useCallback(() => {
     navigator.clipboard.writeText(window.location.href).then(() => {
@@ -323,15 +338,54 @@ function ExportDropdown({ notebook }: { notebook: Notebook }) {
     setOpen(false);
   }, []);
 
-  const handlePdfExport = useCallback(() => {
-    toast.info("PDF export coming soon");
+  const handlePdfExport = useCallback(async () => {
     setOpen(false);
-  }, []);
+    try {
+      const md = buildMarkdown();
+      const res = await fetch("/api/reports", {
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          type: "Notebook Export",
+          company: notebook.title,
+          context: md,
+          depth: "quick",
+        }),
+      });
+      if (res.ok) {
+        const blob = await res.blob();
+        if (blob.type === "application/pdf") {
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement("a");
+          a.href = url;
+          a.download = `${notebook.title || "notebook"}.pdf`;
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          URL.revokeObjectURL(url);
+          toast.success("PDF downloaded");
+          return;
+        }
+      }
+      // Fallback: download as markdown
+      const md2 = buildMarkdown();
+      downloadFile(md2, `${notebook.title || "notebook"}.md`, "text/markdown");
+      toast.info("PDF generation unavailable -- downloaded as Markdown instead");
+    } catch {
+      const md2 = buildMarkdown();
+      downloadFile(md2, `${notebook.title || "notebook"}.md`, "text/markdown");
+      toast.info("PDF generation unavailable -- downloaded as Markdown instead");
+    }
+  }, [buildMarkdown, downloadFile, notebook.title]);
 
   const handleDocxExport = useCallback(() => {
-    toast.info("DOCX export coming soon");
+    // DOCX generation requires a library; download as markdown instead
+    const md = buildMarkdown();
+    downloadFile(md, `${notebook.title || "notebook"}.md`, "text/markdown");
+    toast.info("Downloaded as Markdown -- open in Word or Google Docs to convert");
     setOpen(false);
-  }, []);
+  }, [buildMarkdown, downloadFile, notebook.title]);
 
   return (
     <div ref={ref} className="relative">
