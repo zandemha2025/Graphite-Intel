@@ -3,10 +3,21 @@ import { db, conversations, messages, companyProfiles, documents, conversationDo
 import { eq, desc, and, inArray, sql } from "drizzle-orm";
 import { getOpenAIClient } from "@workspace/integrations-openai-ai-server";
 import OpenAI from "openai";
+import {
+  type DataSource,
+  type SourceResult,
+  classifyQueryIntent,
+  fetchPerplexityResearch,
+  fetchSerpApiData,
+  fetchCrmData,
+  fetchCallData,
+  buildFusionContext,
+  buildFusionSources,
+} from "../lib/data-fusion";
 
 const router: IRouter = Router();
 
-// Perplexity client for deep research (has built-in web search)
+// Perplexity client for deep research (has built-in web search — used by deep research mode)
 function getPerplexityClient(): OpenAI | null {
   const key = process.env.PERPLEXITY_API_KEY;
   if (!key) return null;
@@ -341,25 +352,111 @@ router.post(
         content: m.content,
       }));
 
+      // ---------------------------------------------------------------
+      // Step 0: Build base system prompt + retrieve document chunks
+      // ---------------------------------------------------------------
       const { prompt: systemPrompt, retrievedChunks } = await buildSystemPrompt(req, id, content);
-      let fullResponse = "";
 
-      // Use Perplexity for deep research (has built-in web search), OpenRouter for everything else
+      // ---------------------------------------------------------------
+      // Step 1: Classify query intent (fast — gpt-4o-mini, ~100 tokens)
+      // ---------------------------------------------------------------
+      sendEvent("step", { label: "Classifying query intent...", source: "Graphite" });
+
+      // Grab profile for the classifier
+      const orgId = req.user!.orgId;
+      const profileFilter = orgId
+        ? eq(companyProfiles.orgId, orgId)
+        : eq(companyProfiles.userId, userId);
+      const [profile] = await db.select().from(companyProfiles).where(profileFilter);
+
+      const sourcesToUse = await classifyQueryIntent(content, profile ?? null);
+      sendEvent("step_complete", { label: "Query classified", sources: sourcesToUse });
+
+      // ---------------------------------------------------------------
+      // Step 2: Parallel data fetching based on classification
+      // ---------------------------------------------------------------
+      const searchPromises: Promise<SourceResult>[] = [];
+
+      if (sourcesToUse.includes("WEB_RESEARCH")) {
+        sendEvent("step", { label: "Searching web research...", source: "Perplexity" });
+        searchPromises.push(fetchPerplexityResearch(content, profile ?? null));
+      }
+
+      if (sourcesToUse.includes("SEARCH_DATA")) {
+        sendEvent("step", { label: "Pulling search data...", source: "SerpAPI" });
+        searchPromises.push(fetchSerpApiData(content));
+      }
+
+      if (sourcesToUse.includes("CRM_DATA")) {
+        sendEvent("step", { label: "Checking CRM data...", source: "Salesforce" });
+        searchPromises.push(fetchCrmData(req, content));
+      }
+
+      if (sourcesToUse.includes("CALL_DATA")) {
+        sendEvent("step", { label: "Analyzing call data...", source: "Gong" });
+        searchPromises.push(fetchCallData(req, content));
+      }
+
+      const settledResults = await Promise.allSettled(searchPromises);
+      const successfulResults = settledResults
+        .filter(
+          (r): r is PromiseFulfilledResult<SourceResult> =>
+            r.status === "fulfilled",
+        )
+        .map((r) => r.value);
+
+      // Send step_complete for each fetched source
+      for (const r of successfulResults) {
+        if (r.data) {
+          sendEvent("step_complete", { label: `${r.source} complete`, source: r.source });
+        }
+      }
+
+      // ---------------------------------------------------------------
+      // Step 3: Build enriched system prompt with fusion context
+      // ---------------------------------------------------------------
+      let enrichedPrompt = systemPrompt;
+
+      const fusionContext = buildFusionContext(successfulResults);
+      if (fusionContext) {
+        enrichedPrompt += `\n\nDATA FUSION CONTEXT (automatically gathered from multiple sources):\n${fusionContext}\n\nWhen responding, cite which source provided each piece of information using [Source: Name] format. Distinguish between 1st-party data (company's own systems) and 3rd-party research.`;
+      }
+
+      // Send aggregated sources to frontend
+      const fusionSources = buildFusionSources(
+        successfulResults,
+        retrievedChunks.length > 0,
+        !!profile,
+      );
+      if (fusionSources.length > 0) {
+        sendEvent("sources", { sources: fusionSources });
+      }
+
+      // ---------------------------------------------------------------
+      // Step 4: Call the main LLM with enriched context
+      // ---------------------------------------------------------------
+      sendEvent("step", { label: "Synthesizing insights...", source: "AI" });
+
+      // Deep research still uses Perplexity as the primary LLM for its
+      // built-in web search. Standard/quick use OpenAI with fusion context.
       const perplexity = isDeepResearch ? getPerplexityClient() : null;
       const llmClient = perplexity || getOpenAIClient();
       const llmModel = perplexity ? "sonar-pro" : "gpt-4o";
 
+      const finalSystemContent = isDeepResearch
+        ? enrichedPrompt +
+          "\n\nIMPORTANT: The user has requested DEEP RESEARCH mode. You have access to real-time web search. Provide an extremely thorough, comprehensive, and detailed response with current data. Include multiple perspectives, cite sources where possible, cover edge cases, and structure your response with clear sections and subsections. Leave no stone unturned."
+        : isQuickResearch
+          ? enrichedPrompt +
+            "\n\nBe concise and direct. Provide a brief, focused answer without unnecessary elaboration."
+          : enrichedPrompt;
+
+      let fullResponse = "";
+
       const stream = await (llmClient as any).chat.completions.create({
         model: llmModel,
         messages: [
-          {
-            role: "system",
-            content: isDeepResearch
-              ? systemPrompt + "\n\nIMPORTANT: The user has requested DEEP RESEARCH mode. You have access to real-time web search. Provide an extremely thorough, comprehensive, and detailed response with current data. Include multiple perspectives, cite sources where possible, cover edge cases, and structure your response with clear sections and subsections. Leave no stone unturned."
-              : isQuickResearch
-              ? systemPrompt + "\n\nBe concise and direct. Provide a brief, focused answer without unnecessary elaboration."
-              : systemPrompt,
-          },
+          { role: "system", content: finalSystemContent },
           ...chatMessages,
         ],
         stream: true,
@@ -375,7 +472,10 @@ router.post(
         }
       }
 
-      const sourcesData = retrievedChunks.length > 0
+      // ---------------------------------------------------------------
+      // Step 5: Persist assistant message
+      // ---------------------------------------------------------------
+      const docSourcesData = retrievedChunks.length > 0
         ? retrievedChunks.map((chunk) => ({
             documentId: chunk.documentId,
             documentTitle: chunk.documentTitle,
@@ -391,12 +491,12 @@ router.post(
           conversationId: id,
           role: "assistant",
           content: fullResponse,
-          sources: sourcesData,
+          sources: docSourcesData,
         })
         .returning();
 
-      if (sourcesData) {
-        sendEvent("sources", { sources: sourcesData });
+      if (docSourcesData) {
+        sendEvent("sources", { sources: docSourcesData });
       }
 
       sendEvent("complete", { message: assistantMsg });
