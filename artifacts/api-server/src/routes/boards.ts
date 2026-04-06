@@ -2,7 +2,7 @@
  * CRUD endpoints for boards (dashboards, reports, monitors).
  */
 import { Router, type IRouter, type Request, type Response } from "express";
-import { db, boards } from "@workspace/db";
+import { db, boards, orgMembers } from "@workspace/db";
 import { eq, and, or, desc } from "drizzle-orm";
 
 const router: IRouter = Router();
@@ -53,7 +53,7 @@ router.get("/boards", async (req: Request, res: Response) => {
 router.post("/boards", async (req: Request, res: Response) => {
   if (!requireAuth(req, res)) return;
   const orgId = req.user!.orgId!;
-  const userId = req.user!.id;
+  const authUserId = req.user!.id;
 
   try {
     const { title, description, type, config, isShared } = req.body;
@@ -63,11 +63,18 @@ router.post("/boards", async (req: Request, res: Response) => {
       return;
     }
 
+    // Board schema uses integer createdByUserId — look up org member ID
+    const [member] = await db
+      .select()
+      .from(orgMembers)
+      .where(and(eq(orgMembers.userId, authUserId), eq(orgMembers.orgId, orgId)));
+    const memberIdInt = member?.id ?? 0;
+
     const [board] = await db
       .insert(boards)
       .values({
         orgId,
-        createdByUserId: userId,
+        createdByUserId: memberIdInt,
         title,
         description: description ?? null,
         type: type ?? "live",
