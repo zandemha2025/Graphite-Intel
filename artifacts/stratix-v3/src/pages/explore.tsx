@@ -351,6 +351,33 @@ export default function ExplorePage() {
               return;
             }
 
+            if (event === "error") {
+              try {
+                const parsed = JSON.parse(data);
+                const errorMsg = parsed.error || parsed.message || "An error occurred";
+                setMessages((prev) => [
+                  ...prev,
+                  {
+                    id: assistantId,
+                    role: "assistant" as const,
+                    content: `⚠️ ${errorMsg}\n\nThis may be due to API configuration. Please check your intelligence data source settings in Integrations.`,
+                  },
+                ]);
+              } catch {
+                setMessages((prev) => [
+                  ...prev,
+                  {
+                    id: assistantId,
+                    role: "assistant" as const,
+                    content: "⚠️ Something went wrong. Please try again.",
+                  },
+                ]);
+              }
+              setStreaming(false);
+              setResearchPhase(null);
+              return;
+            }
+
             // Handle token events — backend sends {delta: "..."} or {content: "..."}
             try {
               const parsed = JSON.parse(data);
