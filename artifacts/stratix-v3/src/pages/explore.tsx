@@ -100,7 +100,7 @@ function useRecentActivity() {
       const activity: RecentActivityItem[] = [];
 
       if (results[0]?.status === "fulfilled") {
-        const reports = results[0].value.reports ?? [];
+        const raw = results[0].value; const reports = Array.isArray(raw) ? raw : (raw.reports ?? []);
         if (reports[0]) {
           activity.push({
             title: reports[0].title,
@@ -112,7 +112,7 @@ function useRecentActivity() {
         }
       }
       if (results[1]?.status === "fulfilled") {
-        const notebooks = results[1].value.notebooks ?? [];
+        const raw2 = results[1].value; const notebooks = Array.isArray(raw2) ? raw2 : (raw2.notebooks ?? []);
         if (notebooks[0]) {
           activity.push({
             title: notebooks[0].title,
@@ -124,7 +124,7 @@ function useRecentActivity() {
         }
       }
       if (results[2]?.status === "fulfilled") {
-        const boards = results[2].value.boards ?? [];
+        const raw3 = results[2].value; const boards = Array.isArray(raw3) ? raw3 : (raw3.boards ?? []);
         if (boards[0]) {
           activity.push({
             title: boards[0].title,

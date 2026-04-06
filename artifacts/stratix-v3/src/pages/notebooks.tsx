@@ -216,7 +216,7 @@ export default function NotebooksPage() {
   const { data: notebooks, isLoading } = useQuery<Notebook[]>({
     queryKey: ["notebooks"],
     queryFn: () =>
-      api<{ notebooks: Notebook[] }>("/notebooks").then((r) => r.notebooks),
+      api<Notebook[]>("/notebooks"),
   });
 
   const createMutation = useMutation({

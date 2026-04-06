@@ -360,9 +360,7 @@ function TemplatesTab() {
   const { data: templates, isLoading } = useQuery<Playbook[]>({
     queryKey: ["playbook-templates"],
     queryFn: () =>
-      api<{ playbooks: Playbook[] }>("/playbooks?isTemplate=true").then(
-        (r) => r.playbooks,
-      ),
+      api<Playbook[]>("/playbooks?isTemplate=true"),
   });
 
   const useTemplateMutation = useMutation({

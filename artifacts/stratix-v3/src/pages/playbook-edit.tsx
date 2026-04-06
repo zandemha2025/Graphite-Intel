@@ -252,9 +252,7 @@ export default function PlaybookEditPage() {
   } = useQuery<Playbook>({
     queryKey: ["playbook", playbookId],
     queryFn: () =>
-      api<{ playbook: Playbook }>(`/playbooks/${playbookId}`).then(
-        (r) => r.playbook,
-      ),
+      api<Playbook>(`/playbooks/${playbookId}`),
     enabled: !!playbookId,
   });
 

@@ -449,9 +449,7 @@ export default function NotebookEditPage() {
   const { data: notebook, isLoading, isError } = useQuery<Notebook>({
     queryKey: ["notebook", notebookId],
     queryFn: () =>
-      api<{ notebook: Notebook }>(`/notebooks/${notebookId}`).then(
-        (r) => r.notebook,
-      ),
+      api<Notebook>(`/notebooks/${notebookId}`),
     enabled: !!notebookId,
   });
 
