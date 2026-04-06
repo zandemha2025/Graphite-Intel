@@ -837,14 +837,14 @@ interface Report {
 }
 
 const REPORT_TYPES = [
-  "CMO Monthly Brief",
-  "Campaign ROI Analysis",
-  "Competitive Landscape Report",
-  "Market Sizing & TAM Analysis",
-  "Customer Journey Analysis",
-  "Channel Performance Dashboard",
-  "Brand Health Report",
-  "Growth Opportunity Assessment",
+  { value: "competitive_analysis", label: "Competitive Analysis" },
+  { value: "market_intelligence", label: "Market Intelligence" },
+  { value: "growth_strategy", label: "Growth Strategy" },
+  { value: "brand_positioning", label: "Brand Positioning" },
+  { value: "paid_acquisition", label: "Paid Acquisition Strategy" },
+  { value: "financial_modeling", label: "Financial Modeling" },
+  { value: "cultural_intelligence", label: "Cultural Intelligence" },
+  { value: "full_business_audit", label: "Full Business Audit" },
 ] as const;
 
 type ReportDepth = "quick" | "standard" | "deep";
@@ -860,7 +860,7 @@ function GenerateReportDialog({
 }) {
   const [, navigate] = useLocation();
   const queryClient = useQueryClient();
-  const [reportType, setReportType] = useState<string>(REPORT_TYPES[0]);
+  const [reportType, setReportType] = useState<string>(REPORT_TYPES[0].value);
   const [company, setCompany] = useState("");
   const [context, setContext] = useState("");
   const [depth, setDepth] = useState<ReportDepth>("standard");
@@ -872,7 +872,7 @@ function GenerateReportDialog({
   const abortRef = useRef<AbortController | null>(null);
 
   function reset() {
-    setReportType(REPORT_TYPES[0]);
+    setReportType(REPORT_TYPES[0].value);
     setCompany("");
     setContext("");
     setDepth("standard");
@@ -905,7 +905,7 @@ function GenerateReportDialog({
     try {
       await apiSSE(
         "/reports",
-        { type: reportType, company: company.trim(), context: context.trim(), depth },
+        { reportType, company: company.trim(), additionalContext: context.trim(), depth },
         (event, data) => {
           try {
             const parsed = JSON.parse(data);
@@ -914,7 +914,11 @@ function GenerateReportDialog({
                 setProgress(parsed.message ?? parsed.status ?? "Processing...");
                 break;
               case "content":
-                setStreamContent((prev) => prev + (parsed.text ?? parsed.content ?? ""));
+                setStreamContent((prev) => prev + (parsed.delta ?? parsed.text ?? parsed.content ?? ""));
+                break;
+              case "report_created":
+                setReportId(parsed.id ?? null);
+                setProgress("Generating report...");
                 break;
               case "source":
                 setSources((prev) => [...prev, parsed.name ?? parsed.source ?? "Source"]);
@@ -987,7 +991,7 @@ function GenerateReportDialog({
                   className="h-9 w-full rounded-lg border border-[#E5E7EB] bg-white px-3 text-sm text-[#111827] focus:outline-none focus:ring-2 focus:ring-[#4F46E5]/20 focus:border-[#4F46E5]"
                 >
                   {REPORT_TYPES.map((t) => (
-                    <option key={t} value={t}>{t}</option>
+                    <option key={t.value} value={t.value}>{t.label}</option>
                   ))}
                 </select>
               </div>
