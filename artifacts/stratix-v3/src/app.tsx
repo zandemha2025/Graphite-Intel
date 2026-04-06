@@ -2,7 +2,9 @@ import { Route, Switch, Redirect, useLocation } from "wouter";
 import { Toaster } from "sonner";
 import { useAuth } from "@/hooks/use-auth";
 import { Shell } from "@/components/layout/shell";
-import { type ReactNode, Component, type ErrorInfo } from "react";
+import { type ReactNode, Component, type ErrorInfo, lazy, Suspense } from "react";
+
+const ReportViewPage = lazy(() => import("@/pages/report-view"));
 
 // Pages
 import LandingPage from "@/pages/landing";
@@ -16,6 +18,9 @@ import BoardsPage from "@/pages/boards";
 import BoardViewPage from "@/pages/board-view";
 import IntegrationsPage from "@/pages/integrations";
 import SettingsPage from "@/pages/settings";
+import PlaybooksPage from "@/pages/playbooks";
+import PlaybookEditPage from "@/pages/playbook-edit";
+import PlaybookRunPage from "@/pages/playbook-run";
 
 // Error Boundary
 class ErrorBoundary extends Component<
@@ -90,8 +95,30 @@ function AuthenticatedRoutes() {
         <Route path="/notebooks" component={NotebooksPage} />
         <Route path="/notebooks/:id" component={NotebookEditPage} />
         <Route path="/context" component={ContextPage} />
+        <Route path="/reports/:id">
+              {() => (
+                <Suspense
+                  fallback={
+                    <div className="flex min-h-[400px] items-center justify-center">
+                      <div className="flex items-center gap-2 text-sm text-[#6B7280]">
+                        <svg className="h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                        </svg>
+                        Loading report...
+                      </div>
+                    </div>
+                  }
+                >
+                  <ReportViewPage />
+                </Suspense>
+              )}
+            </Route>
         <Route path="/boards" component={BoardsPage} />
         <Route path="/boards/:id" component={BoardViewPage} />
+        <Route path="/playbooks" component={PlaybooksPage} />
+        <Route path="/playbooks/runs/:id" component={PlaybookRunPage} />
+        <Route path="/playbooks/:id" component={PlaybookEditPage} />
         <Route path="/integrations" component={IntegrationsPage} />
         <Route path="/settings" component={SettingsPage} />
         <Route>

@@ -4,6 +4,7 @@ import {
   BookOpen,
   Brain,
   LayoutGrid,
+  BookMarked,
   Cable,
   Settings,
   LogOut,
@@ -17,6 +18,7 @@ const navItems = [
   { path: "/notebooks", label: "Notebooks", icon: BookOpen },
   { path: "/context", label: "Context", icon: Brain },
   { path: "/boards", label: "Boards", icon: LayoutGrid },
+  { path: "/playbooks", label: "Playbooks", icon: BookMarked },
 ] as const;
 
 const utilItems = [

@@ -2,7 +2,7 @@ import { useState, useCallback, useRef, useEffect } from "react";
 import { cn } from "@/lib/utils";
 import { api, apiPost, apiDelete, apiSSE } from "@/lib/api";
 import { ResultCell, type ResultCellData } from "@/components/explore/result-cell";
-import { Conversation, type Message } from "@/components/explore/conversation";
+import { Conversation, type Message, type Source } from "@/components/explore/conversation";
 import { ChatInput } from "@/components/explore/chat-input";
 import {
   Plus,
@@ -10,6 +10,9 @@ import {
   Trash2,
   ChevronLeft,
   ChevronRight,
+  FileText,
+  BarChart3,
+  Layout,
 } from "lucide-react";
 
 type Depth = "quick" | "standard" | "deep";
@@ -18,11 +21,6 @@ interface ApiConversation {
   id: string;
   title?: string;
   created_at?: string;
-}
-
-interface Source {
-  name: string;
-  url?: string;
 }
 
 /* ---------- Cell parsing ---------- */
@@ -43,9 +41,17 @@ function parseResponseIntoCells(
       const title = titleMatch?.[1] ?? "Analysis";
       const body = section.replace(/^## .+\n?/, "").trim();
       const hasTable = body.includes("|") && body.includes("---");
+      const hasComparison = /\bvs\.?\b|\bcompared to\b/i.test(body);
+      const hasKeyFinding = /key\s*(finding|takeaway)\s*:/i.test(body);
       cells.push({
         id: crypto.randomUUID(),
-        type: hasTable ? "table" : "key-finding",
+        type: hasTable
+          ? "table"
+          : hasComparison
+            ? "comparison"
+            : hasKeyFinding
+              ? "key-finding"
+              : "key-finding",
         title,
         content: body,
         sources: sourceNames,
@@ -53,9 +59,10 @@ function parseResponseIntoCells(
     }
   } else {
     const hasTable = content.includes("|") && content.includes("---");
+    const hasComparison = /\bvs\.?\b|\bcompared to\b/i.test(content);
     cells.push({
       id: crypto.randomUUID(),
-      type: hasTable ? "table" : "analysis",
+      type: hasTable ? "table" : hasComparison ? "comparison" : "analysis",
       title: "Analysis",
       content,
       sources: sourceNames,
@@ -64,6 +71,45 @@ function parseResponseIntoCells(
 
   return cells;
 }
+
+/* ---------- Recent activity cards for empty state ---------- */
+
+interface RecentActivityItem {
+  title: string;
+  type: "report" | "notebook" | "board";
+  time: string;
+}
+
+const recentActivity: RecentActivityItem[] = [
+  { title: "Competitive Brief", type: "report", time: "Generated 2h ago" },
+  { title: "Market Dashboard", type: "board", time: "Updated today" },
+  { title: "Q1 Trend Analysis", type: "notebook", time: "Created yesterday" },
+];
+
+const activityIcons: Record<RecentActivityItem["type"], typeof FileText> = {
+  report: FileText,
+  notebook: BarChart3,
+  board: Layout,
+};
+
+function RecentActivityCard({ item }: { item: RecentActivityItem }) {
+  const Icon = activityIcons[item.type];
+  return (
+    <div className="flex items-center gap-3 rounded-lg border border-[#E5E7EB] bg-white px-4 py-3 transition-colors hover:bg-[#F9FAFB]">
+      <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#EEF2FF]">
+        <Icon className="h-4 w-4 text-[#4F46E5]" />
+      </div>
+      <div>
+        <div className="text-sm font-medium text-[#111827]">{item.title}</div>
+        <div className="text-xs text-[#9CA3AF]">{item.time}</div>
+      </div>
+    </div>
+  );
+}
+
+/* ---------- Research phase management ---------- */
+
+type ResearchPhase = "searching" | "analyzing" | "synthesizing" | "idle";
 
 /* ---------- Main page ---------- */
 
@@ -75,6 +121,8 @@ export default function ExplorePage() {
   const [streaming, setStreaming] = useState(false);
   const [depth, setDepth] = useState<Depth>("standard");
   const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [researchPhase, setResearchPhase] = useState<ResearchPhase>("idle");
+  const [sourceCount, setSourceCount] = useState(0);
   const abortRef = useRef<AbortController | null>(null);
 
   /* Load conversation list on mount */
@@ -201,6 +249,8 @@ export default function ExplorePage() {
       };
       setMessages((prev) => [...prev, userMsg]);
       setStreaming(true);
+      setResearchPhase("searching");
+      setSourceCount(0);
 
       let assistantContent = "";
       let collectedSources: Source[] = [];
@@ -217,10 +267,21 @@ export default function ExplorePage() {
               try {
                 const parsed = JSON.parse(data);
                 if (Array.isArray(parsed)) {
-                  collectedSources = parsed;
+                  collectedSources = parsed.map((s: Source | string) =>
+                    typeof s === "string"
+                      ? { name: s, url: "#", domain: s.toLowerCase().replace(/\s+/g, "") + ".com" }
+                      : { name: s.name, url: s.url || "#", domain: s.domain || s.name.toLowerCase().replace(/\s+/g, "") + ".com" },
+                  );
                 } else if (parsed.sources) {
-                  collectedSources = parsed.sources;
+                  collectedSources = parsed.sources.map(
+                    (s: Source | string) =>
+                      typeof s === "string"
+                        ? { name: s, url: "#", domain: s.toLowerCase().replace(/\s+/g, "") + ".com" }
+                        : { name: s.name, url: s.url || "#", domain: s.domain || s.name.toLowerCase().replace(/\s+/g, "") + ".com" },
+                  );
                 }
+                setSourceCount(collectedSources.length);
+                setResearchPhase("analyzing");
               } catch {
                 // ignore
               }
@@ -248,6 +309,11 @@ export default function ExplorePage() {
               }
             }
 
+            // Advance to synthesizing once we have content
+            if (assistantContent.length > 0) {
+              setResearchPhase("synthesizing");
+            }
+
             const sourceNames = collectedSources.map((s) => s.name);
 
             setMessages((prev) => {
@@ -258,7 +324,12 @@ export default function ExplorePage() {
                     ? {
                         ...m,
                         content: assistantContent,
-                        sources: sourceNames.length > 0 ? sourceNames : m.sources,
+                        sources:
+                          sourceNames.length > 0 ? sourceNames : m.sources,
+                        sourceDetails:
+                          collectedSources.length > 0
+                            ? collectedSources
+                            : m.sourceDetails,
                       }
                     : m,
                 );
@@ -270,6 +341,10 @@ export default function ExplorePage() {
                   role: "assistant" as const,
                   content: assistantContent,
                   sources: sourceNames.length > 0 ? sourceNames : undefined,
+                  sourceDetails:
+                    collectedSources.length > 0
+                      ? collectedSources
+                      : undefined,
                 },
               ];
             });
@@ -285,12 +360,17 @@ export default function ExplorePage() {
             if (existing) return prev;
             return [
               ...prev,
-              { id: assistantId, role: "assistant" as const, content: errorContent },
+              {
+                id: assistantId,
+                role: "assistant" as const,
+                content: errorContent,
+              },
             ];
           });
         }
       } finally {
         setStreaming(false);
+        setResearchPhase("idle");
 
         // Parse finished response into cells
         if (assistantContent.trim()) {
@@ -303,6 +383,14 @@ export default function ExplorePage() {
       }
     },
     [activeConvId, depth],
+  );
+
+  /* Handle follow-up suggestion click */
+  const handleFollowUp = useCallback(
+    (suggestion: string) => {
+      handleSend(suggestion);
+    },
+    [handleSend],
   );
 
   return (
@@ -345,7 +433,9 @@ export default function ExplorePage() {
           <div
             className={cn(
               "flex flex-col border-r border-[#E5E7EB] bg-[#F9FAFB] transition-all",
-              sidebarOpen ? "w-56 min-w-[14rem]" : "w-0 min-w-0 overflow-hidden",
+              sidebarOpen
+                ? "w-56 min-w-[14rem]"
+                : "w-0 min-w-0 overflow-hidden",
             )}
           >
             <div className="flex items-center justify-between border-b border-[#E5E7EB] px-3 py-2">
@@ -411,7 +501,7 @@ export default function ExplorePage() {
             </div>
             <div className="flex-1 overflow-y-auto p-4">
               {cells.length === 0 ? (
-                <div className="flex h-full items-center justify-center">
+                <div className="flex h-full flex-col items-center justify-center">
                   <div className="text-center">
                     <p className="text-sm text-[#6B7280]">
                       Results will appear here as you explore.
@@ -419,6 +509,18 @@ export default function ExplorePage() {
                     <p className="mt-1 text-xs text-[#9CA3AF]">
                       Each insight becomes a saveable, composable cell.
                     </p>
+                  </div>
+
+                  {/* Recent Activity section */}
+                  <div className="mt-8 w-full max-w-sm">
+                    <h3 className="mb-3 text-xs font-medium uppercase tracking-wide text-[#9CA3AF]">
+                      Recent Activity
+                    </h3>
+                    <div className="flex flex-col gap-2">
+                      {recentActivity.map((item) => (
+                        <RecentActivityCard key={item.title} item={item} />
+                      ))}
+                    </div>
                   </div>
                 </div>
               ) : (
@@ -439,7 +541,14 @@ export default function ExplorePage() {
               Conversation
             </h2>
           </div>
-          <Conversation messages={messages} streaming={streaming} className="flex-1" />
+          <Conversation
+            messages={messages}
+            streaming={streaming}
+            researchPhase={researchPhase}
+            sourceCount={sourceCount}
+            onFollowUp={handleFollowUp}
+            className="flex-1"
+          />
         </div>
       </div>
 
