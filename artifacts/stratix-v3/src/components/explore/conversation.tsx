@@ -241,7 +241,7 @@ function InlineCitationContent({
 }) {
   if (!sourceDetails || sourceDetails.length === 0) {
     return (
-      <div className="prose prose-sm max-w-none prose-headings:text-[#111827] prose-p:leading-relaxed prose-table:text-xs prose-th:bg-[#F9FAFB] prose-th:px-3 prose-th:py-1.5 prose-td:px-3 prose-td:py-1.5 prose-td:border-t prose-td:border-[#E5E7EB]">
+      <div className="prose-narrative max-w-none">
         <ReactMarkdown>{content}</ReactMarkdown>
       </div>
     );
@@ -251,7 +251,7 @@ function InlineCitationContent({
   const parts = content.split(/(\[\d+\])/g);
 
   return (
-    <div className="prose prose-sm max-w-none prose-headings:text-[#111827] prose-p:leading-relaxed prose-table:text-xs prose-th:bg-[#F9FAFB] prose-th:px-3 prose-th:py-1.5 prose-td:px-3 prose-td:py-1.5 prose-td:border-t prose-td:border-[#E5E7EB]">
+    <div className="prose-narrative max-w-none">
       {parts.map((part, i) => {
         const citationMatch = part.match(/^\[(\d+)\]$/);
         if (citationMatch) {
@@ -372,7 +372,7 @@ export function Conversation({
                   <div className="whitespace-pre-wrap">{msg.content}</div>
                 </div>
               ) : (
-                <div className="w-full text-sm leading-relaxed text-[#111827]">
+                <div className="w-full text-[15px] leading-7 text-[#111827]">
                   <InlineCitationContent
                     content={msg.content}
                     sourceDetails={

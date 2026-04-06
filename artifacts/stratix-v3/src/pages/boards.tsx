@@ -29,6 +29,10 @@ import {
   BookOpen,
   Sparkles,
   Trash2,
+  X,
+  Radio,
+  Bell,
+  Send,
 } from "lucide-react";
 
 /* ---------- Types ---------- */
@@ -83,32 +87,256 @@ const tabs = [
   { id: "reports", label: "Reports" },
 ];
 
+/* ---------- Board Creation Dialog ---------- */
+
+type BoardType = "live" | "report" | "monitor";
+
+const BOARD_TYPE_OPTIONS: {
+  value: BoardType;
+  label: string;
+  description: string;
+  icon: typeof Activity;
+}[] = [
+  {
+    value: "live",
+    label: "Live Dashboard",
+    description: "Auto-refreshing dashboard on a schedule",
+    icon: Activity,
+  },
+  {
+    value: "report",
+    label: "Report Board",
+    description: "Static board for export and sharing",
+    icon: FileText,
+  },
+  {
+    value: "monitor",
+    label: "Monitoring Board",
+    description: "Alert-driven board that watches for signals",
+    icon: Radio,
+  },
+];
+
+function CreateBoardDialog({
+  open,
+  onClose,
+}: {
+  open: boolean;
+  onClose: () => void;
+}) {
+  const [, navigate] = useLocation();
+  const queryClient = useQueryClient();
+  const [title, setTitle] = useState("");
+  const [boardType, setBoardType] = useState<BoardType>("live");
+  const [monitorTarget, setMonitorTarget] = useState("");
+  const [checkFrequency, setCheckFrequency] = useState<
+    "hourly" | "daily" | "weekly"
+  >("daily");
+  const [alertCondition, setAlertCondition] = useState("");
+  const [creating, setCreating] = useState(false);
+
+  function reset() {
+    setTitle("");
+    setBoardType("live");
+    setMonitorTarget("");
+    setCheckFrequency("daily");
+    setAlertCondition("");
+    setCreating(false);
+  }
+
+  function handleClose() {
+    reset();
+    onClose();
+  }
+
+  async function handleCreate() {
+    if (!title.trim()) {
+      toast.error("Please enter a board title");
+      return;
+    }
+    setCreating(true);
+    try {
+      const payload: Record<string, unknown> = {
+        title: title.trim(),
+        type: boardType,
+      };
+      if (boardType === "monitor") {
+        payload.config = {
+          monitorTarget: monitorTarget.trim(),
+          checkFrequency,
+          alertCondition: alertCondition.trim(),
+        };
+      }
+      const data = await apiPost<{ board: Board }>("/boards", payload);
+      queryClient.invalidateQueries({ queryKey: ["boards"] });
+      toast.success("Board created");
+      handleClose();
+      navigate(`/boards/${data.board.id}`);
+    } catch {
+      toast.error("Failed to create board");
+    } finally {
+      setCreating(false);
+    }
+  }
+
+  if (!open) return null;
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center">
+      <div className="absolute inset-0 bg-black/30" onClick={handleClose} />
+      <div className="relative z-10 w-full max-w-lg rounded-xl border border-[#E5E7EB] bg-white shadow-xl">
+        <div className="flex items-center justify-between border-b border-[#E5E7EB] px-6 py-4">
+          <h2 className="text-base font-semibold text-[#111827]">
+            Create Board
+          </h2>
+          <button
+            onClick={handleClose}
+            className="rounded-lg p-1.5 text-[#6B7280] hover:bg-[#F3F4F6] hover:text-[#111827]"
+          >
+            <X className="h-5 w-5" />
+          </button>
+        </div>
+
+        <div className="space-y-5 p-6">
+          {/* Title */}
+          <Input
+            id="board-title"
+            label="Board Title"
+            placeholder="e.g. Competitor Watch, Market Overview"
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+          />
+
+          {/* Board type selector */}
+          <div className="flex flex-col gap-1.5">
+            <label className="text-sm font-medium text-[#111827]">
+              Board Type
+            </label>
+            <div className="grid gap-2">
+              {BOARD_TYPE_OPTIONS.map((opt) => {
+                const Icon = opt.icon;
+                const selected = boardType === opt.value;
+                return (
+                  <button
+                    key={opt.value}
+                    onClick={() => setBoardType(opt.value)}
+                    className={`flex items-center gap-3 rounded-lg border p-3 text-left transition-colors ${
+                      selected
+                        ? "border-[#4F46E5] bg-[#EEF2FF]"
+                        : "border-[#E5E7EB] hover:bg-[#F9FAFB]"
+                    }`}
+                  >
+                    <div
+                      className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg ${
+                        selected
+                          ? "bg-[#4F46E5] text-white"
+                          : "bg-[#F3F4F6] text-[#6B7280]"
+                      }`}
+                    >
+                      <Icon className="h-4 w-4" />
+                    </div>
+                    <div>
+                      <p
+                        className={`text-sm font-medium ${
+                          selected ? "text-[#4F46E5]" : "text-[#111827]"
+                        }`}
+                      >
+                        {opt.label}
+                      </p>
+                      <p className="text-xs text-[#6B7280]">
+                        {opt.description}
+                      </p>
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Monitoring config - only shown for monitor type */}
+          {boardType === "monitor" && (
+            <div className="space-y-4 rounded-lg border border-[#E5E7EB] bg-[#F9FAFB] p-4">
+              <div className="flex items-center gap-2 text-sm font-medium text-[#111827]">
+                <Bell className="h-4 w-4 text-[#4F46E5]" />
+                Monitor Configuration
+              </div>
+
+              {/* What to monitor */}
+              <div className="flex flex-col gap-1.5">
+                <label className="text-xs font-medium text-[#6B7280]">
+                  What to monitor
+                </label>
+                <textarea
+                  value={monitorTarget}
+                  onChange={(e) => setMonitorTarget(e.target.value)}
+                  placeholder="e.g. Competitor pricing changes, new product launches, market shifts"
+                  rows={2}
+                  className="w-full rounded-lg border border-[#E5E7EB] bg-white px-3 py-2 text-sm text-[#111827] placeholder:text-[#9CA3AF] focus:border-[#4F46E5] focus:outline-none focus:ring-2 focus:ring-[#4F46E5]/20 resize-none"
+                />
+              </div>
+
+              {/* Check frequency */}
+              <div className="flex flex-col gap-1.5">
+                <label className="text-xs font-medium text-[#6B7280]">
+                  Check frequency
+                </label>
+                <div className="flex gap-2">
+                  {(["hourly", "daily", "weekly"] as const).map((f) => (
+                    <button
+                      key={f}
+                      onClick={() => setCheckFrequency(f)}
+                      className={`flex-1 rounded-lg border px-3 py-2 text-xs font-medium capitalize transition-colors ${
+                        checkFrequency === f
+                          ? "border-[#4F46E5] bg-[#4F46E5] text-white"
+                          : "border-[#E5E7EB] bg-white text-[#6B7280] hover:bg-[#F3F4F6]"
+                      }`}
+                    >
+                      {f}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Alert condition */}
+              <div className="flex flex-col gap-1.5">
+                <label className="text-xs font-medium text-[#6B7280]">
+                  Alert me when
+                </label>
+                <textarea
+                  value={alertCondition}
+                  onChange={(e) => setAlertCondition(e.target.value)}
+                  placeholder='e.g. "competitor launches new product", "market share changes >5%"'
+                  rows={2}
+                  className="w-full rounded-lg border border-[#E5E7EB] bg-white px-3 py-2 text-sm text-[#111827] placeholder:text-[#9CA3AF] focus:border-[#4F46E5] focus:outline-none focus:ring-2 focus:ring-[#4F46E5]/20 resize-none"
+                />
+              </div>
+            </div>
+          )}
+
+          <Button
+            className="w-full"
+            onClick={handleCreate}
+            loading={creating}
+          >
+            <Plus className="h-4 w-4" />
+            Create Board
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 /* ---------- Dashboards Tab ---------- */
 
 function DashboardsTab() {
   const [, navigate] = useLocation();
-  const queryClient = useQueryClient();
+  const [createDialogOpen, setCreateDialogOpen] = useState(false);
 
   const { data: boards, isLoading } = useQuery<Board[]>({
     queryKey: ["boards"],
     queryFn: () =>
       api<{ boards: Board[] }>("/boards").then((r) => r.boards),
-  });
-
-  const createMutation = useMutation({
-    mutationFn: () =>
-      apiPost<{ board: Board }>("/boards", {
-        title: "Untitled Board",
-        type: "live",
-      }),
-    onSuccess: (data) => {
-      queryClient.invalidateQueries({ queryKey: ["boards"] });
-      navigate(`/boards/${data.board.id}`);
-      toast.success("Board created");
-    },
-    onError: () => {
-      toast.error("Failed to create board");
-    },
   });
 
   function getTypeBadge(type: Board["type"]) {
@@ -149,58 +377,151 @@ function DashboardsTab() {
 
   if (!boards || boards.length === 0) {
     return (
-      <Card className="flex flex-col items-center justify-center py-16">
-        <LayoutGrid className="mb-3 h-8 w-8 text-[#D1D5DB]" />
-        <p className="text-sm font-medium text-[#111827]">No boards yet</p>
-        <p className="mt-1 text-sm text-[#6B7280]">
-          Create a board to arrange insights into dashboards and reports.
-        </p>
-        <Button
-          size="sm"
-          className="mt-4"
-          onClick={() => createMutation.mutate()}
-          loading={createMutation.isPending}
-        >
-          <Plus className="h-4 w-4" />
-          Create Board
-        </Button>
-      </Card>
+      <>
+        <CreateBoardDialog
+          open={createDialogOpen}
+          onClose={() => setCreateDialogOpen(false)}
+        />
+        <Card className="flex flex-col items-center justify-center py-16">
+          <LayoutGrid className="mb-3 h-8 w-8 text-[#D1D5DB]" />
+          <p className="text-sm font-medium text-[#111827]">No boards yet</p>
+          <p className="mt-1 text-sm text-[#6B7280]">
+            Create a board to arrange insights into dashboards and reports.
+          </p>
+          <Button
+            size="sm"
+            className="mt-4"
+            onClick={() => setCreateDialogOpen(true)}
+          >
+            <Plus className="h-4 w-4" />
+            Create Board
+          </Button>
+        </Card>
+      </>
     );
   }
 
   return (
-    <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-      {boards.map((board) => (
-        <Card
-          key={board.id}
-          className="cursor-pointer transition-colors hover:border-[#4F46E5]/30"
-          onClick={() => navigate(`/boards/${board.id}`)}
+    <>
+      <CreateBoardDialog
+        open={createDialogOpen}
+        onClose={() => setCreateDialogOpen(false)}
+      />
+      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        {boards.map((board) => (
+          <Card
+            key={board.id}
+            className="cursor-pointer transition-colors hover:border-[#4F46E5]/30"
+            onClick={() => navigate(`/boards/${board.id}`)}
+          >
+            <div className="mb-2 flex items-center justify-between">
+              <p className="text-sm font-medium text-[#111827] truncate">
+                {board.title}
+              </p>
+              {getTypeBadge(board.type)}
+            </div>
+            <div className="flex items-center justify-between text-xs text-[#6B7280]">
+              <span>
+                Updated {format(new Date(board.updatedAt), "MMM d, yyyy")}
+              </span>
+              {board.cardCount !== undefined && (
+                <span>{board.cardCount} cards</span>
+              )}
+            </div>
+          </Card>
+        ))}
+        {/* Create new card */}
+        <button
+          onClick={() => setCreateDialogOpen(true)}
+          className="flex flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed border-[#E5E7EB] bg-white p-6 text-[#6B7280] transition-colors hover:border-[#4F46E5]/30 hover:text-[#4F46E5]"
         >
-          <div className="mb-2 flex items-center justify-between">
-            <p className="text-sm font-medium text-[#111827] truncate">
-              {board.title}
-            </p>
-            {getTypeBadge(board.type)}
-          </div>
-          <div className="flex items-center justify-between text-xs text-[#6B7280]">
-            <span>
-              Updated {format(new Date(board.updatedAt), "MMM d, yyyy")}
-            </span>
-            {board.cardCount !== undefined && (
-              <span>{board.cardCount} cards</span>
-            )}
-          </div>
-        </Card>
-      ))}
-      {/* Create new card */}
-      <button
-        onClick={() => createMutation.mutate()}
-        disabled={createMutation.isPending}
-        className="flex flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed border-[#E5E7EB] bg-white p-6 text-[#6B7280] transition-colors hover:border-[#4F46E5]/30 hover:text-[#4F46E5]"
-      >
-        <Plus className="h-6 w-6" />
-        <span className="text-sm font-medium">New Board</span>
-      </button>
+          <Plus className="h-6 w-6" />
+          <span className="text-sm font-medium">New Board</span>
+        </button>
+      </div>
+    </>
+  );
+}
+
+/* ---------- Automations Tab ---------- */
+
+/* ---------- AI Workflow Creator ---------- */
+
+function AIWorkflowCreator() {
+  const [, navigate] = useLocation();
+  const [prompt, setPrompt] = useState("");
+  const [creating, setCreating] = useState(false);
+
+  async function handleCreate() {
+    const trimmed = prompt.trim();
+    if (!trimmed) {
+      toast.error("Please describe the workflow you want to create");
+      return;
+    }
+    setCreating(true);
+    try {
+      // Create the workflow definition
+      const data = await apiPost<{ definition: WorkflowDefinition }>(
+        "/workflow-definitions",
+        {
+          name: "AI Generated Workflow",
+          description: trimmed,
+          steps: [],
+        },
+      );
+      // Trigger AI step generation
+      try {
+        await apiPost(`/workflow-definitions/${data.definition.id}/generate`, {
+          prompt: trimmed,
+        });
+      } catch {
+        // Generation endpoint may not exist yet -- definition still created
+      }
+      toast.success("Workflow created -- review the steps before running");
+      setPrompt("");
+      navigate(`/workflows/builder?id=${data.definition.id}`);
+    } catch {
+      toast.error("Failed to create workflow");
+    } finally {
+      setCreating(false);
+    }
+  }
+
+  return (
+    <div className="rounded-lg border border-[#E5E7EB] bg-[#F9FAFB] p-5">
+      <div className="mb-3 flex items-center gap-2">
+        <Sparkles className="h-4 w-4 text-[#4F46E5]" />
+        <span className="text-sm font-semibold text-[#111827]">
+          Describe a workflow
+        </span>
+      </div>
+      <textarea
+        value={prompt}
+        onChange={(e) => setPrompt(e.target.value)}
+        placeholder='e.g., "Every Monday, pull competitor pricing from their websites and compare with our rates"'
+        rows={3}
+        className="w-full rounded-lg border border-[#E5E7EB] bg-white px-3 py-2 text-sm text-[#111827] placeholder:text-[#9CA3AF] focus:border-[#4F46E5] focus:outline-none focus:ring-2 focus:ring-[#4F46E5]/20 resize-none"
+        onKeyDown={(e) => {
+          if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) {
+            e.preventDefault();
+            handleCreate();
+          }
+        }}
+      />
+      <div className="mt-3 flex items-center justify-between">
+        <p className="text-xs text-[#9CA3AF]">
+          Ctrl+Enter to submit
+        </p>
+        <Button
+          size="sm"
+          onClick={handleCreate}
+          loading={creating}
+          disabled={!prompt.trim()}
+        >
+          <Send className="h-3.5 w-3.5" />
+          Create Workflow
+        </Button>
+      </div>
     </div>
   );
 }
@@ -290,6 +611,9 @@ function AutomationsTab() {
 
   return (
     <div className="space-y-8">
+      {/* AI Workflow Creator */}
+      <AIWorkflowCreator />
+
       {/* Workflow Templates */}
       <div className="space-y-3">
         <div className="flex items-center justify-between">
@@ -917,40 +1241,23 @@ function ReportsTab() {
 /* ---------- Main Page ---------- */
 
 export default function BoardsPage() {
-  const queryClient = useQueryClient();
-  const [, navigate] = useLocation();
-
-  const createMutation = useMutation({
-    mutationFn: () =>
-      apiPost<{ board: Board }>("/boards", {
-        title: "Untitled Board",
-        type: "live",
-      }),
-    onSuccess: (data) => {
-      queryClient.invalidateQueries({ queryKey: ["boards"] });
-      navigate(`/boards/${data.board.id}`);
-      toast.success("Board created");
-    },
-    onError: () => {
-      toast.error("Failed to create board");
-    },
-  });
+  const [headerDialogOpen, setHeaderDialogOpen] = useState(false);
 
   return (
     <Page
       title="Boards"
       subtitle="Live dashboards, report boards, and monitoring boards"
       actions={
-        <Button
-          size="sm"
-          onClick={() => createMutation.mutate()}
-          loading={createMutation.isPending}
-        >
+        <Button size="sm" onClick={() => setHeaderDialogOpen(true)}>
           <Plus className="h-4 w-4" />
           New Board
         </Button>
       }
     >
+      <CreateBoardDialog
+        open={headerDialogOpen}
+        onClose={() => setHeaderDialogOpen(false)}
+      />
       <Tabs tabs={tabs}>
         {(activeTab) => {
           if (activeTab === "dashboards") return <DashboardsTab />;

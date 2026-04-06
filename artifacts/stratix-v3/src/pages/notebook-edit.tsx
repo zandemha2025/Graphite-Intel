@@ -18,6 +18,10 @@ import {
   Check,
   Loader2,
   Globe,
+  Download,
+  ChevronDown,
+  Link,
+  Copy,
 } from "lucide-react";
 
 /* ---------- Types ---------- */
@@ -208,7 +212,7 @@ function NotebookCell({
               Running...
             </div>
           ) : (
-            <div className="prose prose-sm max-w-none text-sm text-[#374151]">
+            <div className="prose-narrative max-w-none text-sm">
               <pre className="whitespace-pre-wrap break-words rounded bg-white p-2 text-xs">
                 {output}
               </pre>
@@ -271,6 +275,107 @@ function AddCellMenu({
           <Plus className="h-3.5 w-3.5" />
           Add Cell
         </Button>
+      )}
+    </div>
+  );
+}
+
+/* ---------- Export Dropdown ---------- */
+
+function ExportDropdown({ notebook }: { notebook: Notebook }) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    function handleClickOutside(e: MouseEvent) {
+      if (ref.current && !ref.current.contains(e.target as Node)) {
+        setOpen(false);
+      }
+    }
+    if (open) {
+      document.addEventListener("mousedown", handleClickOutside);
+      return () =>
+        document.removeEventListener("mousedown", handleClickOutside);
+    }
+  }, [open]);
+
+  const handleMarkdownExport = useCallback(() => {
+    const markdown = notebook.cells
+      .map((cell) => {
+        const parts: string[] = [];
+        if (cell.content) parts.push(cell.content);
+        if (cell.output) parts.push(cell.output);
+        return parts.join("\n\n");
+      })
+      .filter(Boolean)
+      .join("\n\n---\n\n");
+
+    navigator.clipboard.writeText(markdown).then(() => {
+      toast.success("Markdown copied to clipboard");
+    });
+    setOpen(false);
+  }, [notebook.cells]);
+
+  const handleCopyLink = useCallback(() => {
+    navigator.clipboard.writeText(window.location.href).then(() => {
+      toast.success("Link copied to clipboard");
+    });
+    setOpen(false);
+  }, []);
+
+  const handlePdfExport = useCallback(() => {
+    toast.info("PDF export coming soon");
+    setOpen(false);
+  }, []);
+
+  const handleDocxExport = useCallback(() => {
+    toast.info("DOCX export coming soon");
+    setOpen(false);
+  }, []);
+
+  return (
+    <div ref={ref} className="relative">
+      <Button
+        variant="secondary"
+        size="sm"
+        onClick={() => setOpen(!open)}
+      >
+        <Download className="h-3.5 w-3.5" />
+        Export
+        <ChevronDown className="h-3 w-3" />
+      </Button>
+      {open && (
+        <div className="absolute right-0 top-full z-10 mt-1 w-48 rounded-lg border border-[#E5E7EB] bg-white py-1 shadow-lg">
+          <button
+            onClick={handlePdfExport}
+            className="flex w-full items-center gap-2 px-3 py-2 text-left text-xs text-[#374151] hover:bg-[#F9FAFB]"
+          >
+            <FileText className="h-3.5 w-3.5 text-[#6B7280]" />
+            Export as PDF
+          </button>
+          <button
+            onClick={handleDocxExport}
+            className="flex w-full items-center gap-2 px-3 py-2 text-left text-xs text-[#374151] hover:bg-[#F9FAFB]"
+          >
+            <FileText className="h-3.5 w-3.5 text-[#6B7280]" />
+            Export as DOCX
+          </button>
+          <button
+            onClick={handleMarkdownExport}
+            className="flex w-full items-center gap-2 px-3 py-2 text-left text-xs text-[#374151] hover:bg-[#F9FAFB]"
+          >
+            <Copy className="h-3.5 w-3.5 text-[#6B7280]" />
+            Copy as Markdown
+          </button>
+          <div className="mx-2 my-1 border-t border-[#E5E7EB]" />
+          <button
+            onClick={handleCopyLink}
+            className="flex w-full items-center gap-2 px-3 py-2 text-left text-xs text-[#374151] hover:bg-[#F9FAFB]"
+          >
+            <Link className="h-3.5 w-3.5 text-[#6B7280]" />
+            Copy Link
+          </button>
+        </div>
       )}
     </div>
   );
@@ -491,6 +596,7 @@ export default function NotebookEditPage() {
           </div>
         </div>
         <div className="flex items-center gap-2">
+          <ExportDropdown notebook={notebook} />
           <Button
             variant="secondary"
             size="sm"

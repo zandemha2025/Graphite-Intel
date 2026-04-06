@@ -126,7 +126,7 @@ function renderKeyFinding(content: string) {
     return (
       <div>
         {before && (
-          <div className="prose prose-sm max-w-none text-[#374151]">
+          <div className="prose-narrative max-w-none">
             <ReactMarkdown>{before}</ReactMarkdown>
           </div>
         )}
@@ -143,7 +143,7 @@ function renderKeyFinding(content: string) {
   }
   return (
     <div className="rounded-r-lg border-l-4 border-[#4F46E5] bg-[#EEF2FF] px-4 py-3">
-      <div className="prose prose-sm max-w-none text-[#111827]">
+      <div className="prose-narrative max-w-none">
         <ReactMarkdown>{content}</ReactMarkdown>
       </div>
     </div>
@@ -158,7 +158,7 @@ function renderStatContent(content: string) {
   );
 
   return (
-    <div className="prose prose-sm max-w-none text-[#374151]">
+    <div className="prose-narrative max-w-none">
       {parts.map((part, i) => {
         if (/^\$[\d,.]+|^\d{1,3}(\.\d+)?%/.test(part)) {
           return (
@@ -191,7 +191,7 @@ function renderComparison(content: string) {
             <div className="mb-1 text-[10px] font-semibold uppercase tracking-wider text-[#9CA3AF]">
               {idx === 0 ? "Side A" : "Side B"}
             </div>
-            <div className="prose prose-sm max-w-none text-[#374151]">
+            <div className="prose-narrative max-w-none">
               <ReactMarkdown>{side.trim()}</ReactMarkdown>
             </div>
           </div>
@@ -200,7 +200,7 @@ function renderComparison(content: string) {
     );
   }
   return (
-    <div className="prose prose-sm max-w-none text-[#374151]">
+    <div className="prose-narrative max-w-none">
       <ReactMarkdown>{content}</ReactMarkdown>
     </div>
   );
@@ -232,13 +232,13 @@ function RichContent({ content, cellType }: { content: string; cellType: CellTyp
       return (
         <div>
           {before && (
-            <div className="prose prose-sm mb-3 max-w-none text-[#374151]">
+            <div className="prose-narrative mb-3 max-w-none">
               <ReactMarkdown>{before}</ReactMarkdown>
             </div>
           )}
           {renderMarkdownTable(tableContent)}
           {after && (
-            <div className="prose prose-sm mt-3 max-w-none text-[#374151]">
+            <div className="prose-narrative mt-3 max-w-none">
               <ReactMarkdown>{after}</ReactMarkdown>
             </div>
           )}
@@ -264,7 +264,7 @@ function RichContent({ content, cellType }: { content: string; cellType: CellTyp
 
   // Default markdown rendering
   return (
-    <div className="prose prose-sm max-w-none text-[#374151] prose-headings:text-[#111827] prose-p:leading-relaxed prose-table:text-xs prose-th:bg-[#F9FAFB] prose-th:px-3 prose-th:py-1.5 prose-td:px-3 prose-td:py-1.5 prose-td:border-t prose-td:border-[#E5E7EB]">
+    <div className="prose-narrative max-w-none">
       <ReactMarkdown>{content}</ReactMarkdown>
     </div>
   );

@@ -1,4 +1,4 @@
-import { useEffect, useCallback, useRef } from "react";
+import { useEffect, useCallback, useRef, useState, useMemo } from "react";
 import { useRoute, useLocation } from "wouter";
 import { useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
@@ -18,6 +18,8 @@ import {
   CheckCircle2,
   XCircle,
   BookOpen,
+  List,
+  ChevronRight,
 } from "lucide-react";
 
 /* ---------- Types ---------- */
@@ -66,6 +68,138 @@ async function downloadExport(reportId: string, format: "pdf" | "docx") {
   }
 }
 
+/* ---------- TOC helpers ---------- */
+
+interface TocEntry {
+  id: string;
+  text: string;
+  level: 2 | 3;
+}
+
+function parseToc(markdown: string): TocEntry[] {
+  const entries: TocEntry[] = [];
+  const lines = markdown.split("\n");
+  for (const line of lines) {
+    const m2 = line.match(/^##\s+(.+)/);
+    if (m2) {
+      const text = m2[1].replace(/[*_`]/g, "").trim();
+      entries.push({ id: slugify(text), text, level: 2 });
+      continue;
+    }
+    const m3 = line.match(/^###\s+(.+)/);
+    if (m3) {
+      const text = m3[1].replace(/[*_`]/g, "").trim();
+      entries.push({ id: slugify(text), text, level: 3 });
+    }
+  }
+  return entries;
+}
+
+function slugify(text: string): string {
+  return text
+    .toLowerCase()
+    .replace(/[^\w\s-]/g, "")
+    .replace(/\s+/g, "-")
+    .replace(/-+/g, "-")
+    .trim();
+}
+
+function TableOfContents({
+  entries,
+  activeId,
+  onSelect,
+}: {
+  entries: TocEntry[];
+  activeId: string;
+  onSelect: (id: string) => void;
+}) {
+  const [collapsed, setCollapsed] = useState(false);
+
+  if (entries.length === 0) return null;
+
+  return (
+    <div className="sticky top-6">
+      <button
+        onClick={() => setCollapsed(!collapsed)}
+        className="mb-2 flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-[#9CA3AF] hover:text-[#6B7280]"
+      >
+        <List className="h-3.5 w-3.5" />
+        Contents
+        <ChevronRight
+          className={`h-3 w-3 transition-transform ${collapsed ? "" : "rotate-90"}`}
+        />
+      </button>
+      {!collapsed && (
+        <nav className="space-y-0.5">
+          {entries.map((entry) => (
+            <button
+              key={entry.id}
+              onClick={() => onSelect(entry.id)}
+              className={`block w-full truncate rounded-md px-2 py-1 text-left text-xs transition-colors ${
+                entry.level === 3 ? "pl-5" : ""
+              } ${
+                activeId === entry.id
+                  ? "bg-[#EEF2FF] font-medium text-[#4F46E5]"
+                  : "text-[#6B7280] hover:bg-[#F9FAFB] hover:text-[#111827]"
+              }`}
+            >
+              {entry.text}
+            </button>
+          ))}
+        </nav>
+      )}
+    </div>
+  );
+}
+
+/* ---------- Markdown with heading IDs ---------- */
+
+function MarkdownWithIds({ content }: { content: string }) {
+  // Add id anchors to h2/h3 headings by preprocessing the markdown
+  // We render via ReactMarkdown with custom components
+  return (
+    <ReactMarkdown
+      components={{
+        h1: ({ children }) => {
+          const text = extractText(children);
+          return (
+            <h1 id={slugify(text)} className="scroll-mt-6">
+              {children}
+            </h1>
+          );
+        },
+        h2: ({ children }) => {
+          const text = extractText(children);
+          return (
+            <h2 id={slugify(text)} className="scroll-mt-6">
+              {children}
+            </h2>
+          );
+        },
+        h3: ({ children }) => {
+          const text = extractText(children);
+          return (
+            <h3 id={slugify(text)} className="scroll-mt-6">
+              {children}
+            </h3>
+          );
+        },
+      }}
+    >
+      {content}
+    </ReactMarkdown>
+  );
+}
+
+function extractText(children: React.ReactNode): string {
+  if (typeof children === "string") return children;
+  if (Array.isArray(children)) return children.map(extractText).join("");
+  if (children && typeof children === "object" && "props" in children) {
+    return extractText((children as { props: { children: React.ReactNode } }).props.children);
+  }
+  return String(children ?? "");
+}
+
 /* ---------- Main Component ---------- */
 
 export default function ReportViewPage() {
@@ -73,6 +207,7 @@ export default function ReportViewPage() {
   const [, navigate] = useLocation();
   const reportId = params?.id ?? "";
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const [activeTocId, setActiveTocId] = useState("");
 
   const {
     data: report,
@@ -102,6 +237,44 @@ export default function ReportViewPage() {
       }
     };
   }, [report?.status, refetch]);
+
+  // Parse TOC entries from report content
+  const tocEntries = useMemo(
+    () => (report?.content ? parseToc(report.content) : []),
+    [report?.content],
+  );
+
+  // Scroll observer for active TOC heading
+  const contentRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!contentRef.current || tocEntries.length === 0) return;
+
+    const headings = contentRef.current.querySelectorAll("h2[id], h3[id]");
+    if (headings.length === 0) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          if (entry.isIntersecting) {
+            setActiveTocId(entry.target.id);
+          }
+        }
+      },
+      { rootMargin: "-80px 0px -60% 0px", threshold: 0 },
+    );
+
+    headings.forEach((el) => observer.observe(el));
+    return () => observer.disconnect();
+  }, [tocEntries]);
+
+  const handleTocSelect = useCallback((id: string) => {
+    const el = document.getElementById(id);
+    if (el) {
+      el.scrollIntoView({ behavior: "smooth", block: "start" });
+      setActiveTocId(id);
+    }
+  }, []);
 
   const handleCopyMarkdown = useCallback(() => {
     if (report?.content) {
@@ -290,11 +463,25 @@ export default function ReportViewPage() {
       {/* Report content */}
       {report.status === "ready" && report.content && (
         <div className="space-y-6">
-          <Card className="p-6 lg:p-8">
-            <article className="prose prose-sm max-w-none prose-headings:text-[#111827] prose-h1:text-xl prose-h1:font-bold prose-h1:mb-4 prose-h1:mt-6 prose-h2:text-lg prose-h2:font-semibold prose-h2:mb-3 prose-h2:mt-5 prose-h3:text-base prose-h3:font-medium prose-h3:mb-2 prose-h3:mt-4 prose-p:text-[#374151] prose-p:leading-relaxed prose-li:text-[#374151] prose-strong:text-[#111827] prose-a:text-[#4F46E5] prose-a:no-underline hover:prose-a:underline prose-table:text-sm prose-th:text-left prose-th:font-semibold prose-th:text-[#111827] prose-th:bg-[#F9FAFB] prose-th:px-3 prose-th:py-2 prose-td:px-3 prose-td:py-2 prose-td:border-t prose-td:border-[#E5E7EB] prose-blockquote:border-l-[#4F46E5] prose-blockquote:text-[#6B7280] prose-code:text-[#4F46E5] prose-code:bg-[#F3F4F6] prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded prose-code:text-xs prose-code:before:content-none prose-code:after:content-none">
-              <ReactMarkdown>{report.content}</ReactMarkdown>
-            </article>
-          </Card>
+          <div className={`flex gap-6 ${tocEntries.length > 0 ? "" : ""}`}>
+            {/* Main content */}
+            <Card className="min-w-0 flex-1 p-6 lg:p-8">
+              <article ref={contentRef} className="prose-narrative max-w-none">
+                <MarkdownWithIds content={report.content} />
+              </article>
+            </Card>
+
+            {/* Table of contents sidebar */}
+            {tocEntries.length > 3 && (
+              <div className="hidden w-56 shrink-0 lg:block">
+                <TableOfContents
+                  entries={tocEntries}
+                  activeId={activeTocId}
+                  onSelect={handleTocSelect}
+                />
+              </div>
+            )}
+          </div>
 
           {/* Sources */}
           {report.sources && report.sources.length > 0 && (

@@ -20,6 +20,9 @@ import {
   Eye,
   Clock,
   X,
+  Bell,
+  Radio,
+  Pencil,
 } from "lucide-react";
 
 /* ---------- Types ---------- */
@@ -31,15 +34,20 @@ interface BoardCard {
   content: string;
 }
 
+interface MonitorConfig {
+  monitorTarget?: string;
+  checkFrequency?: "hourly" | "daily" | "weekly";
+  alertCondition?: string;
+  refreshInterval?: string;
+}
+
 interface Board {
   id: string;
   title: string;
   type: "live" | "report" | "monitor";
   updatedAt: string;
   cards: BoardCard[];
-  config?: {
-    refreshInterval?: string;
-  };
+  config?: MonitorConfig;
 }
 
 /* ---------- Skeleton ---------- */
@@ -146,6 +154,176 @@ function BoardCardWidget({ card }: { card: BoardCard }) {
   );
 }
 
+/* ---------- Edit Monitors Dialog ---------- */
+
+function EditMonitorsDialog({
+  config,
+  onSave,
+  onClose,
+}: {
+  config: MonitorConfig;
+  onSave: (updates: MonitorConfig) => void;
+  onClose: () => void;
+}) {
+  const [monitorTarget, setMonitorTarget] = useState(
+    config.monitorTarget ?? "",
+  );
+  const [checkFrequency, setCheckFrequency] = useState<
+    "hourly" | "daily" | "weekly"
+  >(config.checkFrequency ?? "daily");
+  const [alertCondition, setAlertCondition] = useState(
+    config.alertCondition ?? "",
+  );
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30">
+      <Card className="w-full max-w-md">
+        <div className="mb-4 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Bell className="h-4 w-4 text-[#4F46E5]" />
+            <p className="text-sm font-semibold text-[#111827]">
+              Edit Monitor Configuration
+            </p>
+          </div>
+          <button
+            onClick={onClose}
+            className="rounded p-1 text-[#6B7280] hover:bg-[#F3F4F6]"
+          >
+            <X className="h-4 w-4" />
+          </button>
+        </div>
+        <div className="space-y-4">
+          <div className="flex flex-col gap-1.5">
+            <label className="text-xs font-medium text-[#6B7280]">
+              What to monitor
+            </label>
+            <textarea
+              value={monitorTarget}
+              onChange={(e) => setMonitorTarget(e.target.value)}
+              placeholder="Describe the signals to watch for..."
+              rows={2}
+              className="w-full rounded-lg border border-[#E5E7EB] bg-white px-3 py-2 text-sm text-[#111827] placeholder:text-[#9CA3AF] focus:border-[#4F46E5] focus:outline-none focus:ring-2 focus:ring-[#4F46E5]/20 resize-none"
+            />
+          </div>
+          <div className="flex flex-col gap-1.5">
+            <label className="text-xs font-medium text-[#6B7280]">
+              Check frequency
+            </label>
+            <div className="flex gap-2">
+              {(["hourly", "daily", "weekly"] as const).map((f) => (
+                <button
+                  key={f}
+                  onClick={() => setCheckFrequency(f)}
+                  className={`flex-1 rounded-lg border px-3 py-2 text-xs font-medium capitalize transition-colors ${
+                    checkFrequency === f
+                      ? "border-[#4F46E5] bg-[#4F46E5] text-white"
+                      : "border-[#E5E7EB] bg-white text-[#6B7280] hover:bg-[#F3F4F6]"
+                  }`}
+                >
+                  {f}
+                </button>
+              ))}
+            </div>
+          </div>
+          <div className="flex flex-col gap-1.5">
+            <label className="text-xs font-medium text-[#6B7280]">
+              Alert me when
+            </label>
+            <textarea
+              value={alertCondition}
+              onChange={(e) => setAlertCondition(e.target.value)}
+              placeholder="Describe conditions that should trigger an alert..."
+              rows={2}
+              className="w-full rounded-lg border border-[#E5E7EB] bg-white px-3 py-2 text-sm text-[#111827] placeholder:text-[#9CA3AF] focus:border-[#4F46E5] focus:outline-none focus:ring-2 focus:ring-[#4F46E5]/20 resize-none"
+            />
+          </div>
+        </div>
+        <div className="mt-4 flex justify-end gap-2">
+          <Button variant="secondary" size="sm" onClick={onClose}>
+            Cancel
+          </Button>
+          <Button
+            size="sm"
+            onClick={() => {
+              onSave({
+                ...config,
+                monitorTarget: monitorTarget.trim(),
+                checkFrequency,
+                alertCondition: alertCondition.trim(),
+              });
+              onClose();
+            }}
+          >
+            <Save className="h-3.5 w-3.5" />
+            Save
+          </Button>
+        </div>
+      </Card>
+    </div>
+  );
+}
+
+/* ---------- Monitoring Alerts Section ---------- */
+
+function MonitoringAlertsSection({
+  config,
+  onEditClick,
+}: {
+  config?: MonitorConfig;
+  onEditClick: () => void;
+}) {
+  return (
+    <div className="mb-6 rounded-lg border border-[#E5E7EB] bg-white">
+      {/* Header */}
+      <div className="flex items-center justify-between border-b border-[#E5E7EB] px-4 py-3">
+        <div className="flex items-center gap-2">
+          <Bell className="h-4 w-4 text-[#4F46E5]" />
+          <span className="text-sm font-semibold text-[#111827]">Alerts</span>
+          {/* Active monitoring indicator */}
+          <span className="flex items-center gap-1.5 rounded-full bg-emerald-50 px-2 py-0.5 text-xs font-medium text-emerald-700">
+            <span className="relative flex h-2 w-2">
+              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
+              <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-500" />
+            </span>
+            Active
+          </span>
+        </div>
+        <Button variant="secondary" size="sm" onClick={onEditClick}>
+          <Pencil className="h-3.5 w-3.5" />
+          Edit Monitors
+        </Button>
+      </div>
+
+      {/* Config summary */}
+      {config?.monitorTarget && (
+        <div className="border-b border-[#E5E7EB] px-4 py-2.5">
+          <div className="flex flex-wrap items-center gap-3 text-xs text-[#6B7280]">
+            <span className="flex items-center gap-1">
+              <Radio className="h-3 w-3" />
+              Watching: {config.monitorTarget}
+            </span>
+            {config.checkFrequency && (
+              <span className="flex items-center gap-1">
+                <Clock className="h-3 w-3" />
+                Checks {config.checkFrequency}
+              </span>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Alerts list - empty state */}
+      <div className="flex flex-col items-center justify-center py-8">
+        <Bell className="mb-2 h-6 w-6 text-[#D1D5DB]" />
+        <p className="text-sm font-medium text-[#111827]">No alerts yet</p>
+        <p className="mt-0.5 text-xs text-[#6B7280]">
+          Monitoring is active. Alerts will appear here when conditions are met.
+        </p>
+      </div>
+    </div>
+  );
+}
+
 /* ---------- Main Page ---------- */
 
 export default function BoardViewPage() {
@@ -155,6 +333,7 @@ export default function BoardViewPage() {
   const [isEditing, setIsEditing] = useState(false);
   const [editTitle, setEditTitle] = useState("");
   const [showSchedule, setShowSchedule] = useState(false);
+  const [showEditMonitors, setShowEditMonitors] = useState(false);
 
   const { data: board, isLoading, isError } = useQuery<Board>({
     queryKey: ["board", boardId],
@@ -338,6 +517,14 @@ export default function BoardViewPage() {
         </div>
       </div>
 
+      {/* Monitoring Alerts section -- only for monitor boards */}
+      {board.type === "monitor" && (
+        <MonitoringAlertsSection
+          config={board.config}
+          onEditClick={() => setShowEditMonitors(true)}
+        />
+      )}
+
       {/* Board cards grid */}
       {board.cards && board.cards.length > 0 ? (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -363,6 +550,17 @@ export default function BoardViewPage() {
           currentInterval={board.config?.refreshInterval}
           onSave={handleSaveSchedule}
           onClose={() => setShowSchedule(false)}
+        />
+      )}
+
+      {/* Edit monitors modal */}
+      {showEditMonitors && board.type === "monitor" && (
+        <EditMonitorsDialog
+          config={board.config ?? {}}
+          onSave={(updates) => {
+            patchMutation.mutate({ config: updates });
+          }}
+          onClose={() => setShowEditMonitors(false)}
         />
       )}
     </Page>
