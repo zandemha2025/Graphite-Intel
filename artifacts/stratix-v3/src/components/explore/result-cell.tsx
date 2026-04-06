@@ -795,31 +795,39 @@ export function ResultCell({ cell, onSave, className }: ResultCellProps) {
   return (
     <div
       className={cn(
-        "rounded-lg border border-[#E5E7EB] bg-white p-4 transition-colors hover:bg-[#FAFAFA]",
+        "rounded-lg border border-[#E5E7EB] bg-white p-5 transition-colors hover:border-[#D1D5DB]",
         className,
       )}
     >
       {/* Header */}
-      <div className="mb-2 flex items-start justify-between">
+      <div className="mb-3 flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <Icon className="h-4 w-4 text-[#4F46E5]" />
-          <Badge variant="indigo">{cellLabels[cell.type]}</Badge>
+          <span className="flex h-6 w-6 items-center justify-center rounded bg-[#F3F4F6]">
+            <Icon className="h-3.5 w-3.5 text-[#6B7280]" />
+          </span>
+          <h4 className="text-sm font-semibold text-[#111827]">
+            {cell.title}
+          </h4>
         </div>
+        {cell.sources && cell.sources.length > 0 && (
+          <div className="flex items-center gap-1 text-xs text-[#9CA3AF]">
+            {cell.sources.slice(0, 3).map((s, i) => (
+              <span key={`${s}-${i}`} className="bg-[#F3F4F6] px-1.5 py-0.5 rounded">[{i + 1}]</span>
+            ))}
+          </div>
+        )}
       </div>
 
-      {/* Title */}
-      <h4 className="mb-2 text-sm font-semibold text-[#111827]">
-        {cell.title}
-      </h4>
-
       {/* Rich content rendering */}
-      <RichContent content={cell.content} cellType={cell.type} />
+      <div className="prose-narrative text-[15px] leading-7">
+        <RichContent content={cell.content} cellType={cell.type} />
+      </div>
 
       {/* Sources footer with 1P/3P/Synthesized labels */}
       <SourcesFooter sources={cell.sources} sourceDetails={cell.sourceDetails} />
 
       {/* Actions */}
-      <div className="mt-3 flex items-center gap-1 border-t border-[#E5E7EB] pt-3">
+      <div className="mt-4 flex items-center gap-2 border-t border-[#F3F4F6] pt-3">
         <SaveDropdown
           onSaveBoard={handleSaveBoard}
           onSaveNotebook={handleSaveNotebook}

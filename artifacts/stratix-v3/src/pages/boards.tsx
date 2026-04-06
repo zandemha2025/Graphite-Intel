@@ -397,21 +397,15 @@ function DashboardsTab() {
           open={createDialogOpen}
           onClose={() => setCreateDialogOpen(false)}
         />
-        <Card className="flex flex-col items-center justify-center py-16">
-          <LayoutGrid className="mb-3 h-8 w-8 text-[#D1D5DB]" />
-          <p className="text-sm font-medium text-[#111827]">No boards yet</p>
-          <p className="mt-1 text-sm text-[#6B7280]">
-            Create a board to arrange insights into dashboards and reports.
-          </p>
-          <Button
-            size="sm"
-            className="mt-4"
+        <div className="text-center py-16">
+          <p className="text-[15px] text-[#6B7280] mb-4">No boards yet</p>
+          <button
+            className="text-[13px] text-[#4F46E5] hover:underline"
             onClick={() => setCreateDialogOpen(true)}
           >
-            <Plus className="h-4 w-4" />
-            Create Board
-          </Button>
-        </Card>
+            + Create your first board
+          </button>
+        </div>
       </>
     );
   }
@@ -819,13 +813,12 @@ function AutomationsTab() {
             </table>
           </div>
         ) : (
-          <Card className="flex flex-col items-center justify-center py-10">
-            <Clock className="mb-3 h-8 w-8 text-[#D1D5DB]" />
-            <p className="text-sm font-medium text-[#111827]">No runs yet</p>
-            <p className="mt-1 text-sm text-[#6B7280]">
+          <div className="text-center py-16">
+            <p className="text-[15px] text-[#6B7280] mb-4">No runs yet</p>
+            <p className="text-[13px] text-[#9CA3AF]">
               Run a workflow template to see results here.
             </p>
-          </Card>
+          </div>
         )}
       </div>
     </div>
@@ -1223,25 +1216,21 @@ function ReportsTab() {
 
         {/* Report Cards */}
         {!filtered || filtered.length === 0 ? (
-          <Card className="flex flex-col items-center justify-center py-16">
-            <BookOpen className="mb-3 h-8 w-8 text-[#D1D5DB]" />
-            <p className="text-sm font-medium text-[#111827]">
+          <div className="text-center py-16">
+            <p className="text-[15px] text-[#6B7280] mb-4">
               {searchQuery ? "No reports match your search" : "No reports yet"}
             </p>
-            <p className="mt-1 text-sm text-[#6B7280]">
-              Generate a deep report to get comprehensive intelligence.
-            </p>
-            {!searchQuery && (
-              <Button
-                size="sm"
-                className="mt-4"
+            {!searchQuery ? (
+              <button
+                className="text-[13px] text-[#4F46E5] hover:underline"
                 onClick={() => setDialogOpen(true)}
               >
-                <Sparkles className="h-4 w-4" />
-                Generate Report
-              </Button>
+                + Generate your first report
+              </button>
+            ) : (
+              <p className="text-[13px] text-[#9CA3AF]">Try a different search term.</p>
             )}
-          </Card>
+          </div>
         ) : (
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {filtered.map((report) => (

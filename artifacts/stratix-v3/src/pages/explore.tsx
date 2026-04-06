@@ -2,8 +2,7 @@ import { useState, useCallback, useRef, useEffect } from "react";
 import { cn } from "@/lib/utils";
 import { api, apiPost, apiDelete, apiSSE, ApiError } from "@/lib/api";
 import { ResultCell, type ResultCellData } from "@/components/explore/result-cell";
-import { Conversation, type Message, type Source } from "@/components/explore/conversation";
-import { ChatInput } from "@/components/explore/chat-input";
+import { type Message, type Source } from "@/components/explore/conversation";
 import {
   Plus,
   MessageSquare,
@@ -14,6 +13,9 @@ import {
   BarChart3,
   Layout,
   Loader2,
+  Search,
+  ArrowRight,
+  Check,
 } from "lucide-react";
 
 type Depth = "quick" | "standard" | "deep";
@@ -79,27 +81,6 @@ interface RecentActivityItem {
   title: string;
   type: "report" | "notebook" | "board";
   time: string;
-}
-
-const activityIcons: Record<RecentActivityItem["type"], typeof FileText> = {
-  report: FileText,
-  notebook: BarChart3,
-  board: Layout,
-};
-
-function RecentActivityCard({ item }: { item: RecentActivityItem }) {
-  const Icon = activityIcons[item.type];
-  return (
-    <div className="flex items-center gap-3 rounded-lg border border-[#E5E7EB] bg-white px-4 py-3 transition-colors hover:bg-[#F9FAFB]">
-      <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#EEF2FF]">
-        <Icon className="h-4 w-4 text-[#4F46E5]" />
-      </div>
-      <div>
-        <div className="text-sm font-medium text-[#111827]">{item.title}</div>
-        <div className="text-xs text-[#9CA3AF]">{item.time}</div>
-      </div>
-    </div>
-  );
 }
 
 function useRecentActivity() {
@@ -169,6 +150,69 @@ function useRecentActivity() {
 
 type ResearchPhase = "searching" | "analyzing" | "synthesizing" | "idle";
 
+/* ---------- Follow-up generation ---------- */
+
+function extractTopics(text: string): string[] {
+  const topics: string[] = [];
+  const properNouns = text.match(/(?:[A-Z][a-z]+(?:\s+[A-Z][a-z]+)+)/g);
+  if (properNouns) {
+    for (const pn of properNouns) {
+      if (!topics.includes(pn) && topics.length < 3) topics.push(pn);
+    }
+  }
+  const sentences = text.split(/[.!?]\s+/);
+  for (const sentence of sentences) {
+    const words = sentence.split(/\s+/).slice(1);
+    for (const word of words) {
+      const clean = word.replace(/[^a-zA-Z]/g, "");
+      if (
+        clean.length > 3 &&
+        clean[0] === clean[0]?.toUpperCase() &&
+        clean[0] !== clean[0]?.toLowerCase() &&
+        !topics.includes(clean) &&
+        topics.length < 3
+      ) {
+        topics.push(clean);
+      }
+    }
+  }
+  return topics;
+}
+
+function generateFollowUps(content: string): string[] {
+  const suggestions: string[] = [];
+  const topics = extractTopics(content);
+  const firstSentence = content.split(/[.!?]/)[0]?.trim() ?? "";
+  if (firstSentence.length > 20) {
+    const subject = firstSentence.slice(0, 60).replace(/[,;:].*/, "").trim();
+    suggestions.push(`Tell me more about ${subject}`);
+  }
+  if (topics[0]) suggestions.push(`How does ${topics[0]} compare to alternatives?`);
+  if (topics[1]) suggestions.push(`What are the key risks around ${topics[1]}?`);
+  if (content.length > 500) {
+    suggestions.push("Summarize the key takeaways in bullet points");
+  } else if (content.length > 100) {
+    suggestions.push("Go deeper on this analysis with more data");
+  }
+  if (suggestions.length < 2) suggestions.push("What are the strategic implications of this?");
+  return suggestions.slice(0, 3);
+}
+
+/* ---------- Research Steps component ---------- */
+
+interface ResearchStep {
+  label: string;
+  done: boolean;
+}
+
+function getResearchSteps(phase: ResearchPhase, sourceCount: number): ResearchStep[] {
+  return [
+    { label: `Searching ${sourceCount > 0 ? sourceCount + " sources" : "sources"}`, done: phase === "analyzing" || phase === "synthesizing" },
+    { label: "Analyzing data", done: phase === "synthesizing" },
+    { label: "Synthesizing insights", done: false },
+  ];
+}
+
 /* ---------- Main page ---------- */
 
 export default function ExplorePage() {
@@ -181,7 +225,11 @@ export default function ExplorePage() {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [researchPhase, setResearchPhase] = useState<ResearchPhase>("idle");
   const [sourceCount, setSourceCount] = useState(0);
+  const [collectedSources, setCollectedSources] = useState<Source[]>([]);
+  const [followUps, setFollowUps] = useState<string[]>([]);
+  const [inputValue, setInputValue] = useState("");
   const abortRef = useRef<AbortController | null>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
   const { items: recentActivity, loading: recentActivityLoading } = useRecentActivity();
 
   /* Load conversation list on mount */
@@ -204,6 +252,8 @@ export default function ExplorePage() {
     if (!activeConvId) {
       setMessages([]);
       setCells([]);
+      setCollectedSources([]);
+      setFollowUps([]);
       return;
     }
     api<{ messages?: Message[] }>(`/openai/conversations/${activeConvId}`)
@@ -223,6 +273,11 @@ export default function ExplorePage() {
           }
         }
         setCells(rebuilt);
+        // Generate follow-ups from last assistant message
+        const lastAssistant = msgs.filter(m => m.role === "assistant").pop();
+        if (lastAssistant?.content) {
+          setFollowUps(generateFollowUps(lastAssistant.content));
+        }
       })
       .catch(() => {
         setMessages([]);
@@ -238,14 +293,17 @@ export default function ExplorePage() {
       setActiveConvId(conv.id);
       setMessages([]);
       setCells([]);
+      setCollectedSources([]);
+      setFollowUps([]);
     } catch {
-      // If API fails, just reset local state for offline use
       const localId = `local-${Date.now()}`;
       const localConv: ApiConversation = { id: localId, title: "New Explore" };
       setConversations((prev) => [localConv, ...prev]);
       setActiveConvId(localId);
       setMessages([]);
       setCells([]);
+      setCollectedSources([]);
+      setFollowUps([]);
     }
   }, []);
 
@@ -262,6 +320,8 @@ export default function ExplorePage() {
         setActiveConvId(null);
         setMessages([]);
         setCells([]);
+        setCollectedSources([]);
+        setFollowUps([]);
       }
     },
     [activeConvId],
@@ -310,9 +370,11 @@ export default function ExplorePage() {
       setStreaming(true);
       setResearchPhase("searching");
       setSourceCount(0);
+      setCollectedSources([]);
+      setFollowUps([]);
 
       let assistantContent = "";
-      let collectedSources: Source[] = [];
+      let localSources: Source[] = [];
       const assistantId = `a-${Date.now()}`;
 
       abortRef.current = new AbortController();
@@ -326,20 +388,21 @@ export default function ExplorePage() {
               try {
                 const parsed = JSON.parse(data);
                 if (Array.isArray(parsed)) {
-                  collectedSources = parsed.map((s: Source | string) =>
+                  localSources = parsed.map((s: Source | string) =>
                     typeof s === "string"
                       ? { name: s, url: "#", domain: s.toLowerCase().replace(/\s+/g, "") + ".com" }
                       : { name: s.name, url: s.url || "#", domain: s.domain || s.name.toLowerCase().replace(/\s+/g, "") + ".com" },
                   );
                 } else if (parsed.sources) {
-                  collectedSources = parsed.sources.map(
+                  localSources = parsed.sources.map(
                     (s: Source | string) =>
                       typeof s === "string"
                         ? { name: s, url: "#", domain: s.toLowerCase().replace(/\s+/g, "") + ".com" }
                         : { name: s.name, url: s.url || "#", domain: s.domain || s.name.toLowerCase().replace(/\s+/g, "") + ".com" },
                   );
                 }
-                setSourceCount(collectedSources.length);
+                setSourceCount(localSources.length);
+                setCollectedSources(localSources);
                 setResearchPhase("analyzing");
               } catch {
                 // ignore
@@ -360,7 +423,7 @@ export default function ExplorePage() {
                   {
                     id: assistantId,
                     role: "assistant" as const,
-                    content: `⚠️ ${errorMsg}\n\nThis may be due to API configuration. Please check your intelligence data source settings in Integrations.`,
+                    content: `Something went wrong: ${errorMsg}\n\nThis may be due to API configuration. Please check your intelligence data source settings in Integrations.`,
                   },
                 ]);
               } catch {
@@ -369,16 +432,16 @@ export default function ExplorePage() {
                   {
                     id: assistantId,
                     role: "assistant" as const,
-                    content: "⚠️ Something went wrong. Please try again.",
+                    content: "Something went wrong. Please try again.",
                   },
                 ]);
               }
               setStreaming(false);
-              setResearchPhase(null);
+              setResearchPhase("idle");
               return;
             }
 
-            // Handle token events — backend sends {delta: "..."} or {content: "..."}
+            // Handle token events
             try {
               const parsed = JSON.parse(data);
               if (typeof parsed.delta === "string") {
@@ -391,18 +454,16 @@ export default function ExplorePage() {
                 assistantContent += parsed.choices[0].delta.content;
               }
             } catch {
-              // Non-JSON data -- treat as raw token
               if (data && data !== "[DONE]") {
                 assistantContent += data;
               }
             }
 
-            // Advance to synthesizing once we have content
             if (assistantContent.length > 0) {
               setResearchPhase("synthesizing");
             }
 
-            const sourceNames = collectedSources.map((s) => s.name);
+            const sourceNames = localSources.map((s) => s.name);
 
             setMessages((prev) => {
               const existing = prev.find((m) => m.id === assistantId);
@@ -415,8 +476,8 @@ export default function ExplorePage() {
                         sources:
                           sourceNames.length > 0 ? sourceNames : m.sources,
                         sourceDetails:
-                          collectedSources.length > 0
-                            ? collectedSources
+                          localSources.length > 0
+                            ? localSources
                             : m.sourceDetails,
                       }
                     : m,
@@ -430,8 +491,8 @@ export default function ExplorePage() {
                   content: assistantContent,
                   sources: sourceNames.length > 0 ? sourceNames : undefined,
                   sourceDetails:
-                    collectedSources.length > 0
-                      ? collectedSources
+                    localSources.length > 0
+                      ? localSources
                       : undefined,
                 },
               ];
@@ -482,14 +543,23 @@ export default function ExplorePage() {
         if (assistantContent.trim()) {
           const newCells = parseResponseIntoCells(
             assistantContent,
-            collectedSources.length > 0 ? collectedSources : undefined,
+            localSources.length > 0 ? localSources : undefined,
           );
           setCells((prev) => [...newCells, ...prev]);
+          setFollowUps(generateFollowUps(assistantContent));
         }
       }
     },
     [activeConvId, depth],
   );
+
+  /* Handle search submit */
+  const handleSearchSubmit = useCallback(() => {
+    const trimmed = inputValue.trim();
+    if (!trimmed || streaming) return;
+    handleSend(trimmed);
+    setInputValue("");
+  }, [inputValue, streaming, handleSend]);
 
   /* Handle follow-up suggestion click */
   const handleFollowUp = useCallback(
@@ -499,174 +569,328 @@ export default function ExplorePage() {
     [handleSend],
   );
 
-  return (
-    <div className="flex h-full flex-col overflow-hidden">
-      {/* Header */}
-      <div className="flex items-center justify-between border-b border-[#E5E7EB] px-6 py-3">
-        <div className="flex items-center gap-3">
-          <h1 className="text-lg font-semibold text-[#111827]">Explore</h1>
-          <button
-            onClick={handleNewConversation}
-            className="flex items-center gap-1.5 rounded-md border border-[#E5E7EB] bg-white px-2.5 py-1 text-xs font-medium text-[#374151] hover:bg-[#F9FAFB]"
-          >
-            <Plus className="h-3.5 w-3.5" />
-            New Explore
-          </button>
-        </div>
-        <div className="flex rounded-lg border border-[#E5E7EB] bg-[#F9FAFB] p-0.5">
-          {(["quick", "standard", "deep"] as const).map((d) => (
-            <button
-              key={d}
-              onClick={() => setDepth(d)}
-              className={cn(
-                "rounded-md px-3 py-1 text-xs font-medium capitalize transition-colors",
-                depth === d
-                  ? "bg-white text-[#111827] shadow-sm"
-                  : "text-[#6B7280] hover:text-[#111827]",
-              )}
-            >
-              {d}
-            </button>
-          ))}
-        </div>
-      </div>
+  const researchSteps = getResearchSteps(researchPhase, sourceCount);
 
-      {/* Split pane */}
-      <div className="flex flex-1 overflow-hidden">
-        {/* Left panel: sidebar + cells */}
-        <div className="flex w-1/2 overflow-hidden border-r border-[#E5E7EB]">
-          {/* Conversation sidebar */}
-          <div
-            className={cn(
-              "flex flex-col border-r border-[#E5E7EB] bg-[#F9FAFB] transition-all",
-              sidebarOpen
-                ? "w-56 min-w-[14rem]"
-                : "w-0 min-w-0 overflow-hidden",
-            )}
-          >
-            <div className="flex items-center justify-between border-b border-[#E5E7EB] px-3 py-2">
-              <span className="text-xs font-medium uppercase tracking-wide text-[#6B7280]">
-                History
+  /* Classify source as 1P */
+  function is1P(source: Source): boolean {
+    const lower = source.name.toLowerCase();
+    return (
+      lower.includes("salesforce") ||
+      lower.includes("hubspot") ||
+      lower.includes("gong") ||
+      lower.includes("your ") ||
+      lower.includes("google drive") ||
+      lower.includes("crm") ||
+      lower.includes("internal")
+    );
+  }
+
+  return (
+    <div className="flex h-full overflow-hidden">
+      {/* LEFT: History sidebar */}
+      <div
+        className={cn(
+          "flex flex-col border-r border-[#E5E7EB] bg-[#F8F9FA] transition-all",
+          sidebarOpen
+            ? "w-[280px] min-w-[280px]"
+            : "w-0 min-w-0 overflow-hidden",
+        )}
+      >
+        <div className="flex items-center justify-between border-b border-[#E5E7EB] px-4 py-3">
+          <span className="text-xs font-semibold uppercase tracking-wide text-[#6B7280]">
+            History
+          </span>
+          <div className="flex items-center gap-1">
+            <button
+              onClick={handleNewConversation}
+              className="rounded p-1 text-[#6B7280] hover:bg-white hover:text-[#4F46E5]"
+              title="New Explore"
+            >
+              <Plus className="h-3.5 w-3.5" />
+            </button>
+            <button
+              onClick={() => setSidebarOpen(false)}
+              className="rounded p-1 text-[#9CA3AF] hover:text-[#6B7280]"
+            >
+              <ChevronLeft className="h-3.5 w-3.5" />
+            </button>
+          </div>
+        </div>
+        <div className="flex-1 overflow-y-auto">
+          {conversations.map((conv) => (
+            <div
+              key={conv.id}
+              className={cn(
+                "group flex cursor-pointer items-center gap-2 px-4 py-2.5 text-sm transition-colors",
+                activeConvId === conv.id
+                  ? "bg-white text-[#111827]"
+                  : "text-[#6B7280] hover:bg-white/60 hover:text-[#111827]",
+              )}
+              onClick={() => setActiveConvId(conv.id)}
+            >
+              <MessageSquare className="h-3.5 w-3.5 shrink-0" />
+              <span className="flex-1 truncate text-[13px]">
+                {conv.title || "Untitled"}
               </span>
               <button
-                onClick={() => setSidebarOpen(false)}
-                className="rounded p-0.5 text-[#9CA3AF] hover:text-[#6B7280]"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleDeleteConversation(conv.id);
+                }}
+                className="hidden shrink-0 rounded p-0.5 text-[#9CA3AF] hover:text-red-500 group-hover:block"
               >
-                <ChevronLeft className="h-3.5 w-3.5" />
+                <Trash2 className="h-3 w-3" />
               </button>
             </div>
-            <div className="flex-1 overflow-y-auto">
-              {conversations.map((conv) => (
-                <div
-                  key={conv.id}
-                  className={cn(
-                    "group flex cursor-pointer items-center gap-2 px-3 py-2 text-sm transition-colors",
-                    activeConvId === conv.id
-                      ? "bg-white text-[#111827]"
-                      : "text-[#6B7280] hover:bg-white/60 hover:text-[#111827]",
-                  )}
-                  onClick={() => setActiveConvId(conv.id)}
-                >
-                  <MessageSquare className="h-3.5 w-3.5 shrink-0" />
-                  <span className="flex-1 truncate text-xs">
-                    {conv.title || "Untitled"}
-                  </span>
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleDeleteConversation(conv.id);
-                    }}
-                    className="hidden shrink-0 rounded p-0.5 text-[#9CA3AF] hover:text-red-500 group-hover:block"
-                  >
-                    <Trash2 className="h-3 w-3" />
-                  </button>
-                </div>
-              ))}
-              {conversations.length === 0 && (
-                <div className="px-3 py-4 text-center text-xs text-[#9CA3AF]">
-                  No conversations yet
-                </div>
-              )}
+          ))}
+          {conversations.length === 0 && (
+            <div className="px-4 py-6 text-center text-xs text-[#9CA3AF]">
+              No conversations yet
             </div>
-          </div>
-
-          {/* Results notebook */}
-          <div className="flex flex-1 flex-col overflow-hidden">
-            <div className="flex items-center gap-2 border-b border-[#E5E7EB] px-4 py-2.5">
-              {!sidebarOpen && (
-                <button
-                  onClick={() => setSidebarOpen(true)}
-                  className="rounded p-0.5 text-[#9CA3AF] hover:text-[#6B7280]"
-                >
-                  <ChevronRight className="h-3.5 w-3.5" />
-                </button>
-              )}
-              <h2 className="text-xs font-medium uppercase tracking-wide text-[#6B7280]">
-                Results Notebook
-              </h2>
-            </div>
-            <div className="flex-1 overflow-y-auto p-4">
-              {cells.length === 0 ? (
-                <div className="flex h-full flex-col items-center justify-center">
-                  <div className="text-center">
-                    <p className="text-sm text-[#6B7280]">
-                      Your intelligence results will appear here.
-                    </p>
-                    <p className="mt-1 text-xs text-[#9CA3AF]">
-                      Each insight becomes a saveable cell you can export, share, or add to a board.
-                    </p>
-                  </div>
-
-                  {/* Recent Activity section */}
-                  {recentActivityLoading ? (
-                    <div className="mt-8 flex items-center gap-2 text-xs text-[#9CA3AF]">
-                      <Loader2 className="h-3 w-3 animate-spin" />
-                      Loading recent activity...
-                    </div>
-                  ) : recentActivity.length > 0 ? (
-                    <div className="mt-8 w-full max-w-sm">
-                      <h3 className="mb-3 text-xs font-medium uppercase tracking-wide text-[#9CA3AF]">
-                        Recent Activity
-                      </h3>
-                      <div className="flex flex-col gap-2">
-                        {recentActivity.map((item) => (
-                          <RecentActivityCard key={item.title} item={item} />
-                        ))}
-                      </div>
-                    </div>
-                  ) : null}
-                </div>
-              ) : (
-                <div className="flex flex-col gap-3">
-                  {cells.map((cell) => (
-                    <ResultCell key={cell.id} cell={cell} />
-                  ))}
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-
-        {/* Right: Conversation */}
-        <div className="flex w-1/2 flex-col overflow-hidden">
-          <div className="border-b border-[#E5E7EB] px-4 py-2.5">
-            <h2 className="text-xs font-medium uppercase tracking-wide text-[#6B7280]">
-              Conversation
-            </h2>
-          </div>
-          <Conversation
-            messages={messages}
-            streaming={streaming}
-            researchPhase={researchPhase}
-            sourceCount={sourceCount}
-            onFollowUp={handleFollowUp}
-            className="flex-1"
-          />
+          )}
         </div>
       </div>
 
-      {/* Bottom: Chat input */}
-      <ChatInput onSend={handleSend} disabled={streaming} />
+      {/* CENTER: Results Notebook (primary) */}
+      <div className="flex flex-1 flex-col overflow-hidden">
+        {/* Search bar at TOP */}
+        <div className="border-b border-[#E5E7EB] bg-white px-6 py-4">
+          <div className="flex items-center gap-3 rounded-lg border border-[#E5E7EB] bg-[#F8F9FA] px-4 py-3 focus-within:border-[#4F46E5] focus-within:ring-1 focus-within:ring-[#4F46E5]/20">
+            {!sidebarOpen && (
+              <button
+                onClick={() => setSidebarOpen(true)}
+                className="rounded p-0.5 text-[#9CA3AF] hover:text-[#6B7280]"
+              >
+                <ChevronRight className="h-4 w-4" />
+              </button>
+            )}
+            <Search className="h-5 w-5 text-[#9CA3AF]" />
+            <input
+              ref={inputRef}
+              className="flex-1 bg-transparent text-[15px] text-[#111827] outline-none placeholder:text-[#9CA3AF]"
+              placeholder="What's happening with our enterprise pipeline?"
+              value={inputValue}
+              onChange={(e) => setInputValue(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && !e.shiftKey) {
+                  e.preventDefault();
+                  handleSearchSubmit();
+                }
+              }}
+              disabled={streaming}
+            />
+            <div className="flex items-center gap-1 text-xs text-[#9CA3AF]">
+              {(["quick", "standard", "deep"] as const).map((d) => (
+                <button
+                  key={d}
+                  onClick={() => setDepth(d)}
+                  className={cn(
+                    "rounded px-2 py-0.5 capitalize transition-colors",
+                    depth === d
+                      ? "bg-[#4F46E5] text-white"
+                      : "hover:text-[#6B7280]",
+                  )}
+                >
+                  {d === "quick" ? "Quick" : d === "standard" ? "Standard" : "Deep"}
+                </button>
+              ))}
+            </div>
+            <button
+              onClick={handleSearchSubmit}
+              disabled={!inputValue.trim() || streaming}
+              className={cn(
+                "flex h-8 w-8 items-center justify-center rounded-lg transition-colors",
+                inputValue.trim() && !streaming
+                  ? "bg-[#4F46E5] text-white hover:bg-[#4338CA]"
+                  : "bg-[#E5E7EB] text-[#9CA3AF]",
+              )}
+            >
+              {streaming ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <ArrowRight className="h-4 w-4" />
+              )}
+            </button>
+          </div>
+        </div>
+
+        {/* Results area */}
+        <div className="flex-1 overflow-y-auto px-6 py-5">
+          {cells.length === 0 && !streaming ? (
+            <div className="text-center py-16">
+              <p className="text-[15px] text-[#6B7280] mb-2">
+                Your intelligence results will appear here
+              </p>
+              <p className="text-[13px] text-[#9CA3AF] mb-6">
+                Each insight becomes a saveable cell you can export, share, or add to a board.
+              </p>
+
+              {/* Suggestion chips */}
+              <div className="flex flex-wrap justify-center gap-2 max-w-lg mx-auto">
+                {[
+                  "What's our customer acquisition cost by channel?",
+                  "Analyze competitor marketing spend vs ours",
+                  "Which accounts are at risk of churning?",
+                  "What marketing channels have the best ROI?",
+                ].map((s) => (
+                  <button
+                    key={s}
+                    onClick={() => handleFollowUp(s)}
+                    className="rounded-full border border-[#E5E7EB] bg-white px-3 py-1.5 text-xs font-medium text-[#374151] transition-colors hover:border-[#4F46E5] hover:bg-[#EEF2FF] hover:text-[#4F46E5]"
+                  >
+                    {s}
+                  </button>
+                ))}
+              </div>
+
+              {/* Recent Activity */}
+              {!recentActivityLoading && recentActivity.length > 0 && (
+                <div className="mt-10 max-w-sm mx-auto">
+                  <h3 className="mb-3 text-xs font-semibold uppercase tracking-wide text-[#9CA3AF]">
+                    Recent Activity
+                  </h3>
+                  <div className="flex flex-col gap-2">
+                    {recentActivity.map((item) => {
+                      const icons = { report: FileText, notebook: BarChart3, board: Layout };
+                      const Icon = icons[item.type];
+                      return (
+                        <div
+                          key={item.title}
+                          className="flex items-center gap-3 rounded-lg border border-[#E5E7EB] bg-white px-4 py-3 transition-colors hover:border-[#D1D5DB]"
+                        >
+                          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#EEF2FF]">
+                            <Icon className="h-4 w-4 text-[#4F46E5]" />
+                          </div>
+                          <div>
+                            <div className="text-sm font-medium text-[#111827]">{item.title}</div>
+                            <div className="text-xs text-[#9CA3AF]">{item.time}</div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+            </div>
+          ) : (
+            <div className="flex flex-col gap-4 max-w-3xl">
+              {/* Streaming indicator */}
+              {streaming && researchPhase !== "idle" && (
+                <div className="rounded-lg border border-[#E5E7EB] bg-[#F8F9FA] px-4 py-3 mb-2">
+                  <div className="flex items-center gap-4 text-sm">
+                    {researchSteps.map((step, idx) => (
+                      <div key={idx} className="flex items-center gap-2">
+                        {step.done ? (
+                          <Check className="h-4 w-4 text-[#059669]" />
+                        ) : (
+                          <Loader2 className="h-4 w-4 text-[#4F46E5] animate-spin" />
+                        )}
+                        <span className={step.done ? "text-[#6B7280]" : "text-[#111827]"}>
+                          {step.label}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {cells.map((cell) => (
+                <ResultCell key={cell.id} cell={cell} />
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* RIGHT: Research Panel */}
+      <aside className="w-[280px] min-w-[280px] border-l border-[#E5E7EB] bg-[#F8F9FA] overflow-y-auto">
+        {/* Research Steps */}
+        {streaming && researchPhase !== "idle" && (
+          <div className="p-4 border-b border-[#E5E7EB]">
+            <h3 className="text-xs font-semibold text-[#6B7280] uppercase tracking-wide mb-3">
+              Research Steps
+            </h3>
+            <div className="space-y-2">
+              {researchSteps.map((step, idx) => (
+                <div key={idx} className="flex items-center gap-2 text-sm">
+                  {step.done ? (
+                    <Check className="h-4 w-4 text-[#059669]" />
+                  ) : (
+                    <Loader2 className="h-4 w-4 text-[#4F46E5] animate-spin" />
+                  )}
+                  <span className={step.done ? "text-[#6B7280]" : "text-[#111827]"}>
+                    {step.label}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Sources */}
+        {collectedSources.length > 0 && (
+          <div className="p-4 border-b border-[#E5E7EB]">
+            <h3 className="text-xs font-semibold text-[#6B7280] uppercase tracking-wide mb-3">
+              Sources ({collectedSources.length})
+            </h3>
+            <div className="space-y-1">
+              {collectedSources.map((s, i) => (
+                <a
+                  key={`${s.name}-${i}`}
+                  href={s.url || "#"}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-2 text-sm py-1.5 hover:bg-white rounded px-2 -mx-2 transition-colors"
+                >
+                  <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded bg-[#4F46E5] text-white text-[10px] font-medium">
+                    {i + 1}
+                  </span>
+                  <div className="flex-1 min-w-0">
+                    <div className="text-[#111827] text-sm truncate">{s.name}</div>
+                    {s.domain && (
+                      <div className="text-[#9CA3AF] text-xs truncate">{s.domain}</div>
+                    )}
+                  </div>
+                  {is1P(s) && (
+                    <span className="text-[10px] bg-[#EEF2FF] text-[#4F46E5] px-1.5 py-0.5 rounded shrink-0">
+                      1P
+                    </span>
+                  )}
+                </a>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Follow-ups */}
+        {followUps.length > 0 && (
+          <div className="p-4 border-b border-[#E5E7EB]">
+            <h3 className="text-xs font-semibold text-[#6B7280] uppercase tracking-wide mb-3">
+              Related Questions
+            </h3>
+            <div className="space-y-1">
+              {followUps.map((q) => (
+                <button
+                  key={q}
+                  onClick={() => handleFollowUp(q)}
+                  className="w-full text-left text-sm text-[#4F46E5] hover:bg-white rounded px-2 py-2 -mx-2 transition-colors"
+                >
+                  {q}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Empty state for research panel */}
+        {collectedSources.length === 0 && followUps.length === 0 && !streaming && (
+          <div className="p-4">
+            <p className="text-[13px] text-[#9CA3AF]">
+              Sources, research steps, and related questions will appear here as you explore.
+            </p>
+          </div>
+        )}
+      </aside>
     </div>
   );
 }

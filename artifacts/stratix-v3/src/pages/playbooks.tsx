@@ -253,24 +253,15 @@ function MyPlaybooksTab() {
   if (!playbooks || playbooks.length === 0) {
     return (
       <>
-        <Card className="flex flex-col items-center justify-center py-16">
-          <BookMarked className="mb-3 h-8 w-8 text-[#D1D5DB]" />
-          <p className="text-sm font-medium text-[#111827]">
-            No playbooks yet
-          </p>
-          <p className="mt-1 text-sm text-[#6B7280]">
-            Create a playbook to define repeatable strategic intelligence
-            procedures.
-          </p>
-          <Button
-            size="sm"
-            className="mt-4"
+        <div className="text-center py-16">
+          <p className="text-[15px] text-[#6B7280] mb-4">No playbooks yet</p>
+          <button
+            className="text-[13px] text-[#4F46E5] hover:underline"
             onClick={() => setCreateOpen(true)}
           >
-            <Plus className="h-4 w-4" />
-            New Playbook
-          </Button>
-        </Card>
+            + Create your first playbook
+          </button>
+        </div>
 
         <CreatePlaybookDialog
           open={createOpen}
@@ -403,16 +394,12 @@ function TemplatesTab() {
 
   if (!templates || templates.length === 0) {
     return (
-      <Card className="flex flex-col items-center justify-center py-16">
-        <FileText className="mb-3 h-8 w-8 text-[#D1D5DB]" />
-        <p className="text-sm font-medium text-[#111827]">
-          No templates available
+      <div className="text-center py-16">
+        <p className="text-[15px] text-[#6B7280] mb-4">No templates available</p>
+        <p className="text-[13px] text-[#9CA3AF]">
+          Templates will appear here when configured by your organization.
         </p>
-        <p className="mt-1 text-sm text-[#6B7280]">
-          Playbook templates will appear here when configured by your
-          organization.
-        </p>
-      </Card>
+      </div>
     );
   }
 

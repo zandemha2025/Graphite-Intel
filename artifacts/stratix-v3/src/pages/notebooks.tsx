@@ -10,7 +10,6 @@ import { Badge } from "@/components/ui/badge";
 import { api, apiPost, apiDelete } from "@/lib/api";
 import {
   Plus,
-  BookOpen,
   FileText,
   Trash2,
   BarChart3,
@@ -284,24 +283,15 @@ export default function NotebooksPage() {
         }
       >
         <div className="space-y-8">
-          <Card className="flex flex-col items-center justify-center py-16">
-            <BookOpen className="mb-3 h-8 w-8 text-[#D1D5DB]" />
-            <p className="text-sm font-medium text-[#111827]">
-              Create your first notebook
-            </p>
-            <p className="mt-1 text-sm text-[#6B7280]">
-              Where Explore is for quick questions, Notebooks are for building
-              comprehensive research documents.
-            </p>
-            <Button
-              size="sm"
-              className="mt-4"
+          <div className="text-center py-16">
+            <p className="text-[15px] text-[#6B7280] mb-4">No notebooks yet</p>
+            <button
+              className="text-[13px] text-[#4F46E5] hover:underline"
               onClick={() => setTemplateOpen(true)}
             >
-              <Plus className="h-4 w-4" />
-              Create Notebook
-            </Button>
-          </Card>
+              + Create your first notebook
+            </button>
+          </div>
 
           {/* Template grid in empty state */}
           <div className="space-y-3">

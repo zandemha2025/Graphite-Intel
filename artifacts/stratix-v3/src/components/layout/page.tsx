@@ -26,11 +26,11 @@ export function Page({
         className,
       )}
     >
-      <div className="mb-5 flex items-start justify-between">
+      <div className="mb-6 flex items-start justify-between">
         <div>
-          <h1 className="text-lg font-semibold text-[#111827]">{title}</h1>
+          <h1 className="text-[15px] font-semibold text-[#111827]">{title}</h1>
           {subtitle && (
-            <p className="mt-1 text-sm text-[#6B7280]">{subtitle}</p>
+            <p className="mt-0.5 text-[13px] text-[#6B7280]">{subtitle}</p>
           )}
         </div>
         {actions && <div className="flex items-center gap-2">{actions}</div>}

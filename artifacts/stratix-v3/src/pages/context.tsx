@@ -3,7 +3,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { Page } from "@/components/layout/page";
-import { Card, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Card } from "@/components/ui/card";
 import { Tabs } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -12,8 +12,6 @@ import { api, apiPut, apiPost, apiDelete } from "@/lib/api";
 import { format } from "date-fns";
 import {
   Building2,
-  FileStack,
-  BookMarked,
   Upload,
   Search,
   Trash2,
@@ -496,27 +494,21 @@ function KnowledgeBaseTab() {
 
       {/* Document list */}
       {displayDocs.length === 0 ? (
-        <Card className="flex flex-col items-center justify-center py-12">
-          <FileStack className="mb-3 h-8 w-8 text-[#D1D5DB]" />
-          <p className="text-sm font-medium text-[#111827]">
+        <div className="text-center py-16">
+          <p className="text-[15px] text-[#6B7280] mb-4">
             {searchResults !== null ? "No matching documents" : "No documents yet"}
           </p>
-          <p className="mt-1 text-sm text-[#6B7280]">
-            {searchResults !== null
-              ? "Try a different search term."
-              : "Upload PDFs, docs, and spreadsheets to build your knowledge base."}
-          </p>
-          {searchResults === null && (
-            <Button
-              size="sm"
-              className="mt-4"
+          {searchResults === null ? (
+            <button
+              className="text-[13px] text-[#4F46E5] hover:underline"
               onClick={() => fileInputRef.current?.click()}
             >
-              <Upload className="h-4 w-4" />
-              Upload Document
-            </Button>
+              + Upload your first document
+            </button>
+          ) : (
+            <p className="text-[13px] text-[#9CA3AF]">Try a different search term.</p>
           )}
-        </Card>
+        </div>
       ) : (
         <div className="overflow-hidden rounded-lg border border-[#E5E7EB]">
           <table className="w-full text-sm">
@@ -675,16 +667,12 @@ function StrategicDefinitionsTab() {
 
       {/* Definitions list */}
       {definitions.length === 0 ? (
-        <Card className="flex flex-col items-center justify-center py-12">
-          <BookMarked className="mb-3 h-8 w-8 text-[#D1D5DB]" />
-          <p className="text-sm font-medium text-[#111827]">
-            No definitions yet
+        <div className="text-center py-16">
+          <p className="text-[15px] text-[#6B7280] mb-4">No definitions yet</p>
+          <p className="text-[13px] text-[#9CA3AF]">
+            Define terms, metrics, and relationships that teach the AI your domain language.
           </p>
-          <p className="mt-1 text-sm text-[#6B7280]">
-            Define terms, metrics, and relationships that teach the AI your
-            domain language.
-          </p>
-        </Card>
+        </div>
       ) : (
         <div className="grid gap-3">
           {definitions.map((def) => (
