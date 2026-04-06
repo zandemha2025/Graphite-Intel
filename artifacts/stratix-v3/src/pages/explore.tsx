@@ -351,15 +351,17 @@ export default function ExplorePage() {
               return;
             }
 
-            // Handle token events (may come as "message" or "token")
+            // Handle token events — backend sends {delta: "..."} or {content: "..."}
             try {
               const parsed = JSON.parse(data);
-              if (parsed.choices?.[0]?.delta?.content) {
-                assistantContent += parsed.choices[0].delta.content;
+              if (typeof parsed.delta === "string") {
+                assistantContent += parsed.delta;
               } else if (typeof parsed.content === "string") {
                 assistantContent += parsed.content;
               } else if (typeof parsed.token === "string") {
                 assistantContent += parsed.token;
+              } else if (parsed.choices?.[0]?.delta?.content) {
+                assistantContent += parsed.choices[0].delta.content;
               }
             } catch {
               // Non-JSON data -- treat as raw token
