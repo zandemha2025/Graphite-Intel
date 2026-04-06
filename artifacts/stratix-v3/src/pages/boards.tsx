@@ -13,18 +13,14 @@ import { Input } from "@/components/ui/input";
 import ReactMarkdown from "react-markdown";
 import {
   Plus,
-  LayoutGrid,
-  Play,
   Zap,
   Clock,
   CheckCircle2,
   XCircle,
   Loader2,
-  ArrowRight,
   FileText,
   Activity,
   Eye,
-  Wrench,
   Search,
   BookOpen,
   Sparkles,
@@ -32,7 +28,6 @@ import {
   X,
   Radio,
   Bell,
-  Send,
 } from "lucide-react";
 
 /* ---------- Types ---------- */
@@ -43,13 +38,6 @@ interface Board {
   type: "live" | "report" | "monitor";
   updatedAt: string;
   cardCount?: number;
-}
-
-interface WorkflowTemplate {
-  id: string;
-  name: string;
-  description: string;
-  intakeQuestions: { id: string; label: string }[];
 }
 
 interface WorkflowRun {
@@ -488,101 +476,63 @@ function DashboardsTab() {
 
 /* ---------- Automations Tab ---------- */
 
-/* ---------- AI Workflow Creator ---------- */
+/* ---------- CMO Workflow Templates (client-side) ---------- */
 
-function AIWorkflowCreator() {
-  const [, navigate] = useLocation();
-  const [prompt, setPrompt] = useState("");
-  const [creating, setCreating] = useState(false);
-
-  async function handleCreate() {
-    const trimmed = prompt.trim();
-    if (!trimmed) {
-      toast.error("Please describe the workflow you want to create");
-      return;
-    }
-    setCreating(true);
-    try {
-      // Create the workflow definition
-      const data = await apiPost<{ definition: WorkflowDefinition }>(
-        "/workflow-definitions",
-        {
-          name: "AI Generated Workflow",
-          description: trimmed,
-          steps: [],
-        },
-      );
-      // Trigger AI step generation
-      try {
-        await apiPost(`/workflow-definitions/${data.definition.id}/generate`, {
-          prompt: trimmed,
-        });
-      } catch {
-        // Generation endpoint may not exist yet -- definition still created
-      }
-      toast.success("Workflow created -- review the steps before running");
-      setPrompt("");
-      navigate(`/workflows/builder?id=${data.definition.id}`);
-    } catch {
-      toast.error("Failed to create workflow");
-    } finally {
-      setCreating(false);
-    }
-  }
-
-  return (
-    <div className="rounded-lg border border-[#E5E7EB] bg-[#F9FAFB] p-5">
-      <div className="mb-3 flex items-center gap-2">
-        <Sparkles className="h-4 w-4 text-[#4F46E5]" />
-        <span className="text-sm font-semibold text-[#111827]">
-          Describe a workflow
-        </span>
-      </div>
-      <textarea
-        value={prompt}
-        onChange={(e) => setPrompt(e.target.value)}
-        placeholder='e.g., "Every Monday, pull competitor pricing from their websites and compare with our rates"'
-        rows={3}
-        className="w-full rounded-lg border border-[#E5E7EB] bg-white px-3 py-2 text-sm text-[#111827] placeholder:text-[#9CA3AF] focus:border-[#4F46E5] focus:outline-none focus:ring-2 focus:ring-[#4F46E5]/20 resize-none"
-        onKeyDown={(e) => {
-          if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) {
-            e.preventDefault();
-            handleCreate();
-          }
-        }}
-      />
-      <div className="mt-3 flex items-center justify-between">
-        <p className="text-xs text-[#9CA3AF]">
-          Ctrl+Enter to submit
-        </p>
-        <Button
-          size="sm"
-          onClick={handleCreate}
-          loading={creating}
-          disabled={!prompt.trim()}
-        >
-          <Send className="h-3.5 w-3.5" />
-          Create Workflow
-        </Button>
-      </div>
-    </div>
-  );
-}
+const CMO_WORKFLOW_TEMPLATES = [
+  {
+    id: "competitor-watch",
+    name: "Weekly Competitor Watch",
+    description: "Monitor competitor websites for pricing, feature, and messaging changes",
+    schedule: "Every Monday 9am",
+    icon: Eye,
+    stepCount: 4,
+  },
+  {
+    id: "pipeline-alert",
+    name: "Deal Pipeline Alert",
+    description: "Alert when deals stall, accounts go silent, or pipeline drops below threshold",
+    schedule: "Daily 8am",
+    icon: Bell,
+    stepCount: 4,
+  },
+  {
+    id: "content-brief",
+    name: "Content Brief Generator",
+    description: "Auto-generate content briefs based on trending topics in your industry",
+    schedule: "Every Wednesday",
+    icon: FileText,
+    stepCount: 4,
+  },
+  {
+    id: "market-monitor",
+    name: "Market Intelligence Brief",
+    description: "Weekly market intelligence summary with competitor moves, news, and trends",
+    schedule: "Every Friday 5pm",
+    icon: Radio,
+    stepCount: 4,
+  },
+  {
+    id: "account-health",
+    name: "Account Health Check",
+    description: "Weekly check on key account engagement, call sentiment, and renewal risk",
+    schedule: "Every Monday 7am",
+    icon: Activity,
+    stepCount: 4,
+  },
+  {
+    id: "campaign-report",
+    name: "Campaign Performance Digest",
+    description: "Auto-generate weekly campaign performance reports across all channels",
+    schedule: "Every Monday 10am",
+    icon: Sparkles,
+    stepCount: 4,
+  },
+];
 
 /* ---------- Automations Tab ---------- */
 
 function AutomationsTab() {
   const [, navigate] = useLocation();
-
-  const { data: templates, isLoading: templatesLoading } = useQuery<
-    WorkflowTemplate[]
-  >({
-    queryKey: ["workflow-templates"],
-    queryFn: () =>
-      api<{ templates: WorkflowTemplate[] }>("/workflows/templates").then(
-        (r) => r.templates,
-      ),
-  });
 
   const { data: runs, isLoading: runsLoading } = useQuery<WorkflowRun[]>({
     queryKey: ["workflow-runs"],
@@ -635,7 +585,16 @@ function AutomationsTab() {
     }
   }
 
-  const isLoading = templatesLoading || runsLoading || defsLoading;
+  function formatDuration(start: string) {
+    const ms = Date.now() - new Date(start).getTime();
+    const seconds = Math.floor(ms / 1000);
+    if (seconds < 60) return `${seconds}s`;
+    const minutes = Math.floor(seconds / 60);
+    if (minutes < 60) return `${minutes}m`;
+    return `${Math.floor(minutes / 60)}h ${minutes % 60}m`;
+  }
+
+  const isLoading = runsLoading || defsLoading;
 
   if (isLoading) {
     return (
@@ -654,103 +613,51 @@ function AutomationsTab() {
 
   return (
     <div className="space-y-8">
-      {/* AI Workflow Creator */}
-      <AIWorkflowCreator />
-
-      {/* Workflow Templates */}
-      <div className="space-y-3">
-        <div className="flex items-center justify-between">
-          <div>
-            <h3 className="text-sm font-semibold text-[#111827]">
-              Workflow Templates
-            </h3>
-            <p className="mt-0.5 text-xs text-[#6B7280]">
-              Pre-built intelligence workflows ready to run.
-            </p>
-          </div>
+      {/* Header with New Workflow button */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-[15px] font-semibold text-[#111827]">Automations</h2>
+          <p className="mt-0.5 text-[13px] text-[#6B7280]">
+            Build, deploy, and monitor automated workflows.
+          </p>
         </div>
-        {templates && templates.length > 0 ? (
-          <div className="grid gap-3 sm:grid-cols-2">
-            {templates.map((tpl) => (
-              <Card key={tpl.id}>
-                <div className="mb-3">
-                  <div className="flex items-center gap-2">
-                    <Zap className="h-4 w-4 text-[#4F46E5]" />
-                    <p className="text-sm font-medium text-[#111827]">
-                      {tpl.name}
-                    </p>
-                  </div>
-                  <p className="mt-1 text-xs text-[#6B7280]">
-                    {tpl.description}
-                  </p>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-xs text-[#9CA3AF]">
-                    {tpl.intakeQuestions.length} intake question
-                    {tpl.intakeQuestions.length !== 1 ? "s" : ""}
-                  </span>
-                  <Button
-                    variant="secondary"
-                    size="sm"
-                    onClick={() =>
-                      navigate(`/workflows/${tpl.id}/run`)
-                    }
-                  >
-                    <Play className="h-3.5 w-3.5" />
-                    Run
-                  </Button>
-                </div>
-              </Card>
-            ))}
-          </div>
-        ) : (
-          <Card className="flex flex-col items-center justify-center py-10">
-            <Zap className="mb-3 h-8 w-8 text-[#D1D5DB]" />
-            <p className="text-sm font-medium text-[#111827]">
-              No templates available
-            </p>
-            <p className="mt-1 text-sm text-[#6B7280]">
-              Workflow templates will appear here when configured.
-            </p>
-          </Card>
-        )}
+        <Button size="sm" onClick={() => navigate("/workflows/new")}>
+          <Plus className="h-3.5 w-3.5" />
+          New Workflow
+        </Button>
       </div>
 
-      {/* Custom Workflow Definitions */}
+      {/* Active Workflows (Custom Definitions) */}
       {definitions && definitions.length > 0 && (
         <div className="space-y-3">
-          <div className="flex items-center justify-between">
-            <div>
-              <h3 className="text-sm font-semibold text-[#111827]">
-                Custom Workflows
-              </h3>
-              <p className="mt-0.5 text-xs text-[#6B7280]">
-                Your custom workflow definitions.
-              </p>
-            </div>
-            <Button
-              variant="secondary"
-              size="sm"
-              onClick={() => navigate("/workflows/builder")}
-            >
-              <Wrench className="h-3.5 w-3.5" />
-              Builder
-            </Button>
+          <div>
+            <h3 className="text-sm font-semibold text-[#111827]">
+              Active Workflows
+            </h3>
+            <p className="mt-0.5 text-xs text-[#6B7280]">
+              Your deployed workflow automations.
+            </p>
           </div>
           <div className="grid gap-3 sm:grid-cols-2">
             {definitions.map((def) => (
-              <Card key={def.id}>
-                <div className="flex items-center gap-2">
-                  <Wrench className="h-4 w-4 text-[#6B7280]" />
-                  <p className="text-sm font-medium text-[#111827]">
-                    {def.name}
-                  </p>
+              <Card key={def.id} className="cursor-pointer" onClick={() => navigate(`/workflows/new?id=${def.id}`)}>
+                <div className="flex items-start justify-between">
+                  <div className="flex items-center gap-2">
+                    <Zap className="h-4 w-4 text-[#4F46E5]" />
+                    <p className="text-sm font-medium text-[#111827]">
+                      {def.name}
+                    </p>
+                  </div>
+                  <Badge variant="success">Active</Badge>
                 </div>
-                <p className="mt-1 text-xs text-[#6B7280]">
+                <p className="mt-1.5 text-xs text-[#6B7280]">
                   {def.description}
                 </p>
-                <div className="mt-2 flex items-center gap-3 text-xs text-[#9CA3AF]">
-                  <span>{def.stepCount} steps</span>
+                <div className="mt-3 flex items-center gap-3 text-xs text-[#9CA3AF]">
+                  <span className="flex items-center gap-1">
+                    <Clock className="h-3 w-3" />
+                    {def.stepCount} steps
+                  </span>
                   <span>
                     Updated{" "}
                     {format(new Date(def.updatedAt), "MMM d, yyyy")}
@@ -784,8 +691,13 @@ function AutomationsTab() {
                   <th className="px-4 py-2.5 text-left font-medium text-[#6B7280]">
                     Date
                   </th>
+                  <th className="hidden px-4 py-2.5 text-left font-medium text-[#6B7280] sm:table-cell">
+                    Duration
+                  </th>
                   <th className="px-4 py-2.5 text-left font-medium text-[#6B7280]">
                     Output
+                  </th>
+                  <th className="px-4 py-2.5 text-right font-medium text-[#6B7280]">
                   </th>
                 </tr>
               </thead>
@@ -804,8 +716,27 @@ function AutomationsTab() {
                     <td className="px-4 py-3 text-[#6B7280]">
                       {format(new Date(run.createdAt), "MMM d, yyyy HH:mm")}
                     </td>
-                    <td className="max-w-xs truncate px-4 py-3 text-[#6B7280]">
-                      {run.outputPreview ?? "--"}
+                    <td className="hidden px-4 py-3 text-[#6B7280] sm:table-cell">
+                      {formatDuration(run.createdAt)}
+                    </td>
+                    <td className="max-w-[200px] truncate px-4 py-3 text-[#6B7280]">
+                      {run.outputPreview
+                        ? run.outputPreview.length > 100
+                          ? run.outputPreview.slice(0, 100) + "..."
+                          : run.outputPreview
+                        : "--"}
+                    </td>
+                    <td className="px-4 py-3 text-right">
+                      {run.outputPreview && (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => navigate(`/workflows/runs/${run.id}`)}
+                        >
+                          <Eye className="h-3.5 w-3.5" />
+                          View
+                        </Button>
+                      )}
                     </td>
                   </tr>
                 ))}
@@ -813,13 +744,57 @@ function AutomationsTab() {
             </table>
           </div>
         ) : (
-          <div className="text-center py-16">
-            <p className="text-[15px] text-[#6B7280] mb-4">No runs yet</p>
-            <p className="text-[13px] text-[#9CA3AF]">
-              Run a workflow template to see results here.
+          <Card className="flex flex-col items-center justify-center py-12">
+            <Clock className="mb-3 h-8 w-8 text-[#D1D5DB]" />
+            <p className="text-sm font-medium text-[#111827]">No runs yet</p>
+            <p className="mt-1 text-xs text-[#6B7280]">
+              Deploy a workflow to see execution history here.
             </p>
-          </div>
+          </Card>
         )}
+      </div>
+
+      {/* CMO Templates */}
+      <div className="space-y-3">
+        <div>
+          <h3 className="text-sm font-semibold text-[#111827]">
+            Templates for CMOs
+          </h3>
+          <p className="mt-0.5 text-xs text-[#6B7280]">
+            Pre-built workflow templates -- click to customize in the builder.
+          </p>
+        </div>
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          {CMO_WORKFLOW_TEMPLATES.map((tpl) => {
+            const Icon = tpl.icon;
+            return (
+              <Card
+                key={tpl.id}
+                className="cursor-pointer"
+                onClick={() => navigate(`/workflows/new?template=${tpl.id}`)}
+              >
+                <div className="mb-2 flex items-center gap-2">
+                  <Icon className="h-4 w-4 text-[#4F46E5]" />
+                  <p className="text-sm font-medium text-[#111827]">
+                    {tpl.name}
+                  </p>
+                </div>
+                <p className="text-xs leading-relaxed text-[#6B7280]">
+                  {tpl.description}
+                </p>
+                <div className="mt-3 flex items-center justify-between">
+                  <span className="flex items-center gap-1 text-xs text-[#9CA3AF]">
+                    <Clock className="h-3 w-3" />
+                    {tpl.schedule}
+                  </span>
+                  <span className="text-xs text-[#9CA3AF]">
+                    {tpl.stepCount} steps
+                  </span>
+                </div>
+              </Card>
+            );
+          })}
+        </div>
       </div>
     </div>
   );

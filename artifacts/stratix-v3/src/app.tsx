@@ -5,6 +5,7 @@ import { Shell } from "@/components/layout/shell";
 import { type ReactNode, Component, type ErrorInfo, lazy, Suspense } from "react";
 
 const ReportViewPage = lazy(() => import("@/pages/report-view"));
+const WorkflowBuilderPage = lazy(() => import("@/pages/workflow-builder"));
 
 // Pages
 import LandingPage from "@/pages/landing";
@@ -120,6 +121,25 @@ function AuthenticatedRoutes() {
         <Route path="/playbooks" component={PlaybooksPage} />
         <Route path="/playbooks/runs/:id" component={PlaybookRunPage} />
         <Route path="/playbooks/:id" component={PlaybookEditPage} />
+        <Route path="/workflows/new">
+              {() => (
+                <Suspense
+                  fallback={
+                    <div className="flex min-h-[400px] items-center justify-center">
+                      <div className="flex items-center gap-2 text-sm text-[#6B7280]">
+                        <svg className="h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                        </svg>
+                        Loading workflow builder...
+                      </div>
+                    </div>
+                  }
+                >
+                  <WorkflowBuilderPage />
+                </Suspense>
+              )}
+            </Route>
         <Route path="/integrations" component={IntegrationsPage} />
         <Route path="/settings" component={SettingsPage} />
         <Route>
