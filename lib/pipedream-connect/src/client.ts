@@ -87,26 +87,56 @@ export class PipedreamConnectClient {
   // Internal HTTP helpers
   // -------------------------------------------------------------------------
 
-  private authHeader(): string {
-    return `Bearer ${this.projectSecret}`;
+  private cachedToken: string | null = null;
+  private tokenExpiry: number = 0;
+
+  private async getAccessToken(): Promise<string> {
+    if (this.cachedToken && Date.now() < this.tokenExpiry) {
+      return this.cachedToken;
+    }
+    const res = await fetch(`${this.apiBase}/v1/oauth/token`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        grant_type: "client_credentials",
+        client_id: this.projectId,
+        client_secret: this.projectSecret,
+      }),
+    });
+    if (!res.ok) {
+      throw new PipedreamApiError(res.status, `OAuth token request failed: ${res.status}`);
+    }
+    const data = await res.json() as { access_token: string; expires_in?: number };
+    this.cachedToken = data.access_token;
+    this.tokenExpiry = Date.now() + ((data.expires_in ?? 3600) - 60) * 1000;
+    return data.access_token;
+  }
+
+  private async authHeader(): Promise<string> {
+    const token = await this.getAccessToken();
+    return `Bearer ${token}`;
   }
 
   private async get<T>(path: string): Promise<T> {
+    const auth = await this.authHeader();
     const res = await fetch(`${this.apiBase}${path}`, {
       headers: {
-        Authorization: this.authHeader(),
+        Authorization: auth,
         "Content-Type": "application/json",
+        "X-PD-Environment": process.env.PIPEDREAM_ENVIRONMENT || "development",
       },
     });
     return parseResponse<T>(res);
   }
 
   private async post<T>(path: string, body: unknown): Promise<T> {
+    const auth = await this.authHeader();
     const res = await fetch(`${this.apiBase}${path}`, {
       method: "POST",
       headers: {
-        Authorization: this.authHeader(),
+        Authorization: auth,
         "Content-Type": "application/json",
+        "X-PD-Environment": process.env.PIPEDREAM_ENVIRONMENT || "development",
       },
       body: JSON.stringify(body),
     });
@@ -114,9 +144,10 @@ export class PipedreamConnectClient {
   }
 
   private async delete(path: string): Promise<void> {
+    const auth = await this.authHeader();
     const res = await fetch(`${this.apiBase}${path}`, {
       method: "DELETE",
-      headers: { Authorization: this.authHeader() },
+      headers: { Authorization: auth },
     });
     if (!res.ok) {
       const text = await res.text().catch(() => "");
