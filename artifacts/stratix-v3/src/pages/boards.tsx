@@ -62,7 +62,7 @@ interface WorkflowDefinition {
 function Skeleton({ className }: { className?: string }) {
   return (
     <div
-      className={`animate-pulse rounded bg-[#F3F4F6] ${className ?? ""}`}
+      className={`animate-pulse rounded bg-[#27272A] ${className ?? ""}`}
     />
   );
 }
@@ -172,14 +172,14 @@ function CreateBoardDialog({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
       <div className="absolute inset-0 bg-black/30" onClick={handleClose} />
-      <div className="relative z-10 w-full max-w-lg rounded-xl border border-[#E5E7EB] bg-white shadow-xl">
-        <div className="flex items-center justify-between border-b border-[#E5E7EB] px-6 py-4">
-          <h2 className="text-base font-semibold text-[#111827]">
+      <div className="relative z-10 w-full max-w-lg rounded-xl border border-[#27272A] bg-[#18181B] shadow-xl">
+        <div className="flex items-center justify-between border-b border-[#27272A] px-6 py-4">
+          <h2 className="text-base font-semibold text-[#FAFAFA]">
             Create Board
           </h2>
           <button
             onClick={handleClose}
-            className="rounded-lg p-1.5 text-[#6B7280] hover:bg-[#F3F4F6] hover:text-[#111827]"
+            className="rounded-lg p-1.5 text-[#A1A1AA] hover:bg-[#27272A] hover:text-[#FAFAFA]"
           >
             <X className="h-5 w-5" />
           </button>
@@ -197,7 +197,7 @@ function CreateBoardDialog({
 
           {/* Board type selector */}
           <div className="flex flex-col gap-1.5">
-            <label className="text-sm font-medium text-[#111827]">
+            <label className="text-sm font-medium text-[#FAFAFA]">
               Board Type
             </label>
             <div className="grid gap-2">
@@ -210,15 +210,15 @@ function CreateBoardDialog({
                     onClick={() => setBoardType(opt.value)}
                     className={`flex items-center gap-3 rounded-lg border p-3 text-left transition-colors ${
                       selected
-                        ? "border-[#4F46E5] bg-[#EEF2FF]"
-                        : "border-[#E5E7EB] hover:bg-[#F9FAFB]"
+                        ? "border-[#6366F1] bg-[#6366F1]/10"
+                        : "border-[#27272A] hover:bg-[#18181B]"
                     }`}
                   >
                     <div
                       className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg ${
                         selected
-                          ? "bg-[#4F46E5] text-white"
-                          : "bg-[#F3F4F6] text-[#6B7280]"
+                          ? "bg-[#6366F1] text-white"
+                          : "bg-[#27272A] text-[#A1A1AA]"
                       }`}
                     >
                       <Icon className="h-4 w-4" />
@@ -226,12 +226,12 @@ function CreateBoardDialog({
                     <div>
                       <p
                         className={`text-sm font-medium ${
-                          selected ? "text-[#4F46E5]" : "text-[#111827]"
+                          selected ? "text-[#6366F1]" : "text-[#FAFAFA]"
                         }`}
                       >
                         {opt.label}
                       </p>
-                      <p className="text-xs text-[#6B7280]">
+                      <p className="text-xs text-[#A1A1AA]">
                         {opt.description}
                       </p>
                     </div>
@@ -243,15 +243,15 @@ function CreateBoardDialog({
 
           {/* Monitoring config - only shown for monitor type */}
           {boardType === "monitor" && (
-            <div className="space-y-4 rounded-lg border border-[#E5E7EB] bg-[#F9FAFB] p-4">
-              <div className="flex items-center gap-2 text-sm font-medium text-[#111827]">
-                <Bell className="h-4 w-4 text-[#4F46E5]" />
+            <div className="space-y-4 rounded-lg border border-[#27272A] bg-[#18181B] p-4">
+              <div className="flex items-center gap-2 text-sm font-medium text-[#FAFAFA]">
+                <Bell className="h-4 w-4 text-[#6366F1]" />
                 Monitor Configuration
               </div>
 
               {/* What to monitor */}
               <div className="flex flex-col gap-1.5">
-                <label className="text-xs font-medium text-[#6B7280]">
+                <label className="text-xs font-medium text-[#A1A1AA]">
                   What to monitor
                 </label>
                 <textarea
@@ -259,13 +259,13 @@ function CreateBoardDialog({
                   onChange={(e) => setMonitorTarget(e.target.value)}
                   placeholder="e.g. Competitor pricing changes, new product launches, market shifts"
                   rows={2}
-                  className="w-full rounded-lg border border-[#E5E7EB] bg-white px-3 py-2 text-sm text-[#111827] placeholder:text-[#9CA3AF] focus:border-[#4F46E5] focus:outline-none focus:ring-2 focus:ring-[#4F46E5]/20 resize-none"
+                  className="w-full rounded-lg border border-[#27272A] bg-[#18181B] px-3 py-2 text-sm text-[#FAFAFA] placeholder:text-[#71717A] focus:border-[#6366F1] focus:outline-none focus:ring-2 focus:ring-[#6366F1]/20 resize-none"
                 />
               </div>
 
               {/* Check frequency */}
               <div className="flex flex-col gap-1.5">
-                <label className="text-xs font-medium text-[#6B7280]">
+                <label className="text-xs font-medium text-[#A1A1AA]">
                   Check frequency
                 </label>
                 <div className="flex gap-2">
@@ -275,8 +275,8 @@ function CreateBoardDialog({
                       onClick={() => setCheckFrequency(f)}
                       className={`flex-1 rounded-lg border px-3 py-2 text-xs font-medium capitalize transition-colors ${
                         checkFrequency === f
-                          ? "border-[#4F46E5] bg-[#4F46E5] text-white"
-                          : "border-[#E5E7EB] bg-white text-[#6B7280] hover:bg-[#F3F4F6]"
+                          ? "border-[#6366F1] bg-[#6366F1] text-white"
+                          : "border-[#27272A] bg-[#18181B] text-[#A1A1AA] hover:bg-[#27272A]"
                       }`}
                     >
                       {f}
@@ -287,7 +287,7 @@ function CreateBoardDialog({
 
               {/* Alert condition */}
               <div className="flex flex-col gap-1.5">
-                <label className="text-xs font-medium text-[#6B7280]">
+                <label className="text-xs font-medium text-[#A1A1AA]">
                   Alert me when
                 </label>
                 <textarea
@@ -295,7 +295,7 @@ function CreateBoardDialog({
                   onChange={(e) => setAlertCondition(e.target.value)}
                   placeholder='e.g. "competitor launches new product", "market share changes >5%"'
                   rows={2}
-                  className="w-full rounded-lg border border-[#E5E7EB] bg-white px-3 py-2 text-sm text-[#111827] placeholder:text-[#9CA3AF] focus:border-[#4F46E5] focus:outline-none focus:ring-2 focus:ring-[#4F46E5]/20 resize-none"
+                  className="w-full rounded-lg border border-[#27272A] bg-[#18181B] px-3 py-2 text-sm text-[#FAFAFA] placeholder:text-[#71717A] focus:border-[#6366F1] focus:outline-none focus:ring-2 focus:ring-[#6366F1]/20 resize-none"
                 />
               </div>
             </div>
@@ -386,9 +386,9 @@ function DashboardsTab() {
           onClose={() => setCreateDialogOpen(false)}
         />
         <div className="text-center py-16">
-          <p className="text-[15px] text-[#6B7280] mb-4">No boards yet</p>
+          <p className="text-[15px] text-[#A1A1AA] mb-4">No boards yet</p>
           <button
-            className="text-[13px] text-[#4F46E5] hover:underline"
+            className="text-[13px] text-[#6366F1] hover:underline"
             onClick={() => setCreateDialogOpen(true)}
           >
             + Create your first board
@@ -408,9 +408,9 @@ function DashboardsTab() {
       {deletingId && (
         <div className="fixed inset-0 z-50 flex items-center justify-center">
           <div className="absolute inset-0 bg-black/30" onClick={() => setDeletingId(null)} />
-          <div className="relative z-10 w-full max-w-sm rounded-xl border border-[#E5E7EB] bg-white p-6 shadow-xl">
-            <p className="text-sm font-semibold text-[#111827]">Delete this board?</p>
-            <p className="mt-2 text-sm text-[#6B7280]">This cannot be undone.</p>
+          <div className="relative z-10 w-full max-w-sm rounded-xl border border-[#27272A] bg-[#18181B] p-6 shadow-xl">
+            <p className="text-sm font-semibold text-[#FAFAFA]">Delete this board?</p>
+            <p className="mt-2 text-sm text-[#A1A1AA]">This cannot be undone.</p>
             <div className="mt-4 flex justify-end gap-2">
               <Button variant="secondary" size="sm" onClick={() => setDeletingId(null)}>
                 Cancel
@@ -432,7 +432,7 @@ function DashboardsTab() {
         {boards.map((board) => (
           <Card
             key={board.id}
-            className="group relative cursor-pointer transition-colors hover:border-[#4F46E5]/30"
+            className="group relative cursor-pointer transition-colors hover:border-[#6366F1]/30"
             onClick={() => navigate(`/boards/${board.id}`)}
           >
             {/* Delete button on hover */}
@@ -441,17 +441,17 @@ function DashboardsTab() {
                 e.stopPropagation();
                 setDeletingId(board.id);
               }}
-              className="absolute right-2 top-2 rounded p-1 text-[#D1D5DB] opacity-0 transition-opacity group-hover:opacity-100 hover:bg-red-50 hover:text-red-500"
+              className="absolute right-2 top-2 rounded p-1 text-[#3F3F46] opacity-0 transition-opacity group-hover:opacity-100 hover:bg-[#EF4444]/10 hover:text-red-500"
             >
               <Trash2 className="h-3.5 w-3.5" />
             </button>
             <div className="mb-2 flex items-center justify-between">
-              <p className="text-sm font-medium text-[#111827] truncate pr-6">
+              <p className="text-sm font-medium text-[#FAFAFA] truncate pr-6">
                 {board.title}
               </p>
               {getTypeBadge(board.type)}
             </div>
-            <div className="flex items-center justify-between text-xs text-[#6B7280]">
+            <div className="flex items-center justify-between text-xs text-[#A1A1AA]">
               <span>
                 Updated {format(new Date(board.updatedAt), "MMM d, yyyy")}
               </span>
@@ -464,7 +464,7 @@ function DashboardsTab() {
         {/* Create new card */}
         <button
           onClick={() => setCreateDialogOpen(true)}
-          className="flex flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed border-[#E5E7EB] bg-white p-6 text-[#6B7280] transition-colors hover:border-[#4F46E5]/30 hover:text-[#4F46E5]"
+          className="flex flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed border-[#27272A] bg-[#18181B] p-6 text-[#A1A1AA] transition-colors hover:border-[#6366F1]/30 hover:text-[#6366F1]"
         >
           <Plus className="h-6 w-6" />
           <span className="text-sm font-medium">New Board</span>
@@ -616,8 +616,8 @@ function AutomationsTab() {
       {/* Header with New Workflow button */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-[15px] font-semibold text-[#111827]">Automations</h2>
-          <p className="mt-0.5 text-[13px] text-[#6B7280]">
+          <h2 className="text-[15px] font-semibold text-[#FAFAFA]">Automations</h2>
+          <p className="mt-0.5 text-[13px] text-[#A1A1AA]">
             Build, deploy, and monitor automated workflows.
           </p>
         </div>
@@ -631,10 +631,10 @@ function AutomationsTab() {
       {definitions && definitions.length > 0 && (
         <div className="space-y-3">
           <div>
-            <h3 className="text-sm font-semibold text-[#111827]">
+            <h3 className="text-sm font-semibold text-[#FAFAFA]">
               Active Workflows
             </h3>
-            <p className="mt-0.5 text-xs text-[#6B7280]">
+            <p className="mt-0.5 text-xs text-[#A1A1AA]">
               Your deployed workflow automations.
             </p>
           </div>
@@ -643,17 +643,17 @@ function AutomationsTab() {
               <Card key={def.id} className="cursor-pointer" onClick={() => navigate(`/workflows/new?id=${def.id}`)}>
                 <div className="flex items-start justify-between">
                   <div className="flex items-center gap-2">
-                    <Zap className="h-4 w-4 text-[#4F46E5]" />
-                    <p className="text-sm font-medium text-[#111827]">
+                    <Zap className="h-4 w-4 text-[#6366F1]" />
+                    <p className="text-sm font-medium text-[#FAFAFA]">
                       {def.name}
                     </p>
                   </div>
                   <Badge variant="success">Active</Badge>
                 </div>
-                <p className="mt-1.5 text-xs text-[#6B7280]">
+                <p className="mt-1.5 text-xs text-[#A1A1AA]">
                   {def.description}
                 </p>
-                <div className="mt-3 flex items-center gap-3 text-xs text-[#9CA3AF]">
+                <div className="mt-3 flex items-center gap-3 text-xs text-[#71717A]">
                   <span className="flex items-center gap-1">
                     <Clock className="h-3 w-3" />
                     {def.stepCount} steps
@@ -672,32 +672,32 @@ function AutomationsTab() {
       {/* Recent Runs */}
       <div className="space-y-3">
         <div>
-          <h3 className="text-sm font-semibold text-[#111827]">Recent Runs</h3>
-          <p className="mt-0.5 text-xs text-[#6B7280]">
+          <h3 className="text-sm font-semibold text-[#FAFAFA]">Recent Runs</h3>
+          <p className="mt-0.5 text-xs text-[#A1A1AA]">
             History of workflow executions.
           </p>
         </div>
         {runs && runs.length > 0 ? (
-          <div className="overflow-hidden rounded-lg border border-[#E5E7EB]">
+          <div className="overflow-hidden rounded-lg border border-[#27272A]">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-[#E5E7EB] bg-[#F9FAFB]">
-                  <th className="px-4 py-2.5 text-left font-medium text-[#6B7280]">
+                <tr className="border-b border-[#27272A] bg-[#18181B]">
+                  <th className="px-4 py-2.5 text-left font-medium text-[#A1A1AA]">
                     Workflow
                   </th>
-                  <th className="px-4 py-2.5 text-left font-medium text-[#6B7280]">
+                  <th className="px-4 py-2.5 text-left font-medium text-[#A1A1AA]">
                     Status
                   </th>
-                  <th className="px-4 py-2.5 text-left font-medium text-[#6B7280]">
+                  <th className="px-4 py-2.5 text-left font-medium text-[#A1A1AA]">
                     Date
                   </th>
-                  <th className="hidden px-4 py-2.5 text-left font-medium text-[#6B7280] sm:table-cell">
+                  <th className="hidden px-4 py-2.5 text-left font-medium text-[#A1A1AA] sm:table-cell">
                     Duration
                   </th>
-                  <th className="px-4 py-2.5 text-left font-medium text-[#6B7280]">
+                  <th className="px-4 py-2.5 text-left font-medium text-[#A1A1AA]">
                     Output
                   </th>
-                  <th className="px-4 py-2.5 text-right font-medium text-[#6B7280]">
+                  <th className="px-4 py-2.5 text-right font-medium text-[#A1A1AA]">
                   </th>
                 </tr>
               </thead>
@@ -705,21 +705,21 @@ function AutomationsTab() {
                 {runs.map((run) => (
                   <tr
                     key={run.id}
-                    className="border-b border-[#E5E7EB] last:border-b-0 hover:bg-[#F9FAFB]"
+                    className="border-b border-[#27272A] last:border-b-0 hover:bg-[#18181B]"
                   >
-                    <td className="px-4 py-3 font-medium text-[#111827]">
+                    <td className="px-4 py-3 font-medium text-[#FAFAFA]">
                       {run.templateName}
                     </td>
                     <td className="px-4 py-3">
                       {getRunStatusBadge(run.status)}
                     </td>
-                    <td className="px-4 py-3 text-[#6B7280]">
+                    <td className="px-4 py-3 text-[#A1A1AA]">
                       {format(new Date(run.createdAt), "MMM d, yyyy HH:mm")}
                     </td>
-                    <td className="hidden px-4 py-3 text-[#6B7280] sm:table-cell">
+                    <td className="hidden px-4 py-3 text-[#A1A1AA] sm:table-cell">
                       {formatDuration(run.createdAt)}
                     </td>
-                    <td className="max-w-[200px] truncate px-4 py-3 text-[#6B7280]">
+                    <td className="max-w-[200px] truncate px-4 py-3 text-[#A1A1AA]">
                       {run.outputPreview
                         ? run.outputPreview.length > 100
                           ? run.outputPreview.slice(0, 100) + "..."
@@ -745,9 +745,9 @@ function AutomationsTab() {
           </div>
         ) : (
           <Card className="flex flex-col items-center justify-center py-12">
-            <Clock className="mb-3 h-8 w-8 text-[#D1D5DB]" />
-            <p className="text-sm font-medium text-[#111827]">No runs yet</p>
-            <p className="mt-1 text-xs text-[#6B7280]">
+            <Clock className="mb-3 h-8 w-8 text-[#3F3F46]" />
+            <p className="text-sm font-medium text-[#FAFAFA]">No runs yet</p>
+            <p className="mt-1 text-xs text-[#A1A1AA]">
               Deploy a workflow to see execution history here.
             </p>
           </Card>
@@ -757,10 +757,10 @@ function AutomationsTab() {
       {/* CMO Templates */}
       <div className="space-y-3">
         <div>
-          <h3 className="text-sm font-semibold text-[#111827]">
+          <h3 className="text-sm font-semibold text-[#FAFAFA]">
             Templates for CMOs
           </h3>
-          <p className="mt-0.5 text-xs text-[#6B7280]">
+          <p className="mt-0.5 text-xs text-[#A1A1AA]">
             Pre-built workflow templates -- click to customize in the builder.
           </p>
         </div>
@@ -774,20 +774,20 @@ function AutomationsTab() {
                 onClick={() => navigate(`/workflows/new?template=${tpl.id}`)}
               >
                 <div className="mb-2 flex items-center gap-2">
-                  <Icon className="h-4 w-4 text-[#4F46E5]" />
-                  <p className="text-sm font-medium text-[#111827]">
+                  <Icon className="h-4 w-4 text-[#6366F1]" />
+                  <p className="text-sm font-medium text-[#FAFAFA]">
                     {tpl.name}
                   </p>
                 </div>
-                <p className="text-xs leading-relaxed text-[#6B7280]">
+                <p className="text-xs leading-relaxed text-[#A1A1AA]">
                   {tpl.description}
                 </p>
                 <div className="mt-3 flex items-center justify-between">
-                  <span className="flex items-center gap-1 text-xs text-[#9CA3AF]">
+                  <span className="flex items-center gap-1 text-xs text-[#71717A]">
                     <Clock className="h-3 w-3" />
                     {tpl.schedule}
                   </span>
-                  <span className="text-xs text-[#9CA3AF]">
+                  <span className="text-xs text-[#71717A]">
                     {tpl.stepCount} steps
                   </span>
                 </div>
@@ -946,17 +946,17 @@ function GenerateReportDialog({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
       <div className="absolute inset-0 bg-black/30" onClick={handleClose} />
-      <div className="relative z-10 w-full max-w-2xl max-h-[85vh] overflow-y-auto rounded-xl border border-[#E5E7EB] bg-white shadow-xl">
-        <div className="sticky top-0 z-10 flex items-center justify-between border-b border-[#E5E7EB] bg-white px-6 py-4">
+      <div className="relative z-10 w-full max-w-2xl max-h-[85vh] overflow-y-auto rounded-xl border border-[#27272A] bg-[#18181B] shadow-xl">
+        <div className="sticky top-0 z-10 flex items-center justify-between border-b border-[#27272A] bg-[#18181B] px-6 py-4">
           <div>
-            <h2 className="text-base font-semibold text-[#111827]">Generate Deep Report</h2>
-            <p className="mt-0.5 text-xs text-[#6B7280]">
+            <h2 className="text-base font-semibold text-[#FAFAFA]">Generate Deep Report</h2>
+            <p className="mt-0.5 text-xs text-[#A1A1AA]">
               {generating ? progress : "Pull from all intelligence sources"}
             </p>
           </div>
           <button
             onClick={handleClose}
-            className="rounded-lg p-1.5 text-[#6B7280] hover:bg-[#F3F4F6] hover:text-[#111827]"
+            className="rounded-lg p-1.5 text-[#A1A1AA] hover:bg-[#27272A] hover:text-[#FAFAFA]"
           >
             <XCircle className="h-5 w-5" />
           </button>
@@ -967,11 +967,11 @@ function GenerateReportDialog({
             <div className="space-y-5">
               {/* Report Type */}
               <div className="flex flex-col gap-1.5">
-                <label className="text-sm font-medium text-[#111827]">Report Type</label>
+                <label className="text-sm font-medium text-[#FAFAFA]">Report Type</label>
                 <select
                   value={reportType}
                   onChange={(e) => setReportType(e.target.value)}
-                  className="h-9 w-full rounded-lg border border-[#E5E7EB] bg-white px-3 text-sm text-[#111827] focus:outline-none focus:ring-2 focus:ring-[#4F46E5]/20 focus:border-[#4F46E5]"
+                  className="h-9 w-full rounded-lg border border-[#27272A] bg-[#18181B] px-3 text-sm text-[#FAFAFA] focus:outline-none focus:ring-2 focus:ring-[#6366F1]/20 focus:border-[#6366F1]"
                 >
                   {REPORT_TYPES.map((t) => (
                     <option key={t.value} value={t.value}>{t.label}</option>
@@ -990,37 +990,37 @@ function GenerateReportDialog({
 
               {/* Additional Context */}
               <div className="flex flex-col gap-1.5">
-                <label className="text-sm font-medium text-[#111827]">
-                  Additional Context <span className="font-normal text-[#9CA3AF]">(optional)</span>
+                <label className="text-sm font-medium text-[#FAFAFA]">
+                  Additional Context <span className="font-normal text-[#71717A]">(optional)</span>
                 </label>
                 <textarea
                   value={context}
                   onChange={(e) => setContext(e.target.value)}
                   placeholder="Any specific angles, competitors, time frames, or focus areas..."
                   rows={3}
-                  className="w-full rounded-lg border border-[#E5E7EB] bg-white px-3 py-2 text-sm text-[#111827] placeholder:text-[#9CA3AF] focus:outline-none focus:ring-2 focus:ring-[#4F46E5]/20 focus:border-[#4F46E5] resize-none"
+                  className="w-full rounded-lg border border-[#27272A] bg-[#18181B] px-3 py-2 text-sm text-[#FAFAFA] placeholder:text-[#71717A] focus:outline-none focus:ring-2 focus:ring-[#6366F1]/20 focus:border-[#6366F1] resize-none"
                 />
               </div>
 
               {/* Depth Toggle */}
               <div className="flex flex-col gap-1.5">
-                <label className="text-sm font-medium text-[#111827]">Depth</label>
-                <div className="flex rounded-lg border border-[#E5E7EB] overflow-hidden">
+                <label className="text-sm font-medium text-[#FAFAFA]">Depth</label>
+                <div className="flex rounded-lg border border-[#27272A] overflow-hidden">
                   {(["quick", "standard", "deep"] as ReportDepth[]).map((d) => (
                     <button
                       key={d}
                       onClick={() => setDepth(d)}
                       className={`flex-1 px-4 py-2 text-sm font-medium capitalize transition-colors ${
                         depth === d
-                          ? "bg-[#4F46E5] text-white"
-                          : "bg-white text-[#6B7280] hover:bg-[#F9FAFB]"
+                          ? "bg-[#6366F1] text-white"
+                          : "bg-[#18181B] text-[#A1A1AA] hover:bg-[#18181B]"
                       }`}
                     >
                       {d}
                     </button>
                   ))}
                 </div>
-                <p className="text-xs text-[#9CA3AF]">
+                <p className="text-xs text-[#71717A]">
                   {depth === "quick" && "5-10 pages. Fast overview with key findings."}
                   {depth === "standard" && "20-40 pages. Thorough analysis with supporting data."}
                   {depth === "deep" && "50-100 pages. Comprehensive deep-dive with full citations."}
@@ -1038,12 +1038,12 @@ function GenerateReportDialog({
               {/* Progress bar */}
               {generating && (
                 <div className="space-y-2">
-                  <div className="flex items-center gap-2 text-sm text-[#4F46E5]">
+                  <div className="flex items-center gap-2 text-sm text-[#6366F1]">
                     <Loader2 className="h-4 w-4 animate-spin" />
                     <span className="font-medium">{progress}</span>
                   </div>
-                  <div className="h-1.5 w-full rounded-full bg-[#F3F4F6] overflow-hidden">
-                    <div className="h-full rounded-full bg-[#4F46E5] animate-pulse" style={{ width: "60%" }} />
+                  <div className="h-1.5 w-full rounded-full bg-[#27272A] overflow-hidden">
+                    <div className="h-full rounded-full bg-[#6366F1] animate-pulse" style={{ width: "60%" }} />
                   </div>
                 </div>
               )}
@@ -1061,8 +1061,8 @@ function GenerateReportDialog({
 
               {/* Streamed content preview */}
               {streamContent && (
-                <div className="max-h-80 overflow-y-auto rounded-lg border border-[#E5E7EB] bg-[#F9FAFB] p-4">
-                  <div className="prose prose-sm max-w-none text-[#111827]">
+                <div className="max-h-80 overflow-y-auto rounded-lg border border-[#27272A] bg-[#18181B] p-4">
+                  <div className="prose prose-sm max-w-none text-[#FAFAFA]">
                     <ReportMarkdown content={streamContent} />
                   </div>
                 </div>
@@ -1220,11 +1220,11 @@ function ReportsTab() {
       <GenerateReportDialog open={dialogOpen} onClose={() => setDialogOpen(false)} />
       <div className="space-y-4">
         {/* Weekly Intelligence Brief */}
-        <div className="rounded-lg border border-[#4F46E5]/20 bg-[#EEF2FF] p-4">
+        <div className="rounded-lg border border-[#6366F1]/20 bg-[#6366F1]/10 p-4">
           <div className="flex items-center justify-between">
             <div>
-              <h3 className="text-sm font-medium text-[#111827]">Weekly Intelligence Brief</h3>
-              <p className="text-xs text-[#6B7280] mt-0.5">Auto-generated every Monday. Your CMO morning read.</p>
+              <h3 className="text-sm font-medium text-[#FAFAFA]">Weekly Intelligence Brief</h3>
+              <p className="text-xs text-[#A1A1AA] mt-0.5">Auto-generated every Monday. Your CMO morning read.</p>
             </div>
             <Button size="sm" onClick={() => generateWeeklyBrief()} loading={generatingBrief}>
               {generatingBrief ? (
@@ -1245,13 +1245,13 @@ function ReportsTab() {
         {/* Search + Create */}
         <div className="flex items-center gap-3">
           <div className="relative flex-1 max-w-sm">
-            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#9CA3AF]" />
+            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#71717A]" />
             <input
               type="text"
               placeholder="Search reports..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="h-9 w-full rounded-lg border border-[#E5E7EB] bg-white pl-9 pr-3 text-sm text-[#111827] placeholder:text-[#9CA3AF] focus:outline-none focus:ring-2 focus:ring-[#4F46E5]/20 focus:border-[#4F46E5]"
+              className="h-9 w-full rounded-lg border border-[#27272A] bg-[#18181B] pl-9 pr-3 text-sm text-[#FAFAFA] placeholder:text-[#71717A] focus:outline-none focus:ring-2 focus:ring-[#6366F1]/20 focus:border-[#6366F1]"
             />
           </div>
           <Button size="sm" onClick={() => setDialogOpen(true)}>
@@ -1263,18 +1263,18 @@ function ReportsTab() {
         {/* Report Cards */}
         {!filtered || filtered.length === 0 ? (
           <div className="text-center py-16">
-            <p className="text-[15px] text-[#6B7280] mb-4">
+            <p className="text-[15px] text-[#A1A1AA] mb-4">
               {searchQuery ? "No reports match your search" : "No reports yet"}
             </p>
             {!searchQuery ? (
               <button
-                className="text-[13px] text-[#4F46E5] hover:underline"
+                className="text-[13px] text-[#6366F1] hover:underline"
                 onClick={() => setDialogOpen(true)}
               >
                 + Generate your first report
               </button>
             ) : (
-              <p className="text-[13px] text-[#9CA3AF]">Try a different search term.</p>
+              <p className="text-[13px] text-[#71717A]">Try a different search term.</p>
             )}
           </div>
         ) : (
@@ -1282,11 +1282,11 @@ function ReportsTab() {
             {filtered.map((report) => (
               <Card
                 key={report.id}
-                className="cursor-pointer transition-colors hover:border-[#4F46E5]/30 group"
+                className="cursor-pointer transition-colors hover:border-[#6366F1]/30 group"
                 onClick={() => navigate(`/reports/${report.id}`)}
               >
                 <div className="mb-2 flex items-start justify-between">
-                  <p className="text-sm font-medium text-[#111827] truncate pr-2">
+                  <p className="text-sm font-medium text-[#FAFAFA] truncate pr-2">
                     {report.title}
                   </p>
                   <button
@@ -1296,7 +1296,7 @@ function ReportsTab() {
                         deleteMutation.mutate(report.id);
                       }
                     }}
-                    className="shrink-0 rounded p-1 text-[#D1D5DB] opacity-0 transition-opacity group-hover:opacity-100 hover:bg-red-50 hover:text-red-500"
+                    className="shrink-0 rounded p-1 text-[#3F3F46] opacity-0 transition-opacity group-hover:opacity-100 hover:bg-[#EF4444]/10 hover:text-red-500"
                   >
                     <Trash2 className="h-3.5 w-3.5" />
                   </button>
@@ -1307,7 +1307,7 @@ function ReportsTab() {
                   </Badge>
                   {getStatusBadge(report.status)}
                 </div>
-                <div className="flex items-center justify-between text-xs text-[#6B7280]">
+                <div className="flex items-center justify-between text-xs text-[#A1A1AA]">
                   <span>{format(new Date(report.createdAt), "MMM d, yyyy")}</span>
                   {report.depth && (
                     <span className="capitalize">{report.depth}</span>

@@ -64,16 +64,16 @@ const CATEGORY_TABS: { id: CategoryId; label: string; icon: typeof Newspaper }[]
 ];
 
 const CATEGORY_COLORS: Record<string, string> = {
-  news: "bg-blue-50 text-blue-700",
-  website: "bg-green-50 text-green-700",
-  customer: "bg-purple-50 text-purple-700",
-  people: "bg-orange-50 text-orange-700",
-  social: "bg-cyan-50 text-cyan-700",
+  news: "bg-[#6366F1]/10 text-[#818CF8]",
+  website: "bg-[#22C55E]/10 text-[#22C55E]",
+  customer: "bg-purple-500/10 text-purple-700",
+  people: "bg-orange-500/10 text-orange-700",
+  social: "bg-cyan-500/10 text-cyan-700",
 };
 
 const SEVERITY_DOT: Record<string, string> = {
-  alert: "bg-red-500",
-  watch: "bg-amber-500",
+  alert: "bg-[#EF4444]/100",
+  watch: "bg-[#F59E0B]/100",
   info: "bg-gray-400",
 };
 
@@ -81,7 +81,7 @@ const SEVERITY_DOT: Record<string, string> = {
 
 function Skeleton({ className }: { className?: string }) {
   return (
-    <div className={`animate-pulse rounded bg-[#F3F4F6] ${className ?? ""}`} />
+    <div className={`animate-pulse rounded bg-[#27272A] ${className ?? ""}`} />
   );
 }
 
@@ -217,17 +217,17 @@ export default function IntelligencePage() {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/20">
           <Card className="w-full max-w-md p-6">
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-[15px] font-semibold text-[#111827]">
+              <h2 className="text-[15px] font-semibold text-[#FAFAFA]">
                 Track Competitor
               </h2>
               <button
                 onClick={() => setShowTrackDialog(false)}
-                className="rounded-md p-1 text-[#6B7280] hover:bg-[#F3F4F6]"
+                className="rounded-md p-1 text-[#A1A1AA] hover:bg-[#27272A]"
               >
                 <X className="h-4 w-4" />
               </button>
             </div>
-            <p className="text-[13px] text-[#6B7280] mb-4">
+            <p className="text-[13px] text-[#A1A1AA] mb-4">
               Enter a competitor name to begin monitoring their news, website
               changes, hiring activity, reviews, and social presence.
             </p>
@@ -269,11 +269,11 @@ export default function IntelligencePage() {
       {/* Empty state */}
       {!isLoading && briefs.length === 0 && (
         <div className="flex flex-col items-center justify-center py-20 text-center">
-          <Radar className="h-12 w-12 text-[#D1D5DB] mb-4" />
-          <h2 className="text-[15px] font-semibold text-[#111827] mb-1">
+          <Radar className="h-12 w-12 text-[#3F3F46] mb-4" />
+          <h2 className="text-[15px] font-semibold text-[#FAFAFA] mb-1">
             No competitors tracked
           </h2>
-          <p className="text-[13px] text-[#6B7280] max-w-md mb-4">
+          <p className="text-[13px] text-[#A1A1AA] max-w-md mb-4">
             {briefData?.message ??
               "Add competitors from your Context page or use the Track button to start monitoring."}
           </p>
@@ -293,7 +293,7 @@ export default function IntelligencePage() {
               className={`p-5 border-l-4 ${
                 hasAlerts
                   ? "bg-[#FEF3C7] border-l-[#F59E0B]"
-                  : "bg-[#EEF2FF] border-l-[#4F46E5]"
+                  : "bg-[#6366F1]/10 border-l-[#6366F1]"
               }`}
             >
               <div className="flex items-start gap-3">
@@ -312,18 +312,18 @@ export default function IntelligencePage() {
                 </div>
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-2 mb-1">
-                    <span className="text-[13px] font-semibold text-[#111827]">
+                    <span className="text-[13px] font-semibold text-[#FAFAFA]">
                       Signal Synthesis
                     </span>
                     <Badge variant={hasAlerts ? "warning" : "info"}>
                       {topBrief.competitor}
                     </Badge>
                   </div>
-                  <p className="text-[13px] text-[#374151] leading-relaxed">
+                  <p className="text-[13px] text-[#A1A1AA] leading-relaxed">
                     {topBrief.synthesis}
                   </p>
-                  <p className="text-[13px] text-[#6B7280] mt-2">
-                    <span className="font-medium text-[#111827]">
+                  <p className="text-[13px] text-[#A1A1AA] mt-2">
+                    <span className="font-medium text-[#FAFAFA]">
                       Recommended:
                     </span>{" "}
                     {topBrief.recommendedAction}
@@ -341,7 +341,7 @@ export default function IntelligencePage() {
                 .map((brief) => (
                   <Card key={brief.competitor} className="p-4">
                     <div className="flex items-center justify-between mb-2">
-                      <span className="text-[13px] font-semibold text-[#111827]">
+                      <span className="text-[13px] font-semibold text-[#FAFAFA]">
                         {brief.competitor}
                       </span>
                       <div className="flex items-center gap-1.5">
@@ -350,14 +350,14 @@ export default function IntelligencePage() {
                         </Badge>
                         <button
                           onClick={() => untrackMutation.mutate(brief.competitor)}
-                          className="rounded p-1 text-[#9CA3AF] hover:text-red-500 hover:bg-red-50"
+                          className="rounded p-1 text-[#71717A] hover:text-red-500 hover:bg-[#EF4444]/10"
                           title="Stop tracking"
                         >
                           <X className="h-3 w-3" />
                         </button>
                       </div>
                     </div>
-                    <p className="text-[12px] text-[#6B7280] leading-relaxed line-clamp-2">
+                    <p className="text-[12px] text-[#A1A1AA] leading-relaxed line-clamp-2">
                       {brief.synthesis}
                     </p>
                   </Card>
@@ -376,15 +376,15 @@ export default function IntelligencePage() {
                   onClick={() => setActiveCategory(tab.id)}
                   className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-[13px] font-medium transition-colors ${
                     active
-                      ? "bg-[#4F46E5] text-white"
-                      : "bg-[#F3F4F6] text-[#6B7280] hover:bg-[#E5E7EB] hover:text-[#111827]"
+                      ? "bg-[#6366F1] text-white"
+                      : "bg-[#27272A] text-[#A1A1AA] hover:bg-[#3F3F46] hover:text-[#FAFAFA]"
                   }`}
                 >
                   <tab.icon className="h-3.5 w-3.5" />
                   {tab.label}
                   <span
                     className={`ml-0.5 text-[11px] ${
-                      active ? "text-white/80" : "text-[#9CA3AF]"
+                      active ? "text-white/80" : "text-[#71717A]"
                     }`}
                   >
                     ({count})
@@ -397,14 +397,14 @@ export default function IntelligencePage() {
           {/* Signal list */}
           <div className="space-y-1">
             {sortedSignals.length === 0 && (
-              <p className="py-8 text-center text-[13px] text-[#6B7280]">
+              <p className="py-8 text-center text-[13px] text-[#A1A1AA]">
                 No signals in this category.
               </p>
             )}
             {sortedSignals.map((signal, idx) => (
               <div
                 key={`${signal.competitor}-${signal.category}-${idx}`}
-                className="group flex items-start gap-3 rounded-lg border border-transparent px-3 py-3 hover:border-[#E5E7EB] hover:bg-[#FAFAFA] transition-colors"
+                className="group flex items-start gap-3 rounded-lg border border-transparent px-3 py-3 hover:border-[#27272A] hover:bg-[#18181B] transition-colors"
               >
                 {/* Severity dot */}
                 <div className="mt-1.5 flex shrink-0">
@@ -419,10 +419,10 @@ export default function IntelligencePage() {
                 <div className="min-w-0 flex-1">
                   <div className="flex items-start justify-between gap-2">
                     <div className="min-w-0 flex-1">
-                      <p className="text-[13px] font-medium text-[#111827] leading-snug">
+                      <p className="text-[13px] font-medium text-[#FAFAFA] leading-snug">
                         {signal.title}
                       </p>
-                      <p className="text-[12px] text-[#6B7280] mt-0.5 line-clamp-2">
+                      <p className="text-[12px] text-[#A1A1AA] mt-0.5 line-clamp-2">
                         {signal.summary}
                       </p>
                     </div>
@@ -437,31 +437,31 @@ export default function IntelligencePage() {
                     </div>
                   </div>
                   <div className="mt-1.5 flex items-center gap-3">
-                    <span className="text-[11px] text-[#9CA3AF]">
+                    <span className="text-[11px] text-[#71717A]">
                       {signal.competitor}
                     </span>
-                    <span className="text-[11px] text-[#D1D5DB]">|</span>
-                    <span className="text-[11px] text-[#9CA3AF]">
+                    <span className="text-[11px] text-[#3F3F46]">|</span>
+                    <span className="text-[11px] text-[#71717A]">
                       {signal.source}
                     </span>
                     {signal.url && (
                       <>
-                        <span className="text-[11px] text-[#D1D5DB]">|</span>
+                        <span className="text-[11px] text-[#3F3F46]">|</span>
                         <a
                           href={signal.url}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="inline-flex items-center gap-0.5 text-[11px] text-[#4F46E5] hover:underline"
+                          className="inline-flex items-center gap-0.5 text-[11px] text-[#6366F1] hover:underline"
                         >
                           Source
                           <ExternalLink className="h-2.5 w-2.5" />
                         </a>
                       </>
                     )}
-                    <span className="text-[11px] text-[#D1D5DB]">|</span>
+                    <span className="text-[11px] text-[#3F3F46]">|</span>
                     <button
                       onClick={() => handleInvestigate(signal)}
-                      className="inline-flex items-center gap-0.5 text-[11px] text-[#4F46E5] hover:underline"
+                      className="inline-flex items-center gap-0.5 text-[11px] text-[#6366F1] hover:underline"
                     >
                       <Compass className="h-2.5 w-2.5" />
                       Investigate

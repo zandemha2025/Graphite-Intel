@@ -44,7 +44,7 @@ interface ReportDetail {
 function Skeleton({ className }: { className?: string }) {
   return (
     <div
-      className={`animate-pulse rounded bg-[#F3F4F6] ${className ?? ""}`}
+      className={`animate-pulse rounded bg-[#27272A] ${className ?? ""}`}
     />
   );
 }
@@ -125,7 +125,7 @@ function TableOfContents({
     <div className="sticky top-6">
       <button
         onClick={() => setCollapsed(!collapsed)}
-        className="mb-2 flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-[#9CA3AF] hover:text-[#6B7280]"
+        className="mb-2 flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-[#71717A] hover:text-[#A1A1AA]"
       >
         <List className="h-3.5 w-3.5" />
         Contents
@@ -143,8 +143,8 @@ function TableOfContents({
                 entry.level === 3 ? "pl-5" : ""
               } ${
                 activeId === entry.id
-                  ? "bg-[#EEF2FF] font-medium text-[#4F46E5]"
-                  : "text-[#6B7280] hover:bg-[#F9FAFB] hover:text-[#111827]"
+                  ? "bg-[#6366F1]/10 font-medium text-[#6366F1]"
+                  : "text-[#A1A1AA] hover:bg-[#18181B] hover:text-[#FAFAFA]"
               }`}
             >
               {entry.text}
@@ -287,27 +287,27 @@ function ReportExportAs({ content, title }: { content: string; title: string }) 
         <ChevronDown className="h-3 w-3" />
       </Button>
       {open && (
-        <div className="absolute right-0 top-full z-10 mt-1 w-48 rounded-lg border border-[#E5E7EB] bg-white py-1 shadow-lg">
+        <div className="absolute right-0 top-full z-10 mt-1 w-48 rounded-lg border border-[#27272A] bg-[#18181B] py-1 shadow-lg">
           <button
             onClick={exportSlideDeck}
-            className="flex w-full items-center gap-2 px-3 py-2 text-left text-xs text-[#374151] hover:bg-[#F9FAFB]"
+            className="flex w-full items-center gap-2 px-3 py-2 text-left text-xs text-[#A1A1AA] hover:bg-[#18181B]"
           >
-            <Presentation className="h-3.5 w-3.5 text-[#6B7280]" />
+            <Presentation className="h-3.5 w-3.5 text-[#A1A1AA]" />
             Slide Deck
           </button>
           <button
             onClick={exportExecutiveSummary}
-            className="flex w-full items-center gap-2 px-3 py-2 text-left text-xs text-[#374151] hover:bg-[#F9FAFB]"
+            className="flex w-full items-center gap-2 px-3 py-2 text-left text-xs text-[#A1A1AA] hover:bg-[#18181B]"
           >
-            <FileText className="h-3.5 w-3.5 text-[#6B7280]" />
+            <FileText className="h-3.5 w-3.5 text-[#A1A1AA]" />
             Executive Summary
           </button>
-          <div className="mx-2 my-1 border-t border-[#E5E7EB]" />
+          <div className="mx-2 my-1 border-t border-[#27272A]" />
           <button
             onClick={exportCSV}
-            className="flex w-full items-center gap-2 px-3 py-2 text-left text-xs text-[#374151] hover:bg-[#F9FAFB]"
+            className="flex w-full items-center gap-2 px-3 py-2 text-left text-xs text-[#A1A1AA] hover:bg-[#18181B]"
           >
-            <TableProperties className="h-3.5 w-3.5 text-[#6B7280]" />
+            <TableProperties className="h-3.5 w-3.5 text-[#A1A1AA]" />
             CSV (all tables)
           </button>
         </div>
@@ -426,10 +426,10 @@ export default function ReportViewPage() {
       <Page title="Report" subtitle="Not found">
         <Card className="flex flex-col items-center justify-center py-16">
           <XCircle className="mb-3 h-8 w-8 text-red-400" />
-          <p className="text-sm font-medium text-[#111827]">
+          <p className="text-sm font-medium text-[#FAFAFA]">
             Report not found
           </p>
-          <p className="mt-1 text-sm text-[#6B7280]">
+          <p className="mt-1 text-sm text-[#A1A1AA]">
             This report may have been deleted or does not exist.
           </p>
           <Button
@@ -544,7 +544,7 @@ export default function ReportViewPage() {
             {report.depth}
           </Badge>
         )}
-        <span className="text-xs text-[#9CA3AF]">
+        <span className="text-xs text-[#71717A]">
           Created{" "}
           {new Date(report.createdAt).toLocaleDateString("en-US", {
             year: "numeric",
@@ -559,11 +559,11 @@ export default function ReportViewPage() {
       {/* Generating state */}
       {report.status === "generating" && (
         <Card className="flex flex-col items-center justify-center py-16">
-          <Loader2 className="mb-3 h-8 w-8 animate-spin text-[#4F46E5]" />
-          <p className="text-sm font-medium text-[#111827]">
+          <Loader2 className="mb-3 h-8 w-8 animate-spin text-[#6366F1]" />
+          <p className="text-sm font-medium text-[#FAFAFA]">
             Report is being generated...
           </p>
-          <p className="mt-1 text-sm text-[#6B7280]">
+          <p className="mt-1 text-sm text-[#A1A1AA]">
             This page will update automatically when the report is ready.
           </p>
         </Card>
@@ -573,10 +573,10 @@ export default function ReportViewPage() {
       {report.status === "failed" && (
         <Card className="flex flex-col items-center justify-center py-16">
           <XCircle className="mb-3 h-8 w-8 text-red-400" />
-          <p className="text-sm font-medium text-[#111827]">
+          <p className="text-sm font-medium text-[#FAFAFA]">
             Report generation failed
           </p>
-          <p className="mt-1 text-sm text-[#6B7280]">
+          <p className="mt-1 text-sm text-[#A1A1AA]">
             Something went wrong during generation. Please try again.
           </p>
         </Card>
@@ -608,7 +608,7 @@ export default function ReportViewPage() {
           {/* Sources */}
           {report.sources && report.sources.length > 0 && (
             <Card className="p-6">
-              <h3 className="mb-3 text-sm font-semibold text-[#111827]">
+              <h3 className="mb-3 text-sm font-semibold text-[#FAFAFA]">
                 Sources ({report.sources.length})
               </h3>
               <div className="space-y-2">
@@ -617,18 +617,18 @@ export default function ReportViewPage() {
                     key={i}
                     className="flex items-center gap-2 text-sm"
                   >
-                    <BookOpen className="h-3.5 w-3.5 shrink-0 text-[#9CA3AF]" />
+                    <BookOpen className="h-3.5 w-3.5 shrink-0 text-[#71717A]" />
                     {source.url ? (
                       <a
                         href={source.url}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="text-[#4F46E5] hover:underline truncate"
+                        className="text-[#6366F1] hover:underline truncate"
                       >
                         {source.name}
                       </a>
                     ) : (
-                      <span className="text-[#6B7280] truncate">
+                      <span className="text-[#A1A1AA] truncate">
                         {source.name}
                       </span>
                     )}
@@ -643,11 +643,11 @@ export default function ReportViewPage() {
       {/* Ready but no content */}
       {report.status === "ready" && !report.content && (
         <Card className="flex flex-col items-center justify-center py-16">
-          <BookOpen className="mb-3 h-8 w-8 text-[#D1D5DB]" />
-          <p className="text-sm font-medium text-[#111827]">
+          <BookOpen className="mb-3 h-8 w-8 text-[#3F3F46]" />
+          <p className="text-sm font-medium text-[#FAFAFA]">
             No content available
           </p>
-          <p className="mt-1 text-sm text-[#6B7280]">
+          <p className="mt-1 text-sm text-[#A1A1AA]">
             This report has no content to display.
           </p>
         </Card>

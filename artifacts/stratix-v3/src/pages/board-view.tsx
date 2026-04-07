@@ -56,7 +56,7 @@ interface Board {
 function Skeleton({ className }: { className?: string }) {
   return (
     <div
-      className={`animate-pulse rounded bg-[#F3F4F6] ${className ?? ""}`}
+      className={`animate-pulse rounded bg-[#27272A] ${className ?? ""}`}
     />
   );
 }
@@ -86,12 +86,12 @@ function ScheduleConfig({
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30">
       <Card className="w-full max-w-sm">
         <div className="mb-4 flex items-center justify-between">
-          <p className="text-sm font-semibold text-[#111827]">
+          <p className="text-sm font-semibold text-[#FAFAFA]">
             Refresh Schedule
           </p>
           <button
             onClick={onClose}
-            className="rounded p-1 text-[#6B7280] hover:bg-[#F3F4F6]"
+            className="rounded p-1 text-[#A1A1AA] hover:bg-[#27272A]"
           >
             <X className="h-4 w-4" />
           </button>
@@ -102,8 +102,8 @@ function ScheduleConfig({
               key={opt.value}
               className={`flex cursor-pointer items-center gap-3 rounded-lg border p-3 text-sm transition-colors ${
                 interval === opt.value
-                  ? "border-[#4F46E5] bg-indigo-50 text-[#4F46E5]"
-                  : "border-[#E5E7EB] text-[#111827] hover:bg-[#F9FAFB]"
+                  ? "border-[#6366F1] bg-[#6366F1]/10 text-[#6366F1]"
+                  : "border-[#27272A] text-[#FAFAFA] hover:bg-[#18181B]"
               }`}
             >
               <input
@@ -144,11 +144,11 @@ function ScheduleConfig({
 function BoardCardWidget({ card }: { card: BoardCard }) {
   return (
     <Card className="h-full">
-      <p className="mb-2 text-xs font-medium text-[#6B7280] uppercase tracking-wide">
+      <p className="mb-2 text-xs font-medium text-[#A1A1AA] uppercase tracking-wide">
         {card.type}
       </p>
-      <p className="text-sm font-medium text-[#111827]">{card.title}</p>
-      <p className="mt-2 text-sm text-[#6B7280] whitespace-pre-wrap">
+      <p className="text-sm font-medium text-[#FAFAFA]">{card.title}</p>
+      <p className="mt-2 text-sm text-[#A1A1AA] whitespace-pre-wrap">
         {card.content}
       </p>
     </Card>
@@ -181,21 +181,21 @@ function EditMonitorsDialog({
       <Card className="w-full max-w-md">
         <div className="mb-4 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <Bell className="h-4 w-4 text-[#4F46E5]" />
-            <p className="text-sm font-semibold text-[#111827]">
+            <Bell className="h-4 w-4 text-[#6366F1]" />
+            <p className="text-sm font-semibold text-[#FAFAFA]">
               Edit Monitor Configuration
             </p>
           </div>
           <button
             onClick={onClose}
-            className="rounded p-1 text-[#6B7280] hover:bg-[#F3F4F6]"
+            className="rounded p-1 text-[#A1A1AA] hover:bg-[#27272A]"
           >
             <X className="h-4 w-4" />
           </button>
         </div>
         <div className="space-y-4">
           <div className="flex flex-col gap-1.5">
-            <label className="text-xs font-medium text-[#6B7280]">
+            <label className="text-xs font-medium text-[#A1A1AA]">
               What to monitor
             </label>
             <textarea
@@ -203,11 +203,11 @@ function EditMonitorsDialog({
               onChange={(e) => setMonitorTarget(e.target.value)}
               placeholder="Describe the signals to watch for..."
               rows={2}
-              className="w-full rounded-lg border border-[#E5E7EB] bg-white px-3 py-2 text-sm text-[#111827] placeholder:text-[#9CA3AF] focus:border-[#4F46E5] focus:outline-none focus:ring-2 focus:ring-[#4F46E5]/20 resize-none"
+              className="w-full rounded-lg border border-[#27272A] bg-[#18181B] px-3 py-2 text-sm text-[#FAFAFA] placeholder:text-[#71717A] focus:border-[#6366F1] focus:outline-none focus:ring-2 focus:ring-[#6366F1]/20 resize-none"
             />
           </div>
           <div className="flex flex-col gap-1.5">
-            <label className="text-xs font-medium text-[#6B7280]">
+            <label className="text-xs font-medium text-[#A1A1AA]">
               Check frequency
             </label>
             <div className="flex gap-2">
@@ -217,8 +217,8 @@ function EditMonitorsDialog({
                   onClick={() => setCheckFrequency(f)}
                   className={`flex-1 rounded-lg border px-3 py-2 text-xs font-medium capitalize transition-colors ${
                     checkFrequency === f
-                      ? "border-[#4F46E5] bg-[#4F46E5] text-white"
-                      : "border-[#E5E7EB] bg-white text-[#6B7280] hover:bg-[#F3F4F6]"
+                      ? "border-[#6366F1] bg-[#6366F1] text-white"
+                      : "border-[#27272A] bg-[#18181B] text-[#A1A1AA] hover:bg-[#27272A]"
                   }`}
                 >
                   {f}
@@ -227,7 +227,7 @@ function EditMonitorsDialog({
             </div>
           </div>
           <div className="flex flex-col gap-1.5">
-            <label className="text-xs font-medium text-[#6B7280]">
+            <label className="text-xs font-medium text-[#A1A1AA]">
               Alert me when
             </label>
             <textarea
@@ -235,7 +235,7 @@ function EditMonitorsDialog({
               onChange={(e) => setAlertCondition(e.target.value)}
               placeholder="Describe conditions that should trigger an alert..."
               rows={2}
-              className="w-full rounded-lg border border-[#E5E7EB] bg-white px-3 py-2 text-sm text-[#111827] placeholder:text-[#9CA3AF] focus:border-[#4F46E5] focus:outline-none focus:ring-2 focus:ring-[#4F46E5]/20 resize-none"
+              className="w-full rounded-lg border border-[#27272A] bg-[#18181B] px-3 py-2 text-sm text-[#FAFAFA] placeholder:text-[#71717A] focus:border-[#6366F1] focus:outline-none focus:ring-2 focus:ring-[#6366F1]/20 resize-none"
             />
           </div>
         </div>
@@ -317,19 +317,19 @@ function AlertIconBadge({ type }: { type: ProactiveAlert["icon"] }) {
   switch (type) {
     case "warning":
       return (
-        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-amber-50 text-amber-600">
+        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[#F59E0B]/10 text-[#F59E0B]">
           <Bell className="h-4 w-4" />
         </div>
       );
     case "chart":
       return (
-        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-blue-50 text-blue-600">
+        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[#6366F1]/10 text-[#818CF8]">
           <Eye className="h-4 w-4" />
         </div>
       );
     case "trending":
       return (
-        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-emerald-50 text-emerald-600">
+        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[#22C55E]/10 text-[#22C55E]">
           <Activity className="h-4 w-4" />
         </div>
       );
@@ -346,20 +346,20 @@ function MonitoringAlertsSection({
   onInvestigate?: (query: string) => void;
 }) {
   return (
-    <div className="mb-6 rounded-lg border border-[#E5E7EB] bg-white">
+    <div className="mb-6 rounded-lg border border-[#27272A] bg-[#18181B]">
       {/* Header */}
-      <div className="flex items-center justify-between border-b border-[#E5E7EB] px-4 py-3">
+      <div className="flex items-center justify-between border-b border-[#27272A] px-4 py-3">
         <div className="flex items-center gap-2">
-          <Bell className="h-4 w-4 text-[#4F46E5]" />
-          <span className="text-sm font-semibold text-[#111827]">Alerts</span>
-          <span className="flex items-center gap-1.5 rounded-full bg-amber-50 px-2 py-0.5 text-xs font-medium text-amber-700">
+          <Bell className="h-4 w-4 text-[#6366F1]" />
+          <span className="text-sm font-semibold text-[#FAFAFA]">Alerts</span>
+          <span className="flex items-center gap-1.5 rounded-full bg-[#F59E0B]/10 px-2 py-0.5 text-xs font-medium text-[#F59E0B]">
             {SAMPLE_ALERTS.length} new
           </span>
           {/* Active monitoring indicator */}
-          <span className="flex items-center gap-1.5 rounded-full bg-emerald-50 px-2 py-0.5 text-xs font-medium text-emerald-700">
+          <span className="flex items-center gap-1.5 rounded-full bg-[#22C55E]/10 px-2 py-0.5 text-xs font-medium text-emerald-700">
             <span className="relative flex h-2 w-2">
               <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
-              <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-500" />
+              <span className="relative inline-flex h-2 w-2 rounded-full bg-[#22C55E]/100" />
             </span>
             Active
           </span>
@@ -372,8 +372,8 @@ function MonitoringAlertsSection({
 
       {/* Config summary */}
       {config?.monitorTarget && (
-        <div className="border-b border-[#E5E7EB] px-4 py-2.5">
-          <div className="flex flex-wrap items-center gap-3 text-xs text-[#6B7280]">
+        <div className="border-b border-[#27272A] px-4 py-2.5">
+          <div className="flex flex-wrap items-center gap-3 text-xs text-[#A1A1AA]">
             <span className="flex items-center gap-1">
               <Radio className="h-3 w-3" />
               Watching: {config.monitorTarget}
@@ -389,35 +389,35 @@ function MonitoringAlertsSection({
       )}
 
       {/* Alert list */}
-      <div className="divide-y divide-[#E5E7EB]">
+      <div className="divide-y divide-[#27272A]">
         {SAMPLE_ALERTS.map((alert) => (
           <div key={alert.id} className="flex items-start gap-3 px-4 py-3">
             <AlertIconBadge type={alert.icon} />
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2">
-                <p className="text-sm font-medium text-[#111827]">
+                <p className="text-sm font-medium text-[#FAFAFA]">
                   {alert.title}
                 </p>
                 <span
                   className={`inline-flex shrink-0 rounded-full px-1.5 py-0.5 text-[9px] font-bold uppercase ${
                     alert.sourceType === "1p"
-                      ? "bg-[#EEF2FF] text-[#4F46E5]"
-                      : "bg-[#F3F4F6] text-[#6B7280]"
+                      ? "bg-[#6366F1]/10 text-[#6366F1]"
+                      : "bg-[#27272A] text-[#A1A1AA]"
                   }`}
                 >
                   {alert.sourceType === "1p" ? "1P" : "3P"}
                 </span>
               </div>
-              <p className="mt-0.5 text-xs text-[#6B7280]">
+              <p className="mt-0.5 text-xs text-[#A1A1AA]">
                 {alert.description}
               </p>
               <div className="mt-2 flex items-center gap-3">
-                <span className="text-[10px] text-[#9CA3AF]">
+                <span className="text-[10px] text-[#71717A]">
                   {alert.sourceLabel} &middot; {alert.timestamp}
                 </span>
                 <button
                   onClick={() => onInvestigate?.(alert.query)}
-                  className="rounded-md bg-[#EEF2FF] px-2 py-0.5 text-[10px] font-semibold text-[#4F46E5] hover:bg-[#4F46E5] hover:text-white transition-colors"
+                  className="rounded-md bg-[#6366F1]/10 px-2 py-0.5 text-[10px] font-semibold text-[#6366F1] hover:bg-[#6366F1] hover:text-white transition-colors"
                 >
                   Investigate
                 </button>
@@ -542,11 +542,11 @@ export default function BoardViewPage() {
     return (
       <Page title="Board not found" subtitle="This board may have been deleted">
         <Card className="flex flex-col items-center justify-center py-16">
-          <LayoutGrid className="mb-3 h-8 w-8 text-[#D1D5DB]" />
-          <p className="text-sm font-medium text-[#111827]">
+          <LayoutGrid className="mb-3 h-8 w-8 text-[#3F3F46]" />
+          <p className="text-sm font-medium text-[#FAFAFA]">
             Board not found
           </p>
-          <p className="mt-1 text-sm text-[#6B7280]">
+          <p className="mt-1 text-sm text-[#A1A1AA]">
             The board you are looking for does not exist or has been deleted.
           </p>
           <Button
@@ -588,7 +588,7 @@ export default function BoardViewPage() {
           <Button
             variant="secondary"
             size="sm"
-            className="text-red-500 hover:text-red-600 hover:bg-red-50"
+            className="text-red-500 hover:text-red-600 hover:bg-[#EF4444]/10"
             onClick={() => setShowDeleteConfirm(true)}
           >
             <Trash2 className="h-3.5 w-3.5" />
@@ -602,7 +602,7 @@ export default function BoardViewPage() {
         {isEditing ? (
           <div className="flex items-center gap-2">
             <input
-              className="h-9 rounded-lg border border-[#E5E7EB] bg-white px-3 text-lg font-semibold text-[#111827] focus:border-[#4F46E5] focus:outline-none focus:ring-2 focus:ring-[#4F46E5]/20"
+              className="h-9 rounded-lg border border-[#27272A] bg-[#18181B] px-3 text-lg font-semibold text-[#FAFAFA] focus:border-[#6366F1] focus:outline-none focus:ring-2 focus:ring-[#6366F1]/20"
               value={editTitle}
               onChange={(e) => setEditTitle(e.target.value)}
               onKeyDown={(e) => {
@@ -624,7 +624,7 @@ export default function BoardViewPage() {
           </div>
         ) : (
           <button
-            className="text-lg font-semibold text-[#111827] hover:text-[#4F46E5] transition-colors"
+            className="text-lg font-semibold text-[#FAFAFA] hover:text-[#6366F1] transition-colors"
             onClick={() => {
               setEditTitle(board.title);
               setIsEditing(true);
@@ -633,7 +633,7 @@ export default function BoardViewPage() {
             {board.title}
           </button>
         )}
-        <div className="mt-1 flex items-center gap-3 text-xs text-[#6B7280]">
+        <div className="mt-1 flex items-center gap-3 text-xs text-[#A1A1AA]">
           <span>
             Updated {format(new Date(board.updatedAt), "MMM d, yyyy HH:mm")}
           </span>
@@ -666,11 +666,11 @@ export default function BoardViewPage() {
         </div>
       ) : (
         <Card className="flex flex-col items-center justify-center py-16">
-          <LayoutGrid className="mb-3 h-8 w-8 text-[#D1D5DB]" />
-          <p className="text-sm font-medium text-[#111827]">
+          <LayoutGrid className="mb-3 h-8 w-8 text-[#3F3F46]" />
+          <p className="text-sm font-medium text-[#FAFAFA]">
             This board is empty
           </p>
-          <p className="mt-1 text-sm text-[#6B7280]">
+          <p className="mt-1 text-sm text-[#A1A1AA]">
             Save insights from Explore or Notebooks to populate this board.
           </p>
         </Card>
@@ -700,9 +700,9 @@ export default function BoardViewPage() {
       {showDeleteConfirm && (
         <div className="fixed inset-0 z-50 flex items-center justify-center">
           <div className="absolute inset-0 bg-black/30" onClick={() => setShowDeleteConfirm(false)} />
-          <div className="relative z-10 w-full max-w-sm rounded-xl border border-[#E5E7EB] bg-white p-6 shadow-xl">
-            <p className="text-sm font-semibold text-[#111827]">Delete this board?</p>
-            <p className="mt-2 text-sm text-[#6B7280]">This cannot be undone.</p>
+          <div className="relative z-10 w-full max-w-sm rounded-xl border border-[#27272A] bg-[#18181B] p-6 shadow-xl">
+            <p className="text-sm font-semibold text-[#FAFAFA]">Delete this board?</p>
+            <p className="mt-2 text-sm text-[#A1A1AA]">This cannot be undone.</p>
             <div className="mt-4 flex justify-end gap-2">
               <Button variant="secondary" size="sm" onClick={() => setShowDeleteConfirm(false)}>
                 Cancel

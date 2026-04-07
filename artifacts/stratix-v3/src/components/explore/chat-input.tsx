@@ -63,15 +63,15 @@ function DataSourcesBar() {
   if (loading) {
     return (
       <div className="flex items-center gap-2 px-4 py-1.5">
-        <Loader2 className="h-3 w-3 animate-spin text-[#9CA3AF]" />
-        <span className="text-xs text-[#9CA3AF]">Loading sources...</span>
+        <Loader2 className="h-3 w-3 animate-spin text-[#71717A]" />
+        <span className="text-xs text-[#71717A]">Loading sources...</span>
       </div>
     );
   }
 
   return (
     <div className="flex items-center gap-1.5 overflow-x-auto px-4 py-1.5">
-      <span className="shrink-0 text-xs font-medium text-[#6B7280]">
+      <span className="shrink-0 text-xs font-medium text-[#A1A1AA]">
         Sources:
       </span>
       {sources.map((src) => (
@@ -80,13 +80,13 @@ function DataSourcesBar() {
           className={cn(
             "inline-flex shrink-0 items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-medium",
             src.connected
-              ? "bg-[#EEF2FF] text-[#4F46E5]"
-              : "bg-[#F3F4F6] text-[#9CA3AF]",
+              ? "bg-[#6366F1]/10 text-[#6366F1]"
+              : "bg-[#27272A] text-[#71717A]",
           )}
         >
           {src.name}
           {!src.connected && (
-            <button className="ml-0.5 underline hover:text-[#4F46E5]">
+            <button className="ml-0.5 underline hover:text-[#6366F1]">
               Connect
             </button>
           )}
@@ -136,7 +136,7 @@ export function ChatInput({ onSend, disabled, className }: ChatInputProps) {
   }
 
   return (
-    <div className={cn("border-t border-[#E5E7EB] bg-white", className)}>
+    <div className={cn("border-t border-[#27272A] bg-[#18181B]", className)}>
       {/* Data sources indicator */}
       <DataSourcesBar />
 
@@ -144,19 +144,19 @@ export function ChatInput({ onSend, disabled, className }: ChatInputProps) {
         {/* Attached file chip */}
         {attachedFile && (
           <div className="mb-2 flex items-center gap-2">
-            <span className="inline-flex items-center gap-1.5 rounded-full bg-[#EEF2FF] px-3 py-1 text-xs font-medium text-[#4F46E5]">
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-[#6366F1]/10 px-3 py-1 text-xs font-medium text-[#6366F1]">
               <Paperclip className="h-3 w-3" />
               {attachedFile.name}
               <button
                 onClick={() => setAttachedFile(null)}
-                className="ml-0.5 rounded-full p-0.5 hover:bg-[#4F46E5]/10"
+                className="ml-0.5 rounded-full p-0.5 hover:bg-[#6366F1]/10"
               >
                 <X className="h-3 w-3" />
               </button>
             </span>
           </div>
         )}
-        <div className="flex items-end gap-2 rounded-lg border border-[#E5E7EB] bg-[#F9FAFB] px-3 py-2">
+        <div className="flex items-end gap-2 rounded-lg border border-[#27272A] bg-[#18181B] px-3 py-2">
           <input
             ref={fileInputRef}
             type="file"
@@ -172,7 +172,7 @@ export function ChatInput({ onSend, disabled, className }: ChatInputProps) {
             }}
           />
           <button
-            className="mb-0.5 shrink-0 rounded-md p-1 text-[#6B7280] hover:bg-[#E5E7EB]/50 hover:text-[#111827]"
+            className="mb-0.5 shrink-0 rounded-md p-1 text-[#A1A1AA] hover:bg-[#3F3F46]/50 hover:text-[#FAFAFA]"
             title="Attach file"
             onClick={() => fileInputRef.current?.click()}
           >
@@ -187,7 +187,7 @@ export function ChatInput({ onSend, disabled, className }: ChatInputProps) {
             onInput={handleInput}
             placeholder="Ask about pipeline, competitors, channels, or growth..."
             rows={1}
-            className="flex-1 resize-none bg-transparent text-sm text-[#111827] placeholder:text-[#9CA3AF] focus:outline-none"
+            className="flex-1 resize-none bg-transparent text-sm text-[#FAFAFA] placeholder:text-[#71717A] focus:outline-none"
             disabled={disabled}
           />
 
@@ -197,8 +197,8 @@ export function ChatInput({ onSend, disabled, className }: ChatInputProps) {
             className={cn(
               "mb-0.5 shrink-0 rounded-md p-1.5 transition-colors",
               value.trim() && !disabled
-                ? "bg-[#4F46E5] text-white hover:bg-[#4338CA]"
-                : "bg-[#E5E7EB] text-[#9CA3AF]",
+                ? "bg-[#6366F1] text-white hover:bg-[#818CF8]"
+                : "bg-[#27272A] text-[#71717A]",
             )}
           >
             <ArrowUp className="h-4 w-4" />

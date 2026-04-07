@@ -43,7 +43,7 @@ interface TeamInvite {
 function Skeleton({ className }: { className?: string }) {
   return (
     <div
-      className={`animate-pulse rounded bg-[#F3F4F6] ${className ?? ""}`}
+      className={`animate-pulse rounded bg-[#27272A] ${className ?? ""}`}
     />
   );
 }
@@ -82,8 +82,8 @@ function ProfileTab() {
   if (!user) {
     return (
       <Card className="flex flex-col items-center justify-center py-16">
-        <User className="mb-3 h-8 w-8 text-[#D1D5DB]" />
-        <p className="text-sm text-[#6B7280]">Loading profile...</p>
+        <User className="mb-3 h-8 w-8 text-[#3F3F46]" />
+        <p className="text-sm text-[#A1A1AA]">Loading profile...</p>
       </Card>
     );
   }
@@ -92,7 +92,7 @@ function ProfileTab() {
     <div className="space-y-4">
       <Card>
         <div className="flex items-start gap-4">
-          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-[#4F46E5] text-sm font-semibold text-white">
+          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-[#6366F1] text-sm font-semibold text-white">
             {user.fullName
               .split(" ")
               .map((n) => n[0])
@@ -101,10 +101,10 @@ function ProfileTab() {
               .slice(0, 2)}
           </div>
           <div className="flex-1">
-            <h3 className="text-sm font-semibold text-[#111827]">
+            <h3 className="text-sm font-semibold text-[#FAFAFA]">
               {user.fullName}
             </h3>
-            <p className="mt-0.5 text-sm text-[#6B7280]">{user.email}</p>
+            <p className="mt-0.5 text-sm text-[#A1A1AA]">{user.email}</p>
             <div className="mt-2">
               <RoleBadge role={user.role} />
             </div>
@@ -116,10 +116,10 @@ function ProfileTab() {
         <Card>
           <div className="flex items-center justify-between">
             <div>
-              <h3 className="text-sm font-semibold text-[#111827]">
+              <h3 className="text-sm font-semibold text-[#FAFAFA]">
                 Organization
               </h3>
-              <p className="mt-0.5 text-sm text-[#6B7280]">{user.orgName}</p>
+              <p className="mt-0.5 text-sm text-[#A1A1AA]">{user.orgName}</p>
             </div>
             <Button
               variant="secondary"
@@ -227,7 +227,7 @@ function TeamTab() {
     <div className="space-y-6">
       {/* Invite form */}
       <Card>
-        <h3 className="mb-3 text-sm font-semibold text-[#111827]">
+        <h3 className="mb-3 text-sm font-semibold text-[#FAFAFA]">
           Invite a team member
         </h3>
         <div className="flex items-end gap-3">
@@ -251,7 +251,7 @@ function TeamTab() {
           <div className="flex flex-col gap-1.5">
             <label
               htmlFor="invite-role"
-              className="text-sm font-medium text-[#111827]"
+              className="text-sm font-medium text-[#FAFAFA]"
             >
               Role
             </label>
@@ -263,7 +263,7 @@ function TeamTab() {
                   e.target.value as "admin" | "analyst" | "viewer",
                 )
               }
-              className="h-9 rounded-lg border border-[#E5E7EB] bg-white px-3 text-sm text-[#111827] focus:border-[#4F46E5] focus:outline-none focus:ring-2 focus:ring-[#4F46E5]/20"
+              className="h-9 rounded-lg border border-[#27272A] bg-[#18181B] px-3 text-sm text-[#FAFAFA] focus:border-[#6366F1] focus:outline-none focus:ring-2 focus:ring-[#6366F1]/20"
             >
               <option value="analyst">Analyst</option>
               <option value="viewer">Viewer</option>
@@ -284,22 +284,22 @@ function TeamTab() {
 
       {/* Members list */}
       <div className="space-y-3">
-        <h3 className="text-sm font-semibold text-[#111827]">Team members</h3>
+        <h3 className="text-sm font-semibold text-[#FAFAFA]">Team members</h3>
         {members && members.length > 0 ? (
-          <div className="overflow-hidden rounded-lg border border-[#E5E7EB]">
+          <div className="overflow-hidden rounded-lg border border-[#27272A]">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-[#E5E7EB] bg-[#F9FAFB]">
-                  <th className="px-4 py-2.5 text-left font-medium text-[#6B7280]">
+                <tr className="border-b border-[#27272A] bg-[#18181B]">
+                  <th className="px-4 py-2.5 text-left font-medium text-[#A1A1AA]">
                     Name
                   </th>
-                  <th className="px-4 py-2.5 text-left font-medium text-[#6B7280]">
+                  <th className="px-4 py-2.5 text-left font-medium text-[#A1A1AA]">
                     Email
                   </th>
-                  <th className="px-4 py-2.5 text-left font-medium text-[#6B7280]">
+                  <th className="px-4 py-2.5 text-left font-medium text-[#A1A1AA]">
                     Role
                   </th>
-                  <th className="px-4 py-2.5 text-right font-medium text-[#6B7280]">
+                  <th className="px-4 py-2.5 text-right font-medium text-[#A1A1AA]">
                     Actions
                   </th>
                 </tr>
@@ -308,12 +308,12 @@ function TeamTab() {
                 {members.map((member) => (
                   <tr
                     key={member.id}
-                    className="border-b border-[#E5E7EB] last:border-b-0"
+                    className="border-b border-[#27272A] last:border-b-0"
                   >
-                    <td className="px-4 py-3 font-medium text-[#111827]">
+                    <td className="px-4 py-3 font-medium text-[#FAFAFA]">
                       {member.fullName}
                     </td>
-                    <td className="px-4 py-3 text-[#6B7280]">
+                    <td className="px-4 py-3 text-[#A1A1AA]">
                       {member.email}
                     </td>
                     <td className="px-4 py-3">
@@ -328,7 +328,7 @@ function TeamTab() {
                               role: e.target.value as TeamMember["role"],
                             })
                           }
-                          className="rounded border border-[#E5E7EB] bg-white px-2 py-1 text-xs text-[#111827] focus:border-[#4F46E5] focus:outline-none"
+                          className="rounded border border-[#27272A] bg-[#18181B] px-2 py-1 text-xs text-[#FAFAFA] focus:border-[#6366F1] focus:outline-none"
                         >
                           <option value="admin">Admin</option>
                           <option value="analyst">Analyst</option>
@@ -342,7 +342,7 @@ function TeamTab() {
                           onClick={() =>
                             removeMemberMutation.mutate(member.id)
                           }
-                          className="rounded p-1 text-[#9CA3AF] hover:bg-[#F3F4F6] hover:text-red-500"
+                          className="rounded p-1 text-[#71717A] hover:bg-[#27272A] hover:text-red-500"
                         >
                           <Trash2 className="h-3.5 w-3.5" />
                         </button>
@@ -355,11 +355,11 @@ function TeamTab() {
           </div>
         ) : (
           <Card className="flex flex-col items-center justify-center py-10">
-            <Users className="mb-3 h-8 w-8 text-[#D1D5DB]" />
-            <p className="text-sm font-medium text-[#111827]">
+            <Users className="mb-3 h-8 w-8 text-[#3F3F46]" />
+            <p className="text-sm font-medium text-[#FAFAFA]">
               No team members yet
             </p>
-            <p className="mt-1 text-sm text-[#6B7280]">
+            <p className="mt-1 text-sm text-[#A1A1AA]">
               Send an invite to get started.
             </p>
           </Card>
@@ -369,20 +369,20 @@ function TeamTab() {
       {/* Pending invites */}
       {invites && invites.length > 0 && (
         <div className="space-y-3">
-          <h3 className="text-sm font-semibold text-[#111827]">
+          <h3 className="text-sm font-semibold text-[#FAFAFA]">
             Pending invites
           </h3>
-          <div className="overflow-hidden rounded-lg border border-[#E5E7EB]">
+          <div className="overflow-hidden rounded-lg border border-[#27272A]">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-[#E5E7EB] bg-[#F9FAFB]">
-                  <th className="px-4 py-2.5 text-left font-medium text-[#6B7280]">
+                <tr className="border-b border-[#27272A] bg-[#18181B]">
+                  <th className="px-4 py-2.5 text-left font-medium text-[#A1A1AA]">
                     Email
                   </th>
-                  <th className="px-4 py-2.5 text-left font-medium text-[#6B7280]">
+                  <th className="px-4 py-2.5 text-left font-medium text-[#A1A1AA]">
                     Role
                   </th>
-                  <th className="px-4 py-2.5 text-right font-medium text-[#6B7280]">
+                  <th className="px-4 py-2.5 text-right font-medium text-[#A1A1AA]">
                     Actions
                   </th>
                 </tr>
@@ -391,9 +391,9 @@ function TeamTab() {
                 {invites.map((invite) => (
                   <tr
                     key={invite.id}
-                    className="border-b border-[#E5E7EB] last:border-b-0"
+                    className="border-b border-[#27272A] last:border-b-0"
                   >
-                    <td className="px-4 py-3 text-[#6B7280]">
+                    <td className="px-4 py-3 text-[#A1A1AA]">
                       {invite.email}
                     </td>
                     <td className="px-4 py-3">
@@ -459,7 +459,7 @@ const SECURITY_POLICIES = [
 function SecurityTab() {
   return (
     <div className="space-y-3">
-      <p className="text-sm text-[#6B7280]">
+      <p className="text-sm text-[#A1A1AA]">
         Security policies and compliance standards for your Stratix workspace.
       </p>
       <div className="grid gap-3 sm:grid-cols-2">
@@ -469,16 +469,16 @@ function SecurityTab() {
             <Card key={policy.title}>
               <div className="mb-3 flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#F3F4F6]">
-                    <Icon className="h-4 w-4 text-[#4F46E5]" />
+                  <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#27272A]">
+                    <Icon className="h-4 w-4 text-[#6366F1]" />
                   </div>
-                  <h4 className="text-sm font-semibold text-[#111827]">
+                  <h4 className="text-sm font-semibold text-[#FAFAFA]">
                     {policy.title}
                   </h4>
                 </div>
                 <Badge variant="default">{policy.label}</Badge>
               </div>
-              <p className="text-xs leading-relaxed text-[#6B7280]">
+              <p className="text-xs leading-relaxed text-[#A1A1AA]">
                 {policy.description}
               </p>
             </Card>

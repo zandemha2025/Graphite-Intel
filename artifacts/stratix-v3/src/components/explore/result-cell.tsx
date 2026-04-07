@@ -95,14 +95,14 @@ function renderMarkdownTable(tableStr: string) {
   const rows = lines.slice(2).map(parseRow);
 
   return (
-    <div className="overflow-x-auto rounded-lg border border-[#E5E7EB]">
+    <div className="overflow-x-auto rounded-lg border border-[#27272A]">
       <table className="w-full text-left text-xs">
         <thead>
-          <tr className="bg-[#F9FAFB]">
+          <tr className="bg-[#18181B]">
             {headers.map((h, i) => (
               <th
                 key={i}
-                className="border-b border-[#E5E7EB] px-3 py-2 font-semibold text-[#111827]"
+                className="border-b border-[#27272A] px-3 py-2 font-semibold text-[#FAFAFA]"
               >
                 {h}
               </th>
@@ -114,12 +114,12 @@ function renderMarkdownTable(tableStr: string) {
             <tr
               key={ri}
               className={cn(
-                "border-b border-[#E5E7EB] last:border-b-0",
-                ri % 2 === 1 ? "bg-[#F9FAFB]/50" : "bg-white",
+                "border-b border-[#27272A] last:border-b-0",
+                ri % 2 === 1 ? "bg-[#18181B]/50" : "bg-[#18181B]",
               )}
             >
               {row.map((cell, ci) => (
-                <td key={ci} className="px-3 py-2 text-[#374151]">
+                <td key={ci} className="px-3 py-2 text-[#A1A1AA]">
                   {cell}
                 </td>
               ))}
@@ -146,11 +146,11 @@ function renderKeyFinding(content: string) {
             <ReactMarkdown>{before}</ReactMarkdown>
           </div>
         )}
-        <div className="my-2 rounded-r-lg border-l-4 border-[#4F46E5] bg-[#EEF2FF] px-4 py-3">
-          <span className="text-xs font-semibold uppercase tracking-wide text-[#4F46E5]">
+        <div className="my-2 rounded-r-lg border-l-4 border-[#6366F1] bg-[#6366F1]/10 px-4 py-3">
+          <span className="text-xs font-semibold uppercase tracking-wide text-[#6366F1]">
             {label.trim()}
           </span>
-          <div className="mt-1 text-sm font-medium leading-relaxed text-[#111827]">
+          <div className="mt-1 text-sm font-medium leading-relaxed text-[#FAFAFA]">
             <ReactMarkdown>{after}</ReactMarkdown>
           </div>
         </div>
@@ -158,7 +158,7 @@ function renderKeyFinding(content: string) {
     );
   }
   return (
-    <div className="rounded-r-lg border-l-4 border-[#4F46E5] bg-[#EEF2FF] px-4 py-3">
+    <div className="rounded-r-lg border-l-4 border-[#6366F1] bg-[#6366F1]/10 px-4 py-3">
       <div className="prose-narrative max-w-none">
         <ReactMarkdown>{content}</ReactMarkdown>
       </div>
@@ -180,7 +180,7 @@ function renderStatContent(content: string) {
           return (
             <span
               key={i}
-              className="not-prose mx-0.5 inline-block text-lg font-bold text-[#111827]"
+              className="not-prose mx-0.5 inline-block text-lg font-bold text-[#FAFAFA]"
             >
               {part}
             </span>
@@ -202,9 +202,9 @@ function renderComparison(content: string) {
         {splitMatch.slice(0, 2).map((side, idx) => (
           <div
             key={idx}
-            className="rounded-lg border border-[#E5E7EB] bg-[#F9FAFB] p-3"
+            className="rounded-lg border border-[#27272A] bg-[#18181B] p-3"
           >
-            <div className="mb-1 text-[10px] font-semibold uppercase tracking-wider text-[#9CA3AF]">
+            <div className="mb-1 text-[10px] font-semibold uppercase tracking-wider text-[#71717A]">
               {idx === 0 ? "Side A" : "Side B"}
             </div>
             <div className="prose-narrative max-w-none">
@@ -321,19 +321,19 @@ function SourceTypeBadge({ source }: { source: SourceWithType }) {
   switch (source.type) {
     case "1p":
       return (
-        <span className="inline-flex items-center gap-1 rounded-full bg-[#EEF2FF] px-2 py-0.5 text-[10px] font-semibold text-[#4F46E5]">
+        <span className="inline-flex items-center gap-1 rounded-full bg-[#6366F1]/10 px-2 py-0.5 text-[10px] font-semibold text-[#6366F1]">
           {source.name}
         </span>
       );
     case "3p":
       return (
-        <span className="inline-flex items-center gap-1 rounded-full bg-[#F3F4F6] px-2 py-0.5 text-[10px] font-semibold text-[#6B7280]">
+        <span className="inline-flex items-center gap-1 rounded-full bg-[#27272A] px-2 py-0.5 text-[10px] font-semibold text-[#A1A1AA]">
           {source.name}
         </span>
       );
     case "synthesized":
       return (
-        <span className="inline-flex items-center gap-1 rounded-full border border-[#E5E7EB] bg-white px-2 py-0.5 text-[10px] font-semibold text-[#9CA3AF]">
+        <span className="inline-flex items-center gap-1 rounded-full border border-[#27272A] bg-[#18181B] px-2 py-0.5 text-[10px] font-semibold text-[#71717A]">
           {source.name}
         </span>
       );
@@ -354,7 +354,7 @@ function SourcesFooter({ sources, sourceDetails }: { sources?: string[]; sourceD
 
   return (
     <div className="mt-3 flex flex-wrap items-center gap-1">
-      <span className="text-[10px] font-medium uppercase tracking-wider text-[#9CA3AF]">
+      <span className="text-[10px] font-medium uppercase tracking-wider text-[#71717A]">
         Sources:
       </span>
       {typedSources.map((source, i) => (
@@ -362,7 +362,7 @@ function SourcesFooter({ sources, sourceDetails }: { sources?: string[]; sourceD
       ))}
       {(has1p || has3p) && (
         <>
-          <span className="text-[10px] text-[#D1D5DB]">&rarr;</span>
+          <span className="text-[10px] text-[#3F3F46]">&rarr;</span>
           <SourceTypeBadge
             source={{ name: "Synthesized", type: "synthesized" }}
           />
@@ -454,41 +454,41 @@ function ExportAsDropdown({ content, title }: { content: string; title: string }
     <div ref={ref} className="relative">
       <button
         onClick={() => setOpen(!open)}
-        className="flex items-center gap-1.5 rounded-md px-2 py-1 text-xs text-[#6B7280] hover:bg-[#F3F4F6] hover:text-[#111827]"
+        className="flex items-center gap-1.5 rounded-md px-2 py-1 text-xs text-[#A1A1AA] hover:bg-[#27272A] hover:text-[#FAFAFA]"
       >
         <ClipboardList className="h-3.5 w-3.5" />
         Export As
         <ChevronDown className="h-3 w-3" />
       </button>
       {open && (
-        <div className="absolute bottom-full left-0 z-10 mb-1 w-44 rounded-lg border border-[#E5E7EB] bg-white py-1 shadow-lg">
+        <div className="absolute bottom-full left-0 z-10 mb-1 w-44 rounded-lg border border-[#27272A] bg-[#18181B] py-1 shadow-lg">
           <button
             onClick={exportAsEmail}
-            className="flex w-full items-center gap-2 px-3 py-2 text-left text-xs text-[#374151] hover:bg-[#F9FAFB]"
+            className="flex w-full items-center gap-2 px-3 py-2 text-left text-xs text-[#A1A1AA] hover:bg-[#18181B]"
           >
-            <Mail className="h-3.5 w-3.5 text-[#6B7280]" />
+            <Mail className="h-3.5 w-3.5 text-[#A1A1AA]" />
             Email Draft
           </button>
           <button
             onClick={exportAsSlide}
-            className="flex w-full items-center gap-2 px-3 py-2 text-left text-xs text-[#374151] hover:bg-[#F9FAFB]"
+            className="flex w-full items-center gap-2 px-3 py-2 text-left text-xs text-[#A1A1AA] hover:bg-[#18181B]"
           >
-            <Presentation className="h-3.5 w-3.5 text-[#6B7280]" />
+            <Presentation className="h-3.5 w-3.5 text-[#A1A1AA]" />
             Slide Summary
           </button>
           <button
             onClick={exportAsBrief}
-            className="flex w-full items-center gap-2 px-3 py-2 text-left text-xs text-[#374151] hover:bg-[#F9FAFB]"
+            className="flex w-full items-center gap-2 px-3 py-2 text-left text-xs text-[#A1A1AA] hover:bg-[#18181B]"
           >
-            <FileText className="h-3.5 w-3.5 text-[#6B7280]" />
+            <FileText className="h-3.5 w-3.5 text-[#A1A1AA]" />
             Executive Brief
           </button>
-          <div className="mx-2 my-1 border-t border-[#E5E7EB]" />
+          <div className="mx-2 my-1 border-t border-[#27272A]" />
           <button
             onClick={exportAsCSV}
-            className="flex w-full items-center gap-2 px-3 py-2 text-left text-xs text-[#374151] hover:bg-[#F9FAFB]"
+            className="flex w-full items-center gap-2 px-3 py-2 text-left text-xs text-[#A1A1AA] hover:bg-[#18181B]"
           >
-            <TableProperties className="h-3.5 w-3.5 text-[#6B7280]" />
+            <TableProperties className="h-3.5 w-3.5 text-[#A1A1AA]" />
             Data Table (CSV)
           </button>
         </div>
@@ -530,22 +530,22 @@ function SaveDropdown({
     <div ref={ref} className="relative">
       <button
         onClick={() => setOpen(!open)}
-        className="flex items-center gap-1.5 rounded-md px-2 py-1 text-xs text-[#6B7280] hover:bg-[#F3F4F6] hover:text-[#111827]"
+        className="flex items-center gap-1.5 rounded-md px-2 py-1 text-xs text-[#A1A1AA] hover:bg-[#27272A] hover:text-[#FAFAFA]"
       >
         <Bookmark className="h-3.5 w-3.5" />
         Save
         <ChevronDown className="h-3 w-3" />
       </button>
       {open && (
-        <div className="absolute bottom-full left-0 z-10 mb-1 w-44 rounded-lg border border-[#E5E7EB] bg-white py-1 shadow-lg">
+        <div className="absolute bottom-full left-0 z-10 mb-1 w-44 rounded-lg border border-[#27272A] bg-[#18181B] py-1 shadow-lg">
           <button
             onClick={() => {
               onSaveBoard?.();
               setOpen(false);
             }}
-            className="flex w-full items-center gap-2 px-3 py-2 text-left text-xs text-[#374151] hover:bg-[#F9FAFB]"
+            className="flex w-full items-center gap-2 px-3 py-2 text-left text-xs text-[#A1A1AA] hover:bg-[#18181B]"
           >
-            <Bookmark className="h-3.5 w-3.5 text-[#6B7280]" />
+            <Bookmark className="h-3.5 w-3.5 text-[#A1A1AA]" />
             Save to Board
           </button>
           <button
@@ -553,23 +553,23 @@ function SaveDropdown({
               onSaveNotebook();
               setOpen(false);
             }}
-            className="flex w-full items-center gap-2 px-3 py-2 text-left text-xs text-[#374151] hover:bg-[#F9FAFB]"
+            className="flex w-full items-center gap-2 px-3 py-2 text-left text-xs text-[#A1A1AA] hover:bg-[#18181B]"
           >
-            <BookOpen className="h-3.5 w-3.5 text-[#6B7280]" />
+            <BookOpen className="h-3.5 w-3.5 text-[#A1A1AA]" />
             Save to Notebook
           </button>
-          <div className="mx-2 my-1 border-t border-[#E5E7EB]" />
+          <div className="mx-2 my-1 border-t border-[#27272A]" />
           <button
             onClick={() => {
               onCopy();
               setOpen(false);
             }}
-            className="flex w-full items-center gap-2 px-3 py-2 text-left text-xs text-[#374151] hover:bg-[#F9FAFB]"
+            className="flex w-full items-center gap-2 px-3 py-2 text-left text-xs text-[#A1A1AA] hover:bg-[#18181B]"
           >
             {copied ? (
               <Check className="h-3.5 w-3.5 text-green-600" />
             ) : (
-              <Copy className="h-3.5 w-3.5 text-[#6B7280]" />
+              <Copy className="h-3.5 w-3.5 text-[#A1A1AA]" />
             )}
             {copied ? "Copied" : "Copy"}
           </button>
@@ -632,20 +632,20 @@ function SaveToBoardDialog({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
       <div className="absolute inset-0 bg-black/30" onClick={onClose} />
-      <div className="relative z-10 w-full max-w-sm rounded-xl border border-[#E5E7EB] bg-white shadow-xl">
-        <div className="flex items-center justify-between border-b border-[#E5E7EB] px-4 py-3">
-          <p className="text-sm font-semibold text-[#111827]">Save to Board</p>
-          <button onClick={onClose} className="rounded p-1 text-[#6B7280] hover:bg-[#F3F4F6]">
+      <div className="relative z-10 w-full max-w-sm rounded-xl border border-[#27272A] bg-[#18181B] shadow-xl">
+        <div className="flex items-center justify-between border-b border-[#27272A] px-4 py-3">
+          <p className="text-sm font-semibold text-[#FAFAFA]">Save to Board</p>
+          <button onClick={onClose} className="rounded p-1 text-[#A1A1AA] hover:bg-[#27272A]">
             <X className="h-4 w-4" />
           </button>
         </div>
         <div className="max-h-64 overflow-y-auto p-2">
           {loading ? (
             <div className="flex items-center justify-center py-8">
-              <Loader2 className="h-5 w-5 animate-spin text-[#9CA3AF]" />
+              <Loader2 className="h-5 w-5 animate-spin text-[#71717A]" />
             </div>
           ) : boards.length === 0 ? (
-            <div className="py-8 text-center text-sm text-[#6B7280]">
+            <div className="py-8 text-center text-sm text-[#A1A1AA]">
               No boards found. Create a board first.
             </div>
           ) : (
@@ -654,11 +654,11 @@ function SaveToBoardDialog({
                 key={board.id}
                 onClick={() => handleSave(board)}
                 disabled={saving !== null}
-                className="flex w-full items-center gap-2 rounded-lg px-3 py-2.5 text-left text-sm text-[#374151] transition-colors hover:bg-[#F9FAFB] disabled:opacity-50"
+                className="flex w-full items-center gap-2 rounded-lg px-3 py-2.5 text-left text-sm text-[#A1A1AA] transition-colors hover:bg-[#18181B] disabled:opacity-50"
               >
-                <Bookmark className="h-3.5 w-3.5 text-[#6B7280]" />
+                <Bookmark className="h-3.5 w-3.5 text-[#A1A1AA]" />
                 <span className="flex-1 truncate">{board.title}</span>
-                {saving === board.id && <Loader2 className="h-3.5 w-3.5 animate-spin text-[#4F46E5]" />}
+                {saving === board.id && <Loader2 className="h-3.5 w-3.5 animate-spin text-[#6366F1]" />}
               </button>
             ))
           )}
@@ -720,20 +720,20 @@ function SaveToNotebookDialog({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
       <div className="absolute inset-0 bg-black/30" onClick={onClose} />
-      <div className="relative z-10 w-full max-w-sm rounded-xl border border-[#E5E7EB] bg-white shadow-xl">
-        <div className="flex items-center justify-between border-b border-[#E5E7EB] px-4 py-3">
-          <p className="text-sm font-semibold text-[#111827]">Save to Notebook</p>
-          <button onClick={onClose} className="rounded p-1 text-[#6B7280] hover:bg-[#F3F4F6]">
+      <div className="relative z-10 w-full max-w-sm rounded-xl border border-[#27272A] bg-[#18181B] shadow-xl">
+        <div className="flex items-center justify-between border-b border-[#27272A] px-4 py-3">
+          <p className="text-sm font-semibold text-[#FAFAFA]">Save to Notebook</p>
+          <button onClick={onClose} className="rounded p-1 text-[#A1A1AA] hover:bg-[#27272A]">
             <X className="h-4 w-4" />
           </button>
         </div>
         <div className="max-h-64 overflow-y-auto p-2">
           {loading ? (
             <div className="flex items-center justify-center py-8">
-              <Loader2 className="h-5 w-5 animate-spin text-[#9CA3AF]" />
+              <Loader2 className="h-5 w-5 animate-spin text-[#71717A]" />
             </div>
           ) : notebooks.length === 0 ? (
-            <div className="py-8 text-center text-sm text-[#6B7280]">
+            <div className="py-8 text-center text-sm text-[#A1A1AA]">
               No notebooks found. Create a notebook first.
             </div>
           ) : (
@@ -742,11 +742,11 @@ function SaveToNotebookDialog({
                 key={nb.id}
                 onClick={() => handleSave(nb)}
                 disabled={saving !== null}
-                className="flex w-full items-center gap-2 rounded-lg px-3 py-2.5 text-left text-sm text-[#374151] transition-colors hover:bg-[#F9FAFB] disabled:opacity-50"
+                className="flex w-full items-center gap-2 rounded-lg px-3 py-2.5 text-left text-sm text-[#A1A1AA] transition-colors hover:bg-[#18181B] disabled:opacity-50"
               >
-                <BookOpen className="h-3.5 w-3.5 text-[#6B7280]" />
+                <BookOpen className="h-3.5 w-3.5 text-[#A1A1AA]" />
                 <span className="flex-1 truncate">{nb.title}</span>
-                {saving === nb.id && <Loader2 className="h-3.5 w-3.5 animate-spin text-[#4F46E5]" />}
+                {saving === nb.id && <Loader2 className="h-3.5 w-3.5 animate-spin text-[#6366F1]" />}
               </button>
             ))
           )}
@@ -795,24 +795,24 @@ export function ResultCell({ cell, onSave, className }: ResultCellProps) {
   return (
     <div
       className={cn(
-        "rounded-lg border border-[#E5E7EB] bg-white p-5 transition-colors hover:border-[#D1D5DB]",
+        "rounded-lg border border-[#27272A] bg-[#18181B] p-5 transition-colors hover:border-[#3F3F46]",
         className,
       )}
     >
       {/* Header */}
       <div className="mb-3 flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <span className="flex h-6 w-6 items-center justify-center rounded bg-[#F3F4F6]">
-            <Icon className="h-3.5 w-3.5 text-[#6B7280]" />
+          <span className="flex h-6 w-6 items-center justify-center rounded bg-[#27272A]">
+            <Icon className="h-3.5 w-3.5 text-[#A1A1AA]" />
           </span>
-          <h4 className="text-sm font-semibold text-[#111827]">
+          <h4 className="text-sm font-semibold text-[#FAFAFA]">
             {cell.title}
           </h4>
         </div>
         {cell.sources && cell.sources.length > 0 && (
-          <div className="flex items-center gap-1 text-xs text-[#9CA3AF]">
+          <div className="flex items-center gap-1 text-xs text-[#71717A]">
             {cell.sources.slice(0, 3).map((s, i) => (
-              <span key={`${s}-${i}`} className="bg-[#F3F4F6] px-1.5 py-0.5 rounded">[{i + 1}]</span>
+              <span key={`${s}-${i}`} className="bg-[#27272A] px-1.5 py-0.5 rounded">[{i + 1}]</span>
             ))}
           </div>
         )}
@@ -827,7 +827,7 @@ export function ResultCell({ cell, onSave, className }: ResultCellProps) {
       <SourcesFooter sources={cell.sources} sourceDetails={cell.sourceDetails} />
 
       {/* Actions */}
-      <div className="mt-4 flex items-center gap-2 border-t border-[#F3F4F6] pt-3">
+      <div className="mt-4 flex items-center gap-2 border-t border-[#27272A] pt-3">
         <SaveDropdown
           onSaveBoard={handleSaveBoard}
           onSaveNotebook={handleSaveNotebook}
@@ -837,7 +837,7 @@ export function ResultCell({ cell, onSave, className }: ResultCellProps) {
         <ExportAsDropdown content={cell.content} title={cell.title} />
         <button
           onClick={handleShare}
-          className="flex items-center gap-1.5 rounded-md px-2 py-1 text-xs text-[#6B7280] hover:bg-[#F3F4F6] hover:text-[#111827]"
+          className="flex items-center gap-1.5 rounded-md px-2 py-1 text-xs text-[#A1A1AA] hover:bg-[#27272A] hover:text-[#FAFAFA]"
         >
           <Share2 className="h-3.5 w-3.5" />
           Share

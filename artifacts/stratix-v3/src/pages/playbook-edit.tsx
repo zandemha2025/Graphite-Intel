@@ -56,7 +56,7 @@ interface PlaybookRun {
 function Skeleton({ className }: { className?: string }) {
   return (
     <div
-      className={`animate-pulse rounded bg-[#F3F4F6] ${className ?? ""}`}
+      className={`animate-pulse rounded bg-[#27272A] ${className ?? ""}`}
     />
   );
 }
@@ -118,21 +118,21 @@ function StepEditor({
     <Card className="overflow-hidden p-0">
       <div className="flex items-stretch">
         {/* Reorder controls */}
-        <div className="flex flex-col items-center justify-center border-r border-[#E5E7EB] bg-[#F9FAFB] px-2">
+        <div className="flex flex-col items-center justify-center border-r border-[#27272A] bg-[#18181B] px-2">
           <button
             onClick={() => onMoveUp(index)}
             disabled={index === 0}
-            className="rounded p-0.5 text-[#9CA3AF] hover:text-[#6B7280] disabled:opacity-30"
+            className="rounded p-0.5 text-[#71717A] hover:text-[#A1A1AA] disabled:opacity-30"
           >
             <ChevronUp className="h-3.5 w-3.5" />
           </button>
-          <span className="my-0.5 text-[10px] font-medium text-[#9CA3AF]">
+          <span className="my-0.5 text-[10px] font-medium text-[#71717A]">
             {index + 1}
           </span>
           <button
             onClick={() => onMoveDown(index)}
             disabled={index === totalSteps - 1}
-            className="rounded p-0.5 text-[#9CA3AF] hover:text-[#6B7280] disabled:opacity-30"
+            className="rounded p-0.5 text-[#71717A] hover:text-[#A1A1AA] disabled:opacity-30"
           >
             <ChevronDown className="h-3.5 w-3.5" />
           </button>
@@ -152,16 +152,16 @@ function StepEditor({
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
                 rows={2}
-                className="w-full rounded-lg border border-[#E5E7EB] bg-white px-3 py-2 text-sm text-[#111827] placeholder:text-[#9CA3AF] transition-colors focus:outline-none focus:ring-2 focus:ring-[#4F46E5]/20 focus:border-[#4F46E5]"
+                className="w-full rounded-lg border border-[#27272A] bg-[#18181B] px-3 py-2 text-sm text-[#FAFAFA] placeholder:text-[#71717A] transition-colors focus:outline-none focus:ring-2 focus:ring-[#6366F1]/20 focus:border-[#6366F1]"
               />
               <div className="flex flex-col gap-1.5">
-                <label className="text-xs font-medium text-[#6B7280]">
+                <label className="text-xs font-medium text-[#A1A1AA]">
                   Step type
                 </label>
                 <select
                   value={type}
                   onChange={(e) => setType(e.target.value)}
-                  className="h-8 rounded-lg border border-[#E5E7EB] bg-white px-2 text-sm text-[#111827] focus:outline-none focus:ring-2 focus:ring-[#4F46E5]/20 focus:border-[#4F46E5]"
+                  className="h-8 rounded-lg border border-[#27272A] bg-[#18181B] px-2 text-sm text-[#FAFAFA] focus:outline-none focus:ring-2 focus:ring-[#6366F1]/20 focus:border-[#6366F1]"
                 >
                   <option value="research">Research</option>
                   <option value="analysis">Analysis</option>
@@ -185,10 +185,10 @@ function StepEditor({
               onClick={() => setEditing(true)}
             >
               <div className="flex items-center gap-2">
-                <div className="flex h-5 w-5 items-center justify-center rounded bg-[#EEF2FF] text-[#4F46E5]">
+                <div className="flex h-5 w-5 items-center justify-center rounded bg-[#6366F1]/10 text-[#6366F1]">
                   <StepTypeIcon type={step.type} />
                 </div>
-                <p className="text-sm font-medium text-[#111827]">
+                <p className="text-sm font-medium text-[#FAFAFA]">
                   {step.title || "Untitled step"}
                 </p>
                 <Badge variant="default" className="ml-auto text-[10px]">
@@ -196,7 +196,7 @@ function StepEditor({
                 </Badge>
               </div>
               {step.description && (
-                <p className="mt-1 ml-7 text-xs text-[#6B7280] line-clamp-2">
+                <p className="mt-1 ml-7 text-xs text-[#A1A1AA] line-clamp-2">
                   {step.description}
                 </p>
               )}
@@ -205,10 +205,10 @@ function StepEditor({
         </div>
 
         {/* Delete */}
-        <div className="flex items-center border-l border-[#E5E7EB] px-2">
+        <div className="flex items-center border-l border-[#27272A] px-2">
           <button
             onClick={() => onDelete(index)}
-            className="rounded p-1 text-[#9CA3AF] hover:bg-[#F3F4F6] hover:text-red-500"
+            className="rounded p-1 text-[#71717A] hover:bg-[#27272A] hover:text-red-500"
           >
             <Trash2 className="h-3.5 w-3.5" />
           </button>
@@ -224,7 +224,7 @@ function AddStepButton({ onAdd }: { onAdd: () => void }) {
   return (
     <button
       onClick={onAdd}
-      className="flex w-full items-center justify-center gap-2 rounded-lg border-2 border-dashed border-[#E5E7EB] bg-white py-3 text-sm font-medium text-[#6B7280] transition-colors hover:border-[#4F46E5]/30 hover:text-[#4F46E5]"
+      className="flex w-full items-center justify-center gap-2 rounded-lg border-2 border-dashed border-[#27272A] bg-[#18181B] py-3 text-sm font-medium text-[#A1A1AA] transition-colors hover:border-[#6366F1]/30 hover:text-[#6366F1]"
     >
       <Plus className="h-4 w-4" />
       Add Step
@@ -395,11 +395,11 @@ export default function PlaybookEditPage() {
     return (
       <Page title="Playbook not found" subtitle="">
         <Card className="flex flex-col items-center justify-center py-16">
-          <FileText className="mb-3 h-8 w-8 text-[#D1D5DB]" />
-          <p className="text-sm font-medium text-[#111827]">
+          <FileText className="mb-3 h-8 w-8 text-[#3F3F46]" />
+          <p className="text-sm font-medium text-[#FAFAFA]">
             Could not load this playbook
           </p>
-          <p className="mt-1 text-sm text-[#6B7280]">
+          <p className="mt-1 text-sm text-[#A1A1AA]">
             It may have been deleted or you may not have access.
           </p>
           <Button
@@ -423,7 +423,7 @@ export default function PlaybookEditPage() {
         <div className="flex items-center gap-3">
           <button
             onClick={() => navigate("/playbooks")}
-            className="rounded-lg p-1.5 text-[#6B7280] transition-colors hover:bg-[#F3F4F6] hover:text-[#111827]"
+            className="rounded-lg p-1.5 text-[#A1A1AA] transition-colors hover:bg-[#27272A] hover:text-[#FAFAFA]"
           >
             <ArrowLeft className="h-4 w-4" />
           </button>
@@ -432,10 +432,10 @@ export default function PlaybookEditPage() {
               type="text"
               value={displayTitle}
               onChange={(e) => handleTitleChange(e.target.value)}
-              className="border-0 bg-transparent text-lg font-semibold text-[#111827] focus:outline-none"
+              className="border-0 bg-transparent text-lg font-semibold text-[#FAFAFA] focus:outline-none"
               placeholder="Untitled Playbook"
             />
-            <div className="mt-0.5 flex items-center gap-2 text-xs text-[#9CA3AF]">
+            <div className="mt-0.5 flex items-center gap-2 text-xs text-[#71717A]">
               {saveStatus === "saving" && (
                 <>
                   <Loader2 className="h-3 w-3 animate-spin" />
@@ -490,18 +490,18 @@ export default function PlaybookEditPage() {
 
       {/* Description */}
       {playbook.description && (
-        <p className="mb-5 text-sm text-[#6B7280]">{playbook.description}</p>
+        <p className="mb-5 text-sm text-[#A1A1AA]">{playbook.description}</p>
       )}
 
       {/* Step list */}
       <div className="space-y-2">
         {playbook.steps.length === 0 ? (
           <Card className="flex flex-col items-center justify-center py-16">
-            <FileText className="mb-3 h-8 w-8 text-[#D1D5DB]" />
-            <p className="text-sm font-medium text-[#111827]">
+            <FileText className="mb-3 h-8 w-8 text-[#3F3F46]" />
+            <p className="text-sm font-medium text-[#FAFAFA]">
               No steps yet
             </p>
-            <p className="mt-1 text-sm text-[#6B7280]">
+            <p className="mt-1 text-sm text-[#A1A1AA]">
               Add steps manually or use AI Generate to create them
               automatically.
             </p>

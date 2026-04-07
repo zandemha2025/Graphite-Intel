@@ -744,27 +744,27 @@ export default function ExplorePage() {
       {/* LEFT: History sidebar */}
       <div
         className={cn(
-          "flex flex-col border-r border-[#E5E7EB] bg-[#F8F9FA] transition-all",
+          "flex flex-col border-r border-[#27272A] bg-[#18181B] transition-all",
           sidebarOpen
             ? "w-[280px] min-w-[280px]"
             : "w-0 min-w-0 overflow-hidden",
         )}
       >
-        <div className="flex items-center justify-between border-b border-[#E5E7EB] px-4 py-3">
-          <span className="text-xs font-semibold uppercase tracking-wide text-[#6B7280]">
+        <div className="flex items-center justify-between border-b border-[#27272A] px-4 py-3">
+          <span className="text-xs font-semibold uppercase tracking-wide text-[#A1A1AA]">
             History
           </span>
           <div className="flex items-center gap-1">
             <button
               onClick={handleNewConversation}
-              className="rounded p-1 text-[#6B7280] hover:bg-white hover:text-[#4F46E5]"
+              className="rounded p-1 text-[#A1A1AA] hover:bg-[#18181B] hover:text-[#6366F1]"
               title="New Explore"
             >
               <Plus className="h-3.5 w-3.5" />
             </button>
             <button
               onClick={() => setSidebarOpen(false)}
-              className="rounded p-1 text-[#9CA3AF] hover:text-[#6B7280]"
+              className="rounded p-1 text-[#71717A] hover:text-[#A1A1AA]"
             >
               <ChevronLeft className="h-3.5 w-3.5" />
             </button>
@@ -777,8 +777,8 @@ export default function ExplorePage() {
               className={cn(
                 "group flex cursor-pointer items-center gap-2 px-4 py-2.5 text-sm transition-colors",
                 activeConvId === conv.id
-                  ? "bg-white text-[#111827]"
-                  : "text-[#6B7280] hover:bg-white/60 hover:text-[#111827]",
+                  ? "bg-[#18181B] text-[#FAFAFA]"
+                  : "text-[#A1A1AA] hover:bg-[#18181B]/60 hover:text-[#FAFAFA]",
               )}
               onClick={() => setActiveConvId(conv.id)}
             >
@@ -791,14 +791,14 @@ export default function ExplorePage() {
                   e.stopPropagation();
                   handleDeleteConversation(conv.id);
                 }}
-                className="hidden shrink-0 rounded p-0.5 text-[#9CA3AF] hover:text-red-500 group-hover:block"
+                className="hidden shrink-0 rounded p-0.5 text-[#71717A] hover:text-red-500 group-hover:block"
               >
                 <Trash2 className="h-3 w-3" />
               </button>
             </div>
           ))}
           {conversations.length === 0 && (
-            <div className="px-4 py-6 text-center text-xs text-[#9CA3AF]">
+            <div className="px-4 py-6 text-center text-xs text-[#71717A]">
               No conversations yet
             </div>
           )}
@@ -808,20 +808,20 @@ export default function ExplorePage() {
       {/* CENTER: Results Notebook (primary) */}
       <div className="flex flex-1 flex-col overflow-hidden">
         {/* Search bar at TOP */}
-        <div className="border-b border-[#E5E7EB] bg-white px-6 py-4">
-          <div className="flex items-center gap-3 rounded-lg border border-[#E5E7EB] bg-[#F8F9FA] px-4 py-3 focus-within:border-[#4F46E5] focus-within:ring-1 focus-within:ring-[#4F46E5]/20">
+        <div className="border-b border-[#27272A] bg-[#18181B] px-6 py-4">
+          <div className="flex items-center gap-3 rounded-lg border border-[#27272A] bg-[#18181B] px-4 py-3 focus-within:border-[#6366F1] focus-within:ring-1 focus-within:ring-[#6366F1]/20">
             {!sidebarOpen && (
               <button
                 onClick={() => setSidebarOpen(true)}
-                className="rounded p-0.5 text-[#9CA3AF] hover:text-[#6B7280]"
+                className="rounded p-0.5 text-[#71717A] hover:text-[#A1A1AA]"
               >
                 <ChevronRight className="h-4 w-4" />
               </button>
             )}
-            <Search className="h-5 w-5 text-[#9CA3AF]" />
+            <Search className="h-5 w-5 text-[#71717A]" />
             <input
               ref={inputRef}
-              className="flex-1 bg-transparent text-[15px] text-[#111827] outline-none placeholder:text-[#9CA3AF]"
+              className="flex-1 bg-transparent text-[15px] text-[#FAFAFA] outline-none placeholder:text-[#71717A]"
               placeholder="What's happening with our enterprise pipeline?"
               value={inputValue}
               onChange={(e) => setInputValue(e.target.value)}
@@ -833,7 +833,7 @@ export default function ExplorePage() {
               }}
               disabled={streaming}
             />
-            <div className="flex items-center gap-1 text-xs text-[#9CA3AF]">
+            <div className="flex items-center gap-1 text-xs text-[#71717A]">
               {(["quick", "standard", "deep"] as const).map((d) => (
                 <button
                   key={d}
@@ -841,8 +841,8 @@ export default function ExplorePage() {
                   className={cn(
                     "rounded px-2 py-0.5 capitalize transition-colors",
                     depth === d
-                      ? "bg-[#4F46E5] text-white"
-                      : "hover:text-[#6B7280]",
+                      ? "bg-[#6366F1] text-white"
+                      : "hover:text-[#A1A1AA]",
                   )}
                 >
                   {d === "quick" ? "Quick" : d === "standard" ? "Standard" : "Deep"}
@@ -855,8 +855,8 @@ export default function ExplorePage() {
               className={cn(
                 "flex h-8 w-8 items-center justify-center rounded-lg transition-colors",
                 inputValue.trim() && !streaming
-                  ? "bg-[#4F46E5] text-white hover:bg-[#4338CA]"
-                  : "bg-[#E5E7EB] text-[#9CA3AF]",
+                  ? "bg-[#6366F1] text-white hover:bg-[#818CF8]"
+                  : "bg-[#27272A] text-[#71717A]",
               )}
             >
               {streaming ? (
@@ -872,10 +872,10 @@ export default function ExplorePage() {
         <div className="flex-1 overflow-y-auto px-6 py-5">
           {cells.length === 0 && !streaming ? (
             <div className="text-center py-16">
-              <p className="text-[15px] text-[#6B7280] mb-2">
+              <p className="text-[15px] text-[#A1A1AA] mb-2">
                 Your intelligence results will appear here
               </p>
-              <p className="text-[13px] text-[#9CA3AF] mb-6">
+              <p className="text-[13px] text-[#71717A] mb-6">
                 Each insight becomes a saveable cell you can export, share, or add to a board.
               </p>
 
@@ -890,7 +890,7 @@ export default function ExplorePage() {
                   <button
                     key={s}
                     onClick={() => handleFollowUp(s)}
-                    className="rounded-full border border-[#E5E7EB] bg-white px-3 py-1.5 text-xs font-medium text-[#374151] transition-colors hover:border-[#4F46E5] hover:bg-[#EEF2FF] hover:text-[#4F46E5]"
+                    className="rounded-full border border-[#27272A] bg-[#18181B] px-3 py-1.5 text-xs font-medium text-[#A1A1AA] transition-colors hover:border-[#6366F1] hover:bg-[#6366F1]/10 hover:text-[#6366F1]"
                   >
                     {s}
                   </button>
@@ -900,7 +900,7 @@ export default function ExplorePage() {
               {/* Recent Activity */}
               {!recentActivityLoading && recentActivity.length > 0 && (
                 <div className="mt-10 max-w-sm mx-auto">
-                  <h3 className="mb-3 text-xs font-semibold uppercase tracking-wide text-[#9CA3AF]">
+                  <h3 className="mb-3 text-xs font-semibold uppercase tracking-wide text-[#71717A]">
                     Recent Activity
                   </h3>
                   <div className="flex flex-col gap-2">
@@ -910,14 +910,14 @@ export default function ExplorePage() {
                       return (
                         <div
                           key={item.title}
-                          className="flex items-center gap-3 rounded-lg border border-[#E5E7EB] bg-white px-4 py-3 transition-colors hover:border-[#D1D5DB]"
+                          className="flex items-center gap-3 rounded-lg border border-[#27272A] bg-[#18181B] px-4 py-3 transition-colors hover:border-[#3F3F46]"
                         >
-                          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#EEF2FF]">
-                            <Icon className="h-4 w-4 text-[#4F46E5]" />
+                          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#6366F1]/10">
+                            <Icon className="h-4 w-4 text-[#6366F1]" />
                           </div>
                           <div>
-                            <div className="text-sm font-medium text-[#111827]">{item.title}</div>
-                            <div className="text-xs text-[#9CA3AF]">{item.time}</div>
+                            <div className="text-sm font-medium text-[#FAFAFA]">{item.title}</div>
+                            <div className="text-xs text-[#71717A]">{item.time}</div>
                           </div>
                         </div>
                       );
@@ -930,16 +930,16 @@ export default function ExplorePage() {
             <div className="flex flex-col gap-4 max-w-3xl">
               {/* Streaming indicator */}
               {streaming && researchPhase !== "idle" && (
-                <div className="rounded-lg border border-[#E5E7EB] bg-[#F8F9FA] px-4 py-3 mb-2">
+                <div className="rounded-lg border border-[#27272A] bg-[#18181B] px-4 py-3 mb-2">
                   <div className="flex items-center gap-4 text-sm">
                     {researchSteps.map((step, idx) => (
                       <div key={idx} className="flex items-center gap-2">
                         {step.done ? (
                           <Check className="h-4 w-4 text-[#059669]" />
                         ) : (
-                          <Loader2 className="h-4 w-4 text-[#4F46E5] animate-spin" />
+                          <Loader2 className="h-4 w-4 text-[#6366F1] animate-spin" />
                         )}
-                        <span className={step.done ? "text-[#6B7280]" : "text-[#111827]"}>
+                        <span className={step.done ? "text-[#A1A1AA]" : "text-[#FAFAFA]"}>
                           {step.label}
                         </span>
                       </div>
@@ -950,18 +950,18 @@ export default function ExplorePage() {
 
               {/* Context Suggestions Bar (Auto-Enrichment) */}
               {contextSuggestions.length > 0 && !dismissedSuggestions && !streaming && (
-                <div className="rounded-lg border border-[#4F46E5]/20 bg-[#EEF2FF] px-4 py-3 mb-2">
+                <div className="rounded-lg border border-[#6366F1]/20 bg-[#6366F1]/10 px-4 py-3 mb-2">
                   <div className="flex items-start justify-between gap-3">
                     <div className="flex items-start gap-2 flex-1 min-w-0">
-                      <Lightbulb className="h-4 w-4 text-[#4F46E5] mt-0.5 shrink-0" />
+                      <Lightbulb className="h-4 w-4 text-[#6366F1] mt-0.5 shrink-0" />
                       <div className="flex-1 min-w-0">
-                        <p className="text-xs font-medium text-[#374151] mb-2">Based on this analysis:</p>
+                        <p className="text-xs font-medium text-[#A1A1AA] mb-2">Based on this analysis:</p>
                         <div className="flex flex-wrap gap-1.5">
                           {contextSuggestions.map((s) => (
                             <button
                               key={`${s.type}-${s.value}`}
                               onClick={() => handleAcceptSuggestion(s)}
-                              className="inline-flex items-center gap-1 rounded-full border border-[#4F46E5]/30 bg-white px-2.5 py-1 text-xs font-medium text-[#4F46E5] transition-colors hover:bg-[#4F46E5] hover:text-white"
+                              className="inline-flex items-center gap-1 rounded-full border border-[#6366F1]/30 bg-[#18181B] px-2.5 py-1 text-xs font-medium text-[#6366F1] transition-colors hover:bg-[#6366F1] hover:text-white"
                             >
                               <Plus className="h-3 w-3" />
                               {s.label}
@@ -972,7 +972,7 @@ export default function ExplorePage() {
                     </div>
                     <button
                       onClick={() => setDismissedSuggestions(true)}
-                      className="rounded p-0.5 text-[#9CA3AF] hover:text-[#6B7280] shrink-0"
+                      className="rounded p-0.5 text-[#71717A] hover:text-[#A1A1AA] shrink-0"
                     >
                       <X className="h-3.5 w-3.5" />
                     </button>
@@ -989,11 +989,11 @@ export default function ExplorePage() {
       </div>
 
       {/* RIGHT: Research Panel */}
-      <aside className="w-[280px] min-w-[280px] border-l border-[#E5E7EB] bg-[#F8F9FA] overflow-y-auto">
+      <aside className="w-[280px] min-w-[280px] border-l border-[#27272A] bg-[#18181B] overflow-y-auto">
         {/* Research Steps */}
         {streaming && researchPhase !== "idle" && (
-          <div className="p-4 border-b border-[#E5E7EB]">
-            <h3 className="text-xs font-semibold text-[#6B7280] uppercase tracking-wide mb-3">
+          <div className="p-4 border-b border-[#27272A]">
+            <h3 className="text-xs font-semibold text-[#A1A1AA] uppercase tracking-wide mb-3">
               Research Steps
             </h3>
             <div className="space-y-2">
@@ -1005,15 +1005,15 @@ export default function ExplorePage() {
                     {step.done ? (
                       <Check className="h-4 w-4 text-[#059669]" />
                     ) : isActiveStep ? (
-                      <Loader2 className="h-4 w-4 text-[#4F46E5] animate-spin" />
+                      <Loader2 className="h-4 w-4 text-[#6366F1] animate-spin" />
                     ) : (
-                      <div className="h-4 w-4 rounded-full border-2 border-[#D1D5DB]" />
+                      <div className="h-4 w-4 rounded-full border-2 border-[#3F3F46]" />
                     )}
-                    <span className={step.done ? "text-[#6B7280]" : isActiveStep ? "text-[#111827]" : "text-[#9CA3AF]"}>
+                    <span className={step.done ? "text-[#A1A1AA]" : isActiveStep ? "text-[#FAFAFA]" : "text-[#71717A]"}>
                       {step.label}
                     </span>
                     {step.source && (
-                      <span className="text-[10px] text-[#9CA3AF] ml-auto">{step.source}</span>
+                      <span className="text-[10px] text-[#71717A] ml-auto">{step.source}</span>
                     )}
                   </div>
                 );
@@ -1024,8 +1024,8 @@ export default function ExplorePage() {
 
         {/* Sources */}
         {collectedSources.length > 0 && (
-          <div className="p-4 border-b border-[#E5E7EB]">
-            <h3 className="text-xs font-semibold text-[#6B7280] uppercase tracking-wide mb-3">
+          <div className="p-4 border-b border-[#27272A]">
+            <h3 className="text-xs font-semibold text-[#A1A1AA] uppercase tracking-wide mb-3">
               Sources ({collectedSources.length})
             </h3>
             <div className="space-y-1">
@@ -1035,24 +1035,24 @@ export default function ExplorePage() {
                   href={s.url || "#"}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center gap-2 text-sm py-1.5 hover:bg-white rounded px-2 -mx-2 transition-colors"
+                  className="flex items-center gap-2 text-sm py-1.5 hover:bg-[#18181B] rounded px-2 -mx-2 transition-colors"
                 >
-                  <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded bg-[#4F46E5] text-white text-[10px] font-medium">
+                  <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded bg-[#6366F1] text-white text-[10px] font-medium">
                     {i + 1}
                   </span>
                   <div className="flex-1 min-w-0">
-                    <div className="text-[#111827] text-sm truncate">{s.name}</div>
+                    <div className="text-[#FAFAFA] text-sm truncate">{s.name}</div>
                     {s.domain && (
-                      <div className="text-[#9CA3AF] text-xs truncate">{s.domain}</div>
+                      <div className="text-[#71717A] text-xs truncate">{s.domain}</div>
                     )}
                   </div>
                   {(s.type === "1p" || (!s.type && is1P(s))) && (
-                    <span className="text-[10px] bg-[#EEF2FF] text-[#4F46E5] px-1.5 py-0.5 rounded font-medium shrink-0">
+                    <span className="text-[10px] bg-[#6366F1]/10 text-[#6366F1] px-1.5 py-0.5 rounded font-medium shrink-0">
                       1P
                     </span>
                   )}
                   {s.type === "3p" && (
-                    <span className="text-[10px] bg-[#F3F4F6] text-[#6B7280] px-1.5 py-0.5 rounded font-medium shrink-0">
+                    <span className="text-[10px] bg-[#27272A] text-[#A1A1AA] px-1.5 py-0.5 rounded font-medium shrink-0">
                       3P
                     </span>
                   )}
@@ -1064,8 +1064,8 @@ export default function ExplorePage() {
 
         {/* Your Focus Areas (Trend Tracking) */}
         {frequentTopics.length > 0 && !streaming && (
-          <div className="p-4 border-b border-[#E5E7EB]">
-            <h3 className="text-xs font-semibold text-[#6B7280] uppercase tracking-wide mb-3">
+          <div className="p-4 border-b border-[#27272A]">
+            <h3 className="text-xs font-semibold text-[#A1A1AA] uppercase tracking-wide mb-3">
               <TrendingUp className="inline h-3 w-3 mr-1" />
               Your Focus Areas
             </h3>
@@ -1076,12 +1076,12 @@ export default function ExplorePage() {
                   className="flex items-center justify-between text-sm py-1"
                 >
                   <div className="flex items-center gap-2 min-w-0">
-                    <span className="text-[#111827] font-medium truncate">{topic.word}</span>
-                    <span className="text-[10px] text-[#9CA3AF] shrink-0">asked {topic.count}x</span>
+                    <span className="text-[#FAFAFA] font-medium truncate">{topic.word}</span>
+                    <span className="text-[10px] text-[#71717A] shrink-0">asked {topic.count}x</span>
                   </div>
                   <button
                     onClick={() => navigate("/boards")}
-                    className="text-[10px] text-[#4F46E5] hover:underline shrink-0 ml-2"
+                    className="text-[10px] text-[#6366F1] hover:underline shrink-0 ml-2"
                   >
                     Create board
                   </button>
@@ -1093,8 +1093,8 @@ export default function ExplorePage() {
 
         {/* Follow-ups */}
         {followUps.length > 0 && (
-          <div className="p-4 border-b border-[#E5E7EB]">
-            <h3 className="text-xs font-semibold text-[#6B7280] uppercase tracking-wide mb-3">
+          <div className="p-4 border-b border-[#27272A]">
+            <h3 className="text-xs font-semibold text-[#A1A1AA] uppercase tracking-wide mb-3">
               Related Questions
             </h3>
             <div className="space-y-1">
@@ -1102,7 +1102,7 @@ export default function ExplorePage() {
                 <button
                   key={q}
                   onClick={() => handleFollowUp(q)}
-                  className="w-full text-left text-sm text-[#4F46E5] hover:bg-white rounded px-2 py-2 -mx-2 transition-colors"
+                  className="w-full text-left text-sm text-[#6366F1] hover:bg-[#18181B] rounded px-2 py-2 -mx-2 transition-colors"
                 >
                   {q}
                 </button>
@@ -1114,7 +1114,7 @@ export default function ExplorePage() {
         {/* Empty state for research panel */}
         {collectedSources.length === 0 && followUps.length === 0 && !streaming && (
           <div className="p-4">
-            <p className="text-[13px] text-[#9CA3AF]">
+            <p className="text-[13px] text-[#71717A]">
               Sources, research steps, and related questions will appear here as you explore.
             </p>
           </div>

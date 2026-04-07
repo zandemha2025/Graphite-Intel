@@ -123,19 +123,19 @@ function SourceTypeLabel({ type }: { type: "1p" | "3p" | "synthesized" }) {
   switch (type) {
     case "1p":
       return (
-        <span className="rounded-full bg-[#EEF2FF] px-1.5 py-0.5 text-[9px] font-bold uppercase text-[#4F46E5]">
+        <span className="rounded-full bg-[#6366F1]/10 px-1.5 py-0.5 text-[9px] font-bold uppercase text-[#6366F1]">
           1P
         </span>
       );
     case "3p":
       return (
-        <span className="rounded-full bg-[#F3F4F6] px-1.5 py-0.5 text-[9px] font-bold uppercase text-[#6B7280]">
+        <span className="rounded-full bg-[#27272A] px-1.5 py-0.5 text-[9px] font-bold uppercase text-[#A1A1AA]">
           3P
         </span>
       );
     case "synthesized":
       return (
-        <span className="rounded-full border border-[#E5E7EB] px-1.5 py-0.5 text-[9px] font-bold uppercase text-[#9CA3AF]">
+        <span className="rounded-full border border-[#27272A] px-1.5 py-0.5 text-[9px] font-bold uppercase text-[#71717A]">
           AI
         </span>
       );
@@ -146,8 +146,8 @@ function SourceCitationsPanel({ sources }: { sources: Source[] }) {
   if (sources.length === 0) return null;
 
   return (
-    <div className="mt-3 rounded-lg border border-[#E5E7EB] bg-[#F9FAFB] p-3">
-      <div className="mb-2 flex items-center gap-1.5 text-xs font-medium text-[#6B7280]">
+    <div className="mt-3 rounded-lg border border-[#27272A] bg-[#18181B] p-3">
+      <div className="mb-2 flex items-center gap-1.5 text-xs font-medium text-[#A1A1AA]">
         <FileText className="h-3.5 w-3.5" />
         Sources
       </div>
@@ -160,19 +160,19 @@ function SourceCitationsPanel({ sources }: { sources: Source[] }) {
               href={source.url || "#"}
               target="_blank"
               rel="noopener noreferrer"
-              className="group flex items-center gap-2 rounded-md px-2 py-1.5 text-xs transition-colors hover:bg-white"
+              className="group flex items-center gap-2 rounded-md px-2 py-1.5 text-xs transition-colors hover:bg-[#18181B]"
             >
-              <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded bg-[#4F46E5] text-[10px] font-semibold text-white">
+              <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded bg-[#6366F1] text-[10px] font-semibold text-white">
                 {idx + 1}
               </span>
               <SourceTypeLabel type={sourceType} />
-              <span className="flex-1 truncate font-medium text-[#111827] group-hover:text-[#4F46E5]">
+              <span className="flex-1 truncate font-medium text-[#FAFAFA] group-hover:text-[#6366F1]">
                 {source.name}
               </span>
               {source.domain && (
-                <span className="shrink-0 text-[#9CA3AF]">{source.domain}</span>
+                <span className="shrink-0 text-[#71717A]">{source.domain}</span>
               )}
-              <ExternalLink className="h-3 w-3 shrink-0 text-[#9CA3AF] opacity-0 transition-opacity group-hover:opacity-100" />
+              <ExternalLink className="h-3 w-3 shrink-0 text-[#71717A] opacity-0 transition-opacity group-hover:opacity-100" />
             </a>
           );
         })}
@@ -198,7 +198,7 @@ function FollowUpSuggestions({
         <button
           key={suggestion}
           onClick={() => onSelect(suggestion)}
-          className="rounded-full border border-[#E5E7EB] bg-white px-3 py-1.5 text-xs font-medium text-[#374151] transition-colors hover:border-[#4F46E5] hover:bg-[#EEF2FF] hover:text-[#4F46E5]"
+          className="rounded-full border border-[#27272A] bg-[#18181B] px-3 py-1.5 text-xs font-medium text-[#A1A1AA] transition-colors hover:border-[#6366F1] hover:bg-[#6366F1]/10 hover:text-[#6366F1]"
         >
           {suggestion}
         </button>
@@ -248,7 +248,7 @@ function ResearchProgressIndicator({
 
   return (
     <div className="mb-4 flex justify-start">
-      <div className="w-full rounded-lg border border-[#E5E7EB] bg-[#F9FAFB] px-4 py-3">
+      <div className="w-full rounded-lg border border-[#27272A] bg-[#18181B] px-4 py-3">
         <div className="flex items-center gap-4">
           {steps.map((step, idx) => {
             const Icon = step.icon;
@@ -259,8 +259,8 @@ function ResearchProgressIndicator({
                     className={cn(
                       "h-px w-6",
                       step.complete || step.active
-                        ? "bg-[#4F46E5]"
-                        : "bg-[#E5E7EB]",
+                        ? "bg-[#6366F1]"
+                        : "bg-[#27272A]",
                     )}
                   />
                 )}
@@ -269,10 +269,10 @@ function ResearchProgressIndicator({
                     className={cn(
                       "flex h-5 w-5 items-center justify-center rounded-full",
                       step.active
-                        ? "animate-pulse bg-[#4F46E5] text-white"
+                        ? "animate-pulse bg-[#6366F1] text-white"
                         : step.complete
-                          ? "bg-[#4F46E5] text-white"
-                          : "bg-[#E5E7EB] text-[#9CA3AF]",
+                          ? "bg-[#6366F1] text-white"
+                          : "bg-[#27272A] text-[#71717A]",
                     )}
                   >
                     <Icon className="h-3 w-3" />
@@ -281,10 +281,10 @@ function ResearchProgressIndicator({
                     className={cn(
                       "text-xs",
                       step.active
-                        ? "font-medium text-[#4F46E5]"
+                        ? "font-medium text-[#6366F1]"
                         : step.complete
-                          ? "font-medium text-[#111827]"
-                          : "text-[#9CA3AF]",
+                          ? "font-medium text-[#FAFAFA]"
+                          : "text-[#71717A]",
                     )}
                   >
                     {step.label}
@@ -295,15 +295,15 @@ function ResearchProgressIndicator({
           })}
         </div>
         {sourceCount > 0 && (
-          <div className="mt-2 text-xs text-[#6B7280]">
+          <div className="mt-2 text-xs text-[#A1A1AA]">
             Found {sourceCount} source{sourceCount !== 1 ? "s" : ""}
           </div>
         )}
         {/* Progress bar */}
-        <div className="mt-2 h-1 overflow-hidden rounded-full bg-[#E5E7EB]">
+        <div className="mt-2 h-1 overflow-hidden rounded-full bg-[#27272A]">
           <div
             className={cn(
-              "h-full rounded-full bg-[#4F46E5] transition-all duration-1000 ease-out",
+              "h-full rounded-full bg-[#6366F1] transition-all duration-1000 ease-out",
               phase === "searching" && "w-1/3",
               phase === "analyzing" && "w-2/3",
               phase === "synthesizing" && "w-11/12",
@@ -349,7 +349,7 @@ function InlineCitationContent({
                 href={source.url || "#"}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="not-prose ml-0.5 mr-0.5 inline-flex h-4 w-4 items-center justify-center rounded bg-[#4F46E5] text-[9px] font-semibold leading-none text-white no-underline hover:bg-[#4338CA]"
+                className="not-prose ml-0.5 mr-0.5 inline-flex h-4 w-4 items-center justify-center rounded bg-[#6366F1] text-[9px] font-semibold leading-none text-white no-underline hover:bg-[#818CF8]"
                 title={`${source.name}${source.domain ? ` — ${source.domain}` : ""}`}
               >
                 {num}
@@ -401,13 +401,13 @@ export function Conversation({
         )}
       >
         <div className="text-center">
-          <div className="mx-auto mb-3 flex h-10 w-10 items-center justify-center rounded-lg bg-[#EEF2FF]">
-            <span className="text-lg text-[#4F46E5]">S</span>
+          <div className="mx-auto mb-3 flex h-10 w-10 items-center justify-center rounded-lg bg-[#6366F1]/10">
+            <span className="text-lg text-[#6366F1]">S</span>
           </div>
-          <h3 className="text-sm font-medium text-[#111827]">
+          <h3 className="text-sm font-medium text-[#FAFAFA]">
             What would you like to know?
           </h3>
-          <p className="mt-1 text-sm text-[#6B7280]">
+          <p className="mt-1 text-sm text-[#A1A1AA]">
             Ask about your pipeline, competitors, channels, or market -- Stratix
             combines your data with real-time research.
           </p>
@@ -424,7 +424,7 @@ export function Conversation({
                 <button
                   key={s}
                   onClick={() => onFollowUp(s)}
-                  className="rounded-full border border-[#E5E7EB] bg-white px-3 py-1.5 text-xs font-medium text-[#374151] transition-colors hover:border-[#4F46E5] hover:bg-[#EEF2FF] hover:text-[#4F46E5]"
+                  className="rounded-full border border-[#27272A] bg-[#18181B] px-3 py-1.5 text-xs font-medium text-[#A1A1AA] transition-colors hover:border-[#6366F1] hover:bg-[#6366F1]/10 hover:text-[#6366F1]"
                 >
                   {s}
                 </button>
@@ -474,11 +474,11 @@ export function Conversation({
               )}
             >
               {msg.role === "user" ? (
-                <div className="max-w-[85%] rounded-lg bg-[#F3F4F6] px-4 py-3 text-sm leading-relaxed text-[#111827]">
+                <div className="max-w-[85%] rounded-lg bg-[#27272A] px-4 py-3 text-sm leading-relaxed text-[#FAFAFA]">
                   <div className="whitespace-pre-wrap">{msg.content}</div>
                 </div>
               ) : (
-                <div className="w-full text-[15px] leading-7 text-[#111827]">
+                <div className="w-full text-[15px] leading-7 text-[#FAFAFA]">
                   <InlineCitationContent
                     content={msg.content}
                     sourceDetails={
@@ -518,18 +518,18 @@ export function Conversation({
             (m) => m.role === "assistant" && m.id.startsWith("a-"),
           ) && (
             <div className="flex justify-start">
-              <div className="rounded-lg bg-[#F3F4F6] px-3.5 py-2.5">
+              <div className="rounded-lg bg-[#27272A] px-3.5 py-2.5">
                 <div className="flex gap-1">
                   <span
-                    className="h-2 w-2 animate-bounce rounded-full bg-[#6B7280]"
+                    className="h-2 w-2 animate-bounce rounded-full bg-[#71717A]"
                     style={{ animationDelay: "0ms" }}
                   />
                   <span
-                    className="h-2 w-2 animate-bounce rounded-full bg-[#6B7280]"
+                    className="h-2 w-2 animate-bounce rounded-full bg-[#71717A]"
                     style={{ animationDelay: "150ms" }}
                   />
                   <span
-                    className="h-2 w-2 animate-bounce rounded-full bg-[#6B7280]"
+                    className="h-2 w-2 animate-bounce rounded-full bg-[#71717A]"
                     style={{ animationDelay: "300ms" }}
                   />
                 </div>

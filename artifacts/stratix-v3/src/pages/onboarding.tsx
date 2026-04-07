@@ -91,21 +91,21 @@ function UrlPhase({
 
   return (
     <div className="mx-auto max-w-lg text-center">
-      <div className="mx-auto mb-6 flex h-12 w-12 items-center justify-center rounded-xl bg-[#4F46E5]">
+      <div className="mx-auto mb-6 flex h-12 w-12 items-center justify-center rounded-xl bg-[#6366F1]">
         <span className="text-lg font-bold text-white">S</span>
       </div>
-      <h1 className="mb-2 text-2xl font-semibold text-[#111827]">
+      <h1 className="mb-2 text-2xl font-semibold text-[#FAFAFA]">
         Let's set up your intelligence
       </h1>
-      <p className="mb-8 text-[#6B7280]">
+      <p className="mb-8 text-[#A1A1AA]">
         Enter your company website and we'll do the rest.
       </p>
 
       <div className="flex gap-2">
         <div className="relative flex-1">
-          <Globe className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#9CA3AF]" />
+          <Globe className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#71717A]" />
           <input
-            className="h-11 w-full rounded-lg border border-[#E5E7EB] pl-10 pr-4 text-[15px] text-[#111827] placeholder:text-[#9CA3AF] focus:border-[#4F46E5] focus:outline-none focus:ring-2 focus:ring-[#4F46E5]/20"
+            className="h-11 w-full rounded-lg border border-[#27272A] pl-10 pr-4 text-[15px] text-[#FAFAFA] placeholder:text-[#71717A] focus:border-[#6366F1] focus:outline-none focus:ring-2 focus:ring-[#6366F1]/20"
             placeholder="yourcompany.com"
             value={url}
             onChange={(e) => setUrl(e.target.value)}
@@ -116,7 +116,7 @@ function UrlPhase({
         <button
           onClick={onResearch}
           disabled={!url.trim() || loading}
-          className="flex h-11 items-center gap-2 rounded-lg bg-[#4F46E5] px-6 font-medium text-white transition-colors hover:bg-[#4338CA] disabled:opacity-50"
+          className="flex h-11 items-center gap-2 rounded-lg bg-[#6366F1] px-6 font-medium text-white transition-colors hover:bg-[#818CF8] disabled:opacity-50"
         >
           {loading ? (
             <Loader2 className="h-4 w-4 animate-spin" />
@@ -129,10 +129,10 @@ function UrlPhase({
         </button>
       </div>
 
-      <p className="mt-3 text-xs text-[#9CA3AF]">
+      <p className="mt-3 text-xs text-[#71717A]">
         Or{" "}
         <button
-          className="text-[#4F46E5] underline hover:text-[#4338CA]"
+          className="text-[#6366F1] underline hover:text-[#818CF8]"
           onClick={onSkip}
         >
           set up manually
@@ -147,10 +147,10 @@ function UrlPhase({
 function ResearchPhase({ steps }: { steps: ResearchStep[] }) {
   return (
     <div className="mx-auto max-w-lg">
-      <h2 className="mb-1 text-lg font-semibold text-[#111827]">
+      <h2 className="mb-1 text-lg font-semibold text-[#FAFAFA]">
         Researching your company...
       </h2>
-      <p className="mb-6 text-sm text-[#6B7280]">
+      <p className="mb-6 text-sm text-[#A1A1AA]">
         This usually takes 10-15 seconds.
       </p>
 
@@ -166,19 +166,19 @@ function ResearchPhase({ steps }: { steps: ResearchStep[] }) {
                   <Check className="h-3 w-3 text-white" />
                 </div>
               ) : (
-                <Loader2 className="h-5 w-5 animate-spin text-[#4F46E5]" />
+                <Loader2 className="h-5 w-5 animate-spin text-[#6366F1]" />
               )}
             </div>
             <span
               className={cn(
                 "flex-1",
-                step.done ? "text-[#111827]" : "text-[#6B7280]",
+                step.done ? "text-[#FAFAFA]" : "text-[#A1A1AA]",
               )}
             >
               {step.label}
             </span>
             {step.value && (
-              <span className="shrink-0 text-right text-sm font-medium text-[#111827]">
+              <span className="shrink-0 text-right text-sm font-medium text-[#FAFAFA]">
                 {step.value}
               </span>
             )}
@@ -241,14 +241,14 @@ function ConfirmPhase({
 
   return (
     <div className="mx-auto max-w-lg">
-      <h2 className="mb-1 text-lg font-semibold text-[#111827]">
+      <h2 className="mb-1 text-lg font-semibold text-[#FAFAFA]">
         Here's what we found
       </h2>
-      <p className="mb-6 text-sm text-[#6B7280]">
+      <p className="mb-6 text-sm text-[#A1A1AA]">
         Confirm or adjust anything that's off.
       </p>
 
-      <div className="divide-y divide-[#E5E7EB] rounded-lg border border-[#E5E7EB]">
+      <div className="divide-y divide-[#27272A] rounded-lg border border-[#27272A]">
         {profileFields.map((field) => (
           <div
             key={field.key}
@@ -257,9 +257,9 @@ function ConfirmPhase({
             {editingField === field.key ? (
               <div className="flex flex-1 items-center gap-2">
                 <div className="flex-1">
-                  <p className="mb-1 text-xs text-[#6B7280]">{field.label}</p>
+                  <p className="mb-1 text-xs text-[#A1A1AA]">{field.label}</p>
                   <input
-                    className="h-8 w-full rounded border border-[#E5E7EB] px-2 text-sm text-[#111827] focus:border-[#4F46E5] focus:outline-none"
+                    className="h-8 w-full rounded border border-[#27272A] px-2 text-sm text-[#FAFAFA] focus:border-[#6366F1] focus:outline-none"
                     value={editValue}
                     onChange={(e) => setEditValue(e.target.value)}
                     onKeyDown={(e) => {
@@ -277,7 +277,7 @@ function ConfirmPhase({
                 </button>
                 <button
                   onClick={() => setEditingField(null)}
-                  className="text-[#9CA3AF] hover:text-[#6B7280]"
+                  className="text-[#71717A] hover:text-[#A1A1AA]"
                 >
                   <X className="h-3.5 w-3.5" />
                 </button>
@@ -285,20 +285,20 @@ function ConfirmPhase({
             ) : (
               <>
                 <div className="min-w-0 flex-1">
-                  <p className="text-xs text-[#6B7280]">{field.label}</p>
+                  <p className="text-xs text-[#A1A1AA]">{field.label}</p>
                   <p
                     className={cn(
                       "truncate text-sm font-medium",
                       field.value
-                        ? "text-[#111827]"
-                        : "italic text-[#9CA3AF]",
+                        ? "text-[#FAFAFA]"
+                        : "italic text-[#71717A]",
                     )}
                   >
                     {field.value || "Not found"}
                   </p>
                 </div>
                 <button
-                  className="shrink-0 ml-3 flex items-center gap-1 text-xs text-[#4F46E5] hover:text-[#4338CA]"
+                  className="shrink-0 ml-3 flex items-center gap-1 text-xs text-[#6366F1] hover:text-[#818CF8]"
                   onClick={() => startEdit(field.key, field.value)}
                 >
                   <Pencil className="h-3 w-3" />
@@ -312,10 +312,10 @@ function ConfirmPhase({
 
       {/* Questions the AI could not answer */}
       <div className="mt-6">
-        <h3 className="mb-1 text-sm font-medium text-[#111827]">
+        <h3 className="mb-1 text-sm font-medium text-[#FAFAFA]">
           Help us understand your priorities
         </h3>
-        <p className="mb-4 text-xs text-[#6B7280]">
+        <p className="mb-4 text-xs text-[#A1A1AA]">
           {missingFields.length > 0
             ? "We couldn't find everything from your website. This helps us give better recommendations."
             : "Select what matters most to you this quarter."}
@@ -323,7 +323,7 @@ function ConfirmPhase({
 
         <div className="space-y-4">
           <div>
-            <label className="text-sm text-[#6B7280]">
+            <label className="text-sm text-[#A1A1AA]">
               Top priorities this quarter{" "}
               <span className="text-xs">({priorities.length}/3)</span>
             </label>
@@ -338,8 +338,8 @@ function ConfirmPhase({
                     className={cn(
                       "rounded-full border px-3 py-1.5 text-xs font-medium transition-colors",
                       selected
-                        ? "border-[#4F46E5] bg-[#EEF2FF] text-[#4F46E5]"
-                        : "border-[#E5E7EB] text-[#6B7280] hover:border-[#4F46E5]/30 hover:text-[#111827]",
+                        ? "border-[#6366F1] bg-[#6366F1]/10 text-[#6366F1]"
+                        : "border-[#27272A] text-[#A1A1AA] hover:border-[#6366F1]/30 hover:text-[#FAFAFA]",
                       !selected &&
                         priorities.length >= 3 &&
                         "cursor-not-allowed opacity-40",
@@ -356,11 +356,11 @@ function ConfirmPhase({
           </div>
 
           <div>
-            <label className="text-sm text-[#6B7280]">Your role</label>
+            <label className="text-sm text-[#A1A1AA]">Your role</label>
             <select
               value={role}
               onChange={(e) => setRole(e.target.value)}
-              className="mt-1 h-9 w-full rounded-lg border border-[#E5E7EB] bg-white px-3 text-sm text-[#111827] focus:border-[#4F46E5] focus:outline-none focus:ring-2 focus:ring-[#4F46E5]/20"
+              className="mt-1 h-9 w-full rounded-lg border border-[#27272A] bg-[#18181B] px-3 text-sm text-[#FAFAFA] focus:border-[#6366F1] focus:outline-none focus:ring-2 focus:ring-[#6366F1]/20"
             >
               <option value="">Select role...</option>
               {ROLE_OPTIONS.map((r) => (
@@ -375,7 +375,7 @@ function ConfirmPhase({
 
       <button
         onClick={onContinue}
-        className="mt-6 flex h-11 w-full items-center justify-center gap-2 rounded-lg bg-[#4F46E5] font-medium text-white transition-colors hover:bg-[#4338CA]"
+        className="mt-6 flex h-11 w-full items-center justify-center gap-2 rounded-lg bg-[#6366F1] font-medium text-white transition-colors hover:bg-[#818CF8]"
       >
         Save & Continue
         <ArrowRight className="h-4 w-4" />
@@ -400,13 +400,13 @@ function InsightPhase({
   return (
     <div className="mx-auto max-w-lg">
       <div className="mb-4 text-center">
-        <div className="mx-auto mb-3 flex h-10 w-10 items-center justify-center rounded-lg bg-[#EEF2FF]">
-          <Sparkles className="h-5 w-5 text-[#4F46E5]" />
+        <div className="mx-auto mb-3 flex h-10 w-10 items-center justify-center rounded-lg bg-[#6366F1]/10">
+          <Sparkles className="h-5 w-5 text-[#6366F1]" />
         </div>
-        <h2 className="text-lg font-semibold text-[#111827]">
+        <h2 className="text-lg font-semibold text-[#FAFAFA]">
           Your First Insight
         </h2>
-        <p className="mt-1 text-sm text-[#6B7280]">
+        <p className="mt-1 text-sm text-[#A1A1AA]">
           {insightLoading
             ? `Generating intelligence for ${profile.companyName || "your company"}...`
             : "Here's your personalized intelligence brief."}
@@ -414,15 +414,15 @@ function InsightPhase({
       </div>
 
       {insightLoading && !insightContent && (
-        <div className="rounded-lg border border-[#E5E7EB] bg-[#F9FAFB] p-4">
+        <div className="rounded-lg border border-[#27272A] bg-[#18181B] p-4">
           <div className="flex items-center gap-3">
-            <Loader2 className="h-4 w-4 animate-spin text-[#4F46E5]" />
+            <Loader2 className="h-4 w-4 animate-spin text-[#6366F1]" />
             <div className="flex-1">
-              <span className="text-xs font-medium text-[#111827]">
+              <span className="text-xs font-medium text-[#FAFAFA]">
                 Synthesizing intelligence from multiple sources...
               </span>
-              <div className="mt-2 h-1 overflow-hidden rounded-full bg-[#E5E7EB]">
-                <div className="h-full w-1/3 animate-pulse rounded-full bg-[#4F46E5]" />
+              <div className="mt-2 h-1 overflow-hidden rounded-full bg-[#27272A]">
+                <div className="h-full w-1/3 animate-pulse rounded-full bg-[#6366F1]" />
               </div>
             </div>
           </div>
@@ -430,17 +430,17 @@ function InsightPhase({
       )}
 
       {insightContent && (
-        <div className="rounded-lg border border-[#E5E7EB] bg-white p-5">
+        <div className="rounded-lg border border-[#27272A] bg-[#18181B] p-5">
           <div className="mb-3 flex items-center gap-2">
-            <span className="inline-flex items-center gap-1 rounded-full bg-[#EEF2FF] px-2.5 py-0.5 text-xs font-medium text-[#4F46E5]">
+            <span className="inline-flex items-center gap-1 rounded-full bg-[#6366F1]/10 px-2.5 py-0.5 text-xs font-medium text-[#6366F1]">
               <Sparkles className="h-3 w-3" />
               AI Analysis
             </span>
-            <span className="inline-flex items-center rounded-full bg-[#F3F4F6] px-2.5 py-0.5 text-xs font-medium text-[#6B7280]">
+            <span className="inline-flex items-center rounded-full bg-[#27272A] px-2.5 py-0.5 text-xs font-medium text-[#A1A1AA]">
               Fusion Engine
             </span>
           </div>
-          <div className="prose-sm max-w-none text-sm leading-relaxed text-[#111827] [&_h2]:mt-4 [&_h2]:mb-2 [&_h2]:text-base [&_h2]:font-semibold [&_h3]:mt-3 [&_h3]:mb-1 [&_h3]:text-sm [&_h3]:font-semibold [&_li]:my-0.5 [&_p]:my-2 [&_strong]:font-semibold [&_ul]:my-2 [&_ul]:pl-4">
+          <div className="prose-sm max-w-none text-sm leading-relaxed text-[#FAFAFA] [&_h2]:mt-4 [&_h2]:mb-2 [&_h2]:text-base [&_h2]:font-semibold [&_h3]:mt-3 [&_h3]:mb-1 [&_h3]:text-sm [&_h3]:font-semibold [&_li]:my-0.5 [&_p]:my-2 [&_strong]:font-semibold [&_ul]:my-2 [&_ul]:pl-4">
             <ReactMarkdown>{insightContent}</ReactMarkdown>
           </div>
         </div>
@@ -464,22 +464,22 @@ function ReadyPhase({
         <Check className="h-7 w-7 text-[#059669]" />
       </div>
 
-      <div className="mb-4 inline-flex items-center gap-2 rounded-full bg-[#EEF2FF] px-4 py-2 text-sm text-[#4F46E5]">
+      <div className="mb-4 inline-flex items-center gap-2 rounded-full bg-[#6366F1]/10 px-4 py-2 text-sm text-[#6366F1]">
         <Check className="h-4 w-4" />
         Context Health: {healthScore}%
       </div>
 
-      <h2 className="mb-2 text-lg font-semibold text-[#111827]">
+      <h2 className="mb-2 text-lg font-semibold text-[#FAFAFA]">
         Your intelligence workspace is ready
       </h2>
-      <p className="mb-6 text-sm text-[#6B7280]">
+      <p className="mb-6 text-sm text-[#A1A1AA]">
         We've set up your profile, identified competitors, and generated your
         first insight.
       </p>
 
       <button
         onClick={onStart}
-        className="inline-flex h-11 items-center gap-2 rounded-lg bg-[#4F46E5] px-8 font-medium text-white transition-colors hover:bg-[#4338CA]"
+        className="inline-flex h-11 items-center gap-2 rounded-lg bg-[#6366F1] px-8 font-medium text-white transition-colors hover:bg-[#818CF8]"
       >
         Start Exploring
         <ArrowRight className="h-4 w-4" />
@@ -819,7 +819,7 @@ export default function OnboardingPage() {
   const phaseIndex = phases.indexOf(phase);
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-[#F3F4F6] px-4 py-12">
+    <div className="flex min-h-screen items-center justify-center bg-[#09090B] px-4 py-12">
       <div className="w-full max-w-xl">
         {/* Progress indicator */}
         <div className="mb-8 flex items-center justify-center gap-2">
@@ -829,15 +829,15 @@ export default function OnboardingPage() {
               className={cn(
                 "h-1.5 rounded-full transition-all duration-300",
                 i <= phaseIndex
-                  ? "w-8 bg-[#4F46E5]"
-                  : "w-4 bg-[#E5E7EB]",
+                  ? "w-8 bg-[#6366F1]"
+                  : "w-4 bg-[#27272A]",
               )}
             />
           ))}
         </div>
 
         {/* Card */}
-        <div className="rounded-xl bg-white p-6 shadow-sm sm:p-8">
+        <div className="rounded-xl bg-[#18181B] p-6 shadow-sm sm:p-8">
           {phase === "url" && (
             <UrlPhase
               url={url}

@@ -46,7 +46,7 @@ class ErrorBoundary extends Component<
   render() {
     if (this.state.hasError) {
       return (
-        <div className="flex min-h-screen items-center justify-center bg-white px-4">
+        <div className="flex min-h-screen items-center justify-center bg-[#09090B] px-4">
           <div className="text-center">
             <h1 className="text-lg font-semibold text-[#111827]">Something went wrong</h1>
             <p className="mt-2 text-sm text-[#6B7280]">
@@ -71,7 +71,7 @@ function AuthenticatedRoutes() {
 
   if (isLoading) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-white">
+      <div className="flex min-h-screen items-center justify-center bg-[#09090B]">
         <div className="flex items-center gap-2 text-sm text-[#6B7280]">
           <svg className="h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none">
             <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />

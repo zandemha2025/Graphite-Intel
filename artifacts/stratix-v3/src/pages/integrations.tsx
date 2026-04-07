@@ -74,7 +74,7 @@ type AppCategory =
 function Skeleton({ className }: { className?: string }) {
   return (
     <div
-      className={`animate-pulse rounded bg-[#F3F4F6] ${className ?? ""}`}
+      className={`animate-pulse rounded bg-[#27272A] ${className ?? ""}`}
     />
   );
 }
@@ -120,10 +120,10 @@ function DataSourcesSection() {
   return (
     <div className="space-y-4">
       <div>
-        <h2 className="text-sm font-semibold text-[#111827]">
+        <h2 className="text-sm font-semibold text-[#FAFAFA]">
           Intelligence Data Sources
         </h2>
-        <p className="mt-1 text-sm text-[#6B7280]">
+        <p className="mt-1 text-sm text-[#A1A1AA]">
           Backend services that power the Data Fusion Engine. Configured by your
           admin.
         </p>
@@ -131,12 +131,12 @@ function DataSourcesSection() {
       <div className="grid gap-3 sm:grid-cols-2">
         {DATA_SOURCES.map((source) => (
           <Card key={source.id} className="flex items-start gap-3">
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-[#F3F4F6] text-[#6B7280]">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-[#27272A] text-[#A1A1AA]">
               {source.icon}
             </div>
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2">
-                <p className="text-sm font-medium text-[#111827]">
+                <p className="text-sm font-medium text-[#FAFAFA]">
                   {source.name}
                 </p>
                 {source.status === "configured" ? (
@@ -150,7 +150,7 @@ function DataSourcesSection() {
                   </Badge>
                 )}
               </div>
-              <p className="mt-1 text-xs text-[#6B7280]">
+              <p className="mt-1 text-xs text-[#A1A1AA]">
                 {source.description}
               </p>
             </div>
@@ -362,10 +362,10 @@ function ConnectedAppsSection() {
       ) : accounts.length > 0 ? (
         <div className="space-y-4">
           <div>
-            <h2 className="text-sm font-semibold text-[#111827]">
+            <h2 className="text-sm font-semibold text-[#FAFAFA]">
               Connected Accounts
             </h2>
-            <p className="mt-1 text-sm text-[#6B7280]">
+            <p className="mt-1 text-sm text-[#A1A1AA]">
               Active integrations syncing data into Stratix.
             </p>
           </div>
@@ -376,14 +376,14 @@ function ConnectedAppsSection() {
                 className="flex items-center justify-between"
               >
                 <div className="flex items-center gap-3">
-                  <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-[#F3F4F6] text-[#6B7280]">
+                  <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-[#27272A] text-[#A1A1AA]">
                     <Link2 className="h-4 w-4" />
                   </div>
                   <div>
-                    <p className="text-sm font-medium text-[#111827]">
+                    <p className="text-sm font-medium text-[#FAFAFA]">
                       {account.appName}
                     </p>
-                    <p className="text-xs text-[#6B7280]">
+                    <p className="text-xs text-[#A1A1AA]">
                       {account.accountLabel}
                     </p>
                   </div>
@@ -415,10 +415,10 @@ function ConnectedAppsSection() {
       {/* App catalog */}
       <div className="space-y-4">
         <div>
-          <h2 className="text-sm font-semibold text-[#111827]">
+          <h2 className="text-sm font-semibold text-[#FAFAFA]">
             Available Apps
           </h2>
-          <p className="mt-1 text-sm text-[#6B7280]">
+          <p className="mt-1 text-sm text-[#A1A1AA]">
             Connect apps via Pipedream to bring data into your intelligence
             workspace.
           </p>
@@ -432,8 +432,8 @@ function ConnectedAppsSection() {
               onClick={() => setCategoryFilter(cat.id)}
               className={`rounded-lg px-3 py-1.5 text-xs font-medium transition-colors ${
                 categoryFilter === cat.id
-                  ? "bg-[#4F46E5] text-white"
-                  : "bg-[#F3F4F6] text-[#6B7280] hover:bg-[#E5E7EB] hover:text-[#111827]"
+                  ? "bg-[#6366F1] text-white"
+                  : "bg-[#27272A] text-[#A1A1AA] hover:bg-[#3F3F46] hover:text-[#FAFAFA]"
               }`}
             >
               {cat.label}
@@ -451,14 +451,14 @@ function ConnectedAppsSection() {
                 className="flex flex-col justify-between"
               >
                 <div className="mb-3 flex items-start gap-3">
-                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-[#F3F4F6] text-[#6B7280]">
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-[#27272A] text-[#A1A1AA]">
                     {app.icon}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-[#111827]">
+                    <p className="text-sm font-medium text-[#FAFAFA]">
                       {app.name}
                     </p>
-                    <p className="mt-0.5 text-xs text-[#6B7280]">
+                    <p className="mt-0.5 text-xs text-[#A1A1AA]">
                       {app.description}
                     </p>
                   </div>
@@ -498,7 +498,7 @@ export default function IntegrationsPage() {
     >
       <div className="space-y-8">
         <DataSourcesSection />
-        <div className="border-t border-[#E5E7EB]" />
+        <div className="border-t border-[#27272A]" />
         <ConnectedAppsSection />
       </div>
     </Page>

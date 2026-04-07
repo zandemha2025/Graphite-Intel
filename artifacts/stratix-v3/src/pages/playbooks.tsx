@@ -53,7 +53,7 @@ interface Playbook {
 function Skeleton({ className }: { className?: string }) {
   return (
     <div
-      className={`animate-pulse rounded bg-[#F3F4F6] ${className ?? ""}`}
+      className={`animate-pulse rounded bg-[#27272A] ${className ?? ""}`}
     />
   );
 }
@@ -86,11 +86,11 @@ function CreatePlaybookDialog({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
       <div className="fixed inset-0 bg-black/20" onClick={onClose} />
-      <div className="relative z-10 w-full max-w-md rounded-xl border border-[#E5E7EB] bg-white p-6 shadow-lg">
-        <h2 className="text-base font-semibold text-[#111827]">
+      <div className="relative z-10 w-full max-w-md rounded-xl border border-[#27272A] bg-[#18181B] p-6 shadow-lg">
+        <h2 className="text-base font-semibold text-[#FAFAFA]">
           New Playbook
         </h2>
-        <p className="mt-1 text-sm text-[#6B7280]">
+        <p className="mt-1 text-sm text-[#A1A1AA]">
           Create a new strategic playbook with step-by-step procedures.
         </p>
 
@@ -102,7 +102,7 @@ function CreatePlaybookDialog({
             onChange={(e) => setTitle(e.target.value)}
           />
           <div className="flex flex-col gap-1.5">
-            <label className="text-sm font-medium text-[#111827]">
+            <label className="text-sm font-medium text-[#FAFAFA]">
               Description
             </label>
             <textarea
@@ -110,7 +110,7 @@ function CreatePlaybookDialog({
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               rows={3}
-              className="w-full rounded-lg border border-[#E5E7EB] bg-white px-3 py-2 text-sm text-[#111827] placeholder:text-[#9CA3AF] transition-colors focus:outline-none focus:ring-2 focus:ring-[#4F46E5]/20 focus:border-[#4F46E5]"
+              className="w-full rounded-lg border border-[#27272A] bg-[#18181B] px-3 py-2 text-sm text-[#FAFAFA] placeholder:text-[#71717A] transition-colors focus:outline-none focus:ring-2 focus:ring-[#6366F1]/20 focus:border-[#6366F1]"
             />
           </div>
         </div>
@@ -153,13 +153,13 @@ function DeleteConfirm({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
       <div className="fixed inset-0 bg-black/20" onClick={onCancel} />
-      <div className="relative z-10 w-full max-w-sm rounded-xl border border-[#E5E7EB] bg-white p-6 shadow-lg">
-        <h2 className="text-base font-semibold text-[#111827]">
+      <div className="relative z-10 w-full max-w-sm rounded-xl border border-[#27272A] bg-[#18181B] p-6 shadow-lg">
+        <h2 className="text-base font-semibold text-[#FAFAFA]">
           Delete playbook
         </h2>
-        <p className="mt-2 text-sm text-[#6B7280]">
+        <p className="mt-2 text-sm text-[#A1A1AA]">
           Are you sure you want to delete{" "}
-          <span className="font-medium text-[#111827]">{playbookTitle}</span>?
+          <span className="font-medium text-[#FAFAFA]">{playbookTitle}</span>?
           This action cannot be undone.
         </p>
         <div className="mt-5 flex justify-end gap-2">
@@ -262,9 +262,9 @@ function MyPlaybooksTab() {
     return (
       <>
         <div className="text-center py-16">
-          <p className="text-[15px] text-[#6B7280] mb-4">No playbooks yet</p>
+          <p className="text-[15px] text-[#A1A1AA] mb-4">No playbooks yet</p>
           <button
-            className="text-[13px] text-[#4F46E5] hover:underline"
+            className="text-[13px] text-[#6366F1] hover:underline"
             onClick={() => setCreateOpen(true)}
           >
             + Create your first playbook
@@ -289,11 +289,11 @@ function MyPlaybooksTab() {
         {playbooks.map((pb) => (
           <Card
             key={pb.id}
-            className="group cursor-pointer transition-colors hover:border-[#4F46E5]/30"
+            className="group cursor-pointer transition-colors hover:border-[#6366F1]/30"
             onClick={() => navigate(`/playbooks/${pb.id}`)}
           >
             <div className="mb-2 flex items-center justify-between">
-              <p className="text-sm font-medium text-[#111827] truncate">
+              <p className="text-sm font-medium text-[#FAFAFA] truncate">
                 {pb.title}
               </p>
               <div className="flex items-center gap-1.5">
@@ -303,18 +303,18 @@ function MyPlaybooksTab() {
                     e.stopPropagation();
                     setDeleteTarget(pb);
                   }}
-                  className="hidden rounded p-1 text-[#9CA3AF] hover:bg-[#F3F4F6] hover:text-red-500 group-hover:block"
+                  className="hidden rounded p-1 text-[#71717A] hover:bg-[#27272A] hover:text-red-500 group-hover:block"
                 >
                   <Trash2 className="h-3.5 w-3.5" />
                 </button>
               </div>
             </div>
             {pb.description && (
-              <p className="mb-2 text-xs text-[#6B7280] line-clamp-2">
+              <p className="mb-2 text-xs text-[#A1A1AA] line-clamp-2">
                 {pb.description}
               </p>
             )}
-            <div className="flex items-center justify-between text-xs text-[#6B7280]">
+            <div className="flex items-center justify-between text-xs text-[#A1A1AA]">
               <span>
                 {pb.steps.length} step{pb.steps.length !== 1 ? "s" : ""}
               </span>
@@ -330,7 +330,7 @@ function MyPlaybooksTab() {
         {/* New playbook dashed card */}
         <button
           onClick={() => setCreateOpen(true)}
-          className="flex flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed border-[#E5E7EB] bg-white p-6 text-[#6B7280] transition-colors hover:border-[#4F46E5]/30 hover:text-[#4F46E5]"
+          className="flex flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed border-[#27272A] bg-[#18181B] p-6 text-[#A1A1AA] transition-colors hover:border-[#6366F1]/30 hover:text-[#6366F1]"
         >
           <Plus className="h-6 w-6" />
           <span className="text-sm font-medium">New Playbook</span>
@@ -529,17 +529,17 @@ function TemplatesTab() {
             <Card key={tpl.name}>
               <div className="mb-3">
                 <div className="flex items-center gap-2">
-                  <Icon className="h-4 w-4 text-[#4F46E5]" />
-                  <p className="text-sm font-medium text-[#111827]">
+                  <Icon className="h-4 w-4 text-[#6366F1]" />
+                  <p className="text-sm font-medium text-[#FAFAFA]">
                     {tpl.name}
                   </p>
                 </div>
-                <p className="mt-1 text-xs text-[#6B7280] line-clamp-2">
+                <p className="mt-1 text-xs text-[#A1A1AA] line-clamp-2">
                   {tpl.description}
                 </p>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-xs text-[#9CA3AF]">
+                <span className="text-xs text-[#71717A]">
                   {tpl.steps.length} step{tpl.steps.length !== 1 ? "s" : ""}
                 </span>
                 <Button
@@ -574,7 +574,7 @@ function TemplatesTab() {
 
       {templates && templates.length > 0 && (
         <div className="space-y-3">
-          <h3 className="text-sm font-semibold text-[#111827]">
+          <h3 className="text-sm font-semibold text-[#FAFAFA]">
             Organization Templates
           </h3>
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
@@ -582,19 +582,19 @@ function TemplatesTab() {
               <Card key={tpl.id}>
                 <div className="mb-3">
                   <div className="flex items-center gap-2">
-                    <BookMarked className="h-4 w-4 text-[#4F46E5]" />
-                    <p className="text-sm font-medium text-[#111827]">
+                    <BookMarked className="h-4 w-4 text-[#6366F1]" />
+                    <p className="text-sm font-medium text-[#FAFAFA]">
                       {tpl.title}
                     </p>
                   </div>
                   {tpl.description && (
-                    <p className="mt-1 text-xs text-[#6B7280] line-clamp-2">
+                    <p className="mt-1 text-xs text-[#A1A1AA] line-clamp-2">
                       {tpl.description}
                     </p>
                   )}
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-xs text-[#9CA3AF]">
+                  <span className="text-xs text-[#71717A]">
                     {tpl.steps.length} step{tpl.steps.length !== 1 ? "s" : ""}
                   </span>
                   <Button

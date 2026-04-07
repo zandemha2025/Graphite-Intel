@@ -33,7 +33,7 @@ export function Tabs({
 
   return (
     <div className={className}>
-      <div className="flex border-b border-[#E5E7EB]">
+      <div className="flex border-b border-[#27272A]">
         {tabs.map((tab) => (
           <button
             key={tab.id}
@@ -41,13 +41,13 @@ export function Tabs({
             className={cn(
               "px-4 py-2 text-sm font-medium transition-colors relative",
               activeTab === tab.id
-                ? "text-[#4F46E5]"
-                : "text-[#6B7280] hover:text-[#111827]",
+                ? "text-[#FAFAFA]"
+                : "text-[#71717A] hover:text-[#A1A1AA]",
             )}
           >
             {tab.label}
             {activeTab === tab.id && (
-              <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#4F46E5]" />
+              <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#6366F1]" />
             )}
           </button>
         ))}

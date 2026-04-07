@@ -49,7 +49,7 @@ interface PlaybookRun {
 function Skeleton({ className }: { className?: string }) {
   return (
     <div
-      className={`animate-pulse rounded bg-[#F3F4F6] ${className ?? ""}`}
+      className={`animate-pulse rounded bg-[#27272A] ${className ?? ""}`}
     />
   );
 }
@@ -59,13 +59,13 @@ function Skeleton({ className }: { className?: string }) {
 function StepStatusIcon({ status }: { status: StepStatus }) {
   switch (status) {
     case "pending":
-      return <Clock className="h-4 w-4 text-[#9CA3AF]" />;
+      return <Clock className="h-4 w-4 text-[#71717A]" />;
     case "in_progress":
-      return <Loader2 className="h-4 w-4 animate-spin text-[#4F46E5]" />;
+      return <Loader2 className="h-4 w-4 animate-spin text-[#6366F1]" />;
     case "complete":
       return <CheckCircle2 className="h-4 w-4 text-green-500" />;
     case "skipped":
-      return <MinusCircle className="h-4 w-4 text-[#9CA3AF]" />;
+      return <MinusCircle className="h-4 w-4 text-[#71717A]" />;
     case "failed":
       return <XCircle className="h-4 w-4 text-red-500" />;
   }
@@ -117,14 +117,14 @@ function ProgressBar({ steps }: { steps: RunStep[] }) {
   return (
     <div className="mb-6">
       <div className="mb-2 flex items-center justify-between text-xs">
-        <span className="font-medium text-[#111827]">
+        <span className="font-medium text-[#FAFAFA]">
           {completed} of {total} steps complete
         </span>
-        <span className="font-medium text-[#4F46E5]">{percent}%</span>
+        <span className="font-medium text-[#6366F1]">{percent}%</span>
       </div>
-      <div className="h-2 w-full overflow-hidden rounded-full bg-[#F3F4F6]">
+      <div className="h-2 w-full overflow-hidden rounded-full bg-[#27272A]">
         <div
-          className="h-full rounded-full bg-[#4F46E5] transition-all duration-500"
+          className="h-full rounded-full bg-[#6366F1] transition-all duration-500"
           style={{ width: `${percent}%` }}
         />
       </div>
@@ -179,18 +179,18 @@ function RunStepCard({
         {/* Content */}
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2">
-            <span className="text-xs font-medium text-[#9CA3AF]">
+            <span className="text-xs font-medium text-[#71717A]">
               Step {index + 1}
             </span>
             <Badge variant={stepStatusBadgeVariant(step.status)}>
               {stepStatusLabel(step.status)}
             </Badge>
           </div>
-          <p className="mt-1 text-sm font-medium text-[#111827]">
+          <p className="mt-1 text-sm font-medium text-[#FAFAFA]">
             {step.title || "Untitled step"}
           </p>
           {step.description && (
-            <p className="mt-0.5 text-xs text-[#6B7280]">
+            <p className="mt-0.5 text-xs text-[#A1A1AA]">
               {step.description}
             </p>
           )}
@@ -204,7 +204,7 @@ function RunStepCard({
                 placeholder="Add notes for this step..."
                 rows={2}
                 disabled={!canAct}
-                className="w-full rounded-lg border border-[#E5E7EB] bg-white px-3 py-2 text-xs text-[#111827] placeholder:text-[#9CA3AF] transition-colors focus:outline-none focus:ring-2 focus:ring-[#4F46E5]/20 focus:border-[#4F46E5] disabled:bg-[#F9FAFB] disabled:text-[#6B7280]"
+                className="w-full rounded-lg border border-[#27272A] bg-[#18181B] px-3 py-2 text-xs text-[#FAFAFA] placeholder:text-[#71717A] transition-colors focus:outline-none focus:ring-2 focus:ring-[#6366F1]/20 focus:border-[#6366F1] disabled:bg-[#18181B] disabled:text-[#A1A1AA]"
               />
             </div>
           )}
@@ -254,7 +254,7 @@ function RunStepCard({
 
           {/* Completed timestamp */}
           {step.completedAt && (
-            <p className="mt-2 text-[10px] text-[#9CA3AF]">
+            <p className="mt-2 text-[10px] text-[#71717A]">
               Completed at{" "}
               {new Date(step.completedAt).toLocaleString()}
             </p>
@@ -344,11 +344,11 @@ export default function PlaybookRunPage() {
     return (
       <Page title="Run not found" subtitle="">
         <Card className="flex flex-col items-center justify-center py-16">
-          <Play className="mb-3 h-8 w-8 text-[#D1D5DB]" />
-          <p className="text-sm font-medium text-[#111827]">
+          <Play className="mb-3 h-8 w-8 text-[#3F3F46]" />
+          <p className="text-sm font-medium text-[#FAFAFA]">
             Could not load this run
           </p>
-          <p className="mt-1 text-sm text-[#6B7280]">
+          <p className="mt-1 text-sm text-[#A1A1AA]">
             It may have been deleted or you may not have access.
           </p>
           <Button
@@ -374,15 +374,15 @@ export default function PlaybookRunPage() {
         <div className="flex items-center gap-3">
           <button
             onClick={() => navigate(`/playbooks/${run.playbookId}`)}
-            className="rounded-lg p-1.5 text-[#6B7280] transition-colors hover:bg-[#F3F4F6] hover:text-[#111827]"
+            className="rounded-lg p-1.5 text-[#A1A1AA] transition-colors hover:bg-[#27272A] hover:text-[#FAFAFA]"
           >
             <ArrowLeft className="h-4 w-4" />
           </button>
           <div>
-            <h1 className="text-lg font-semibold text-[#111827]">
+            <h1 className="text-lg font-semibold text-[#FAFAFA]">
               {run.playbookTitle}
             </h1>
-            <p className="mt-0.5 text-xs text-[#9CA3AF]">
+            <p className="mt-0.5 text-xs text-[#71717A]">
               Started {new Date(run.createdAt).toLocaleString()}
             </p>
           </div>
@@ -409,11 +409,11 @@ export default function PlaybookRunPage() {
       {/* Empty state */}
       {run.steps.length === 0 && (
         <Card className="flex flex-col items-center justify-center py-16">
-          <FileText className="mb-3 h-8 w-8 text-[#D1D5DB]" />
-          <p className="text-sm font-medium text-[#111827]">
+          <FileText className="mb-3 h-8 w-8 text-[#3F3F46]" />
+          <p className="text-sm font-medium text-[#FAFAFA]">
             No steps in this run
           </p>
-          <p className="mt-1 text-sm text-[#6B7280]">
+          <p className="mt-1 text-sm text-[#A1A1AA]">
             This playbook had no steps when it was executed.
           </p>
         </Card>

@@ -334,9 +334,9 @@ function StepStatusIcon({ status }: { status: WorkflowStep["status"] }) {
     case "done":
       return <CheckCircle2 className="h-5 w-5 text-green-500" />;
     case "building":
-      return <Loader2 className="h-5 w-5 animate-spin text-[#4F46E5]" />;
+      return <Loader2 className="h-5 w-5 animate-spin text-[#6366F1]" />;
     case "pending":
-      return <Circle className="h-5 w-5 text-[#D1D5DB]" />;
+      return <Circle className="h-5 w-5 text-[#3F3F46]" />;
   }
 }
 
@@ -369,10 +369,10 @@ function InputPhase({
       {/* Conversational prompt */}
       <div className="space-y-5">
         <div className="flex items-center gap-3">
-          <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-[#4F46E5]/10">
-            <Sparkles className="h-5 w-5 text-[#4F46E5]" />
+          <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-[#6366F1]/10">
+            <Sparkles className="h-5 w-5 text-[#6366F1]" />
           </div>
-          <h2 className="text-lg font-semibold text-[#111827]">
+          <h2 className="text-lg font-semibold text-[#FAFAFA]">
             What would you like to automate?
           </h2>
         </div>
@@ -383,7 +383,7 @@ function InputPhase({
             onChange={(e) => setPrompt(e.target.value)}
             placeholder='e.g., "Every Monday, check competitor websites for pricing changes and email me a summary"'
             rows={4}
-            className="w-full rounded-xl border border-[#E5E7EB] bg-white px-4 py-3.5 text-[15px] text-[#111827] placeholder:text-[#9CA3AF] focus:border-[#4F46E5] focus:outline-none focus:ring-2 focus:ring-[#4F46E5]/20 resize-none shadow-sm"
+            className="w-full rounded-xl border border-[#27272A] bg-[#18181B] px-4 py-3.5 text-[15px] text-[#FAFAFA] placeholder:text-[#71717A] focus:border-[#6366F1] focus:outline-none focus:ring-2 focus:ring-[#6366F1]/20 resize-none shadow-sm"
             autoFocus
             onKeyDown={(e) => {
               if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) {
@@ -393,7 +393,7 @@ function InputPhase({
             }}
           />
           <div className="flex items-center justify-between">
-            <p className="text-xs text-[#9CA3AF]">
+            <p className="text-xs text-[#71717A]">
               Cmd+Enter to submit
             </p>
             <Button
@@ -410,11 +410,11 @@ function InputPhase({
 
       {/* Divider */}
       <div className="flex items-center gap-4">
-        <div className="h-px flex-1 bg-[#E5E7EB]" />
-        <span className="text-xs font-medium text-[#9CA3AF]">
+        <div className="h-px flex-1 bg-[#27272A]" />
+        <span className="text-xs font-medium text-[#71717A]">
           Or start from a template
         </span>
-        <div className="h-px flex-1 bg-[#E5E7EB]" />
+        <div className="h-px flex-1 bg-[#27272A]" />
       </div>
 
       {/* Templates */}
@@ -425,18 +425,18 @@ function InputPhase({
             <button
               key={tpl.id}
               onClick={() => onSelectTemplate(tpl.id)}
-              className="group rounded-xl border border-[#E5E7EB] bg-white p-4 text-left transition-all hover:border-[#4F46E5]/30 hover:shadow-sm"
+              className="group rounded-xl border border-[#27272A] bg-[#18181B] p-4 text-left transition-all hover:border-[#6366F1]/30 hover:shadow-sm"
             >
               <div className="mb-2 flex items-center gap-2">
-                <Icon className="h-4 w-4 text-[#4F46E5]" />
-                <span className="text-sm font-medium text-[#111827]">
+                <Icon className="h-4 w-4 text-[#6366F1]" />
+                <span className="text-sm font-medium text-[#FAFAFA]">
                   {tpl.name}
                 </span>
               </div>
-              <p className="text-xs leading-relaxed text-[#6B7280]">
+              <p className="text-xs leading-relaxed text-[#A1A1AA]">
                 {tpl.description}
               </p>
-              <div className="mt-3 flex items-center gap-1.5 text-xs text-[#9CA3AF]">
+              <div className="mt-3 flex items-center gap-1.5 text-xs text-[#71717A]">
                 <Clock className="h-3 w-3" />
                 {tpl.schedule}
               </div>
@@ -464,17 +464,17 @@ function ReviewPhase({
   return (
     <div className="mx-auto max-w-2xl space-y-6 pt-6">
       <div className="flex items-center gap-3">
-        <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-[#4F46E5]/10">
-          <FileText className="h-5 w-5 text-[#4F46E5]" />
+        <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-[#6366F1]/10">
+          <FileText className="h-5 w-5 text-[#6366F1]" />
         </div>
-        <h2 className="text-lg font-semibold text-[#111827]">
+        <h2 className="text-lg font-semibold text-[#FAFAFA]">
           Here's what I'll build:
         </h2>
       </div>
 
       {/* Workflow name */}
-      <div className="rounded-xl border border-[#E5E7EB] bg-white p-5 shadow-sm">
-        <h3 className="mb-4 text-sm font-semibold text-[#111827]">
+      <div className="rounded-xl border border-[#27272A] bg-[#18181B] p-5 shadow-sm">
+        <h3 className="mb-4 text-sm font-semibold text-[#FAFAFA]">
           {plan.name}
         </h3>
 
@@ -483,17 +483,17 @@ function ReviewPhase({
           {plan.steps.map((step, i) => (
             <div
               key={step.id}
-              className="flex items-start gap-3 rounded-lg bg-[#F9FAFB] px-4 py-3"
+              className="flex items-start gap-3 rounded-lg bg-[#18181B] px-4 py-3"
             >
-              <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[#4F46E5]/10 text-xs font-semibold text-[#4F46E5]">
+              <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[#6366F1]/10 text-xs font-semibold text-[#6366F1]">
                 {i + 1}
               </span>
               <div className="min-w-0 flex-1">
-                <p className="text-sm font-medium text-[#111827]">
+                <p className="text-sm font-medium text-[#FAFAFA]">
                   {step.label}
                 </p>
                 {step.tool && (
-                  <p className="mt-0.5 text-xs text-[#9CA3AF]">
+                  <p className="mt-0.5 text-xs text-[#71717A]">
                     via {step.tool}
                   </p>
                 )}
@@ -504,9 +504,9 @@ function ReviewPhase({
         </div>
 
         {/* Schedule */}
-        <div className="mt-4 flex items-center gap-2 rounded-lg bg-[#EEF2FF] px-4 py-2.5">
+        <div className="mt-4 flex items-center gap-2 rounded-lg bg-[#6366F1]/10 px-4 py-2.5">
           <TriggerIcon trigger={plan.trigger} />
-          <span className="text-sm font-medium text-[#4F46E5]">
+          <span className="text-sm font-medium text-[#6366F1]">
             Schedule: {plan.schedule}
           </span>
         </div>
@@ -539,13 +539,13 @@ function BuildingPhase({ plan }: { plan: WorkflowPlan }) {
   return (
     <div className="mx-auto max-w-2xl space-y-6 pt-6">
       <div className="flex items-center gap-3">
-        <Loader2 className="h-5 w-5 animate-spin text-[#4F46E5]" />
-        <h2 className="text-lg font-semibold text-[#111827]">
+        <Loader2 className="h-5 w-5 animate-spin text-[#6366F1]" />
+        <h2 className="text-lg font-semibold text-[#FAFAFA]">
           Building your workflow...
         </h2>
       </div>
 
-      <div className="rounded-xl border border-[#E5E7EB] bg-white p-5 shadow-sm">
+      <div className="rounded-xl border border-[#27272A] bg-[#18181B] p-5 shadow-sm">
         <div className="space-y-4">
           {plan.steps.map((step) => (
             <div key={step.id} className="flex items-center gap-3">
@@ -554,8 +554,8 @@ function BuildingPhase({ plan }: { plan: WorkflowPlan }) {
                 <p
                   className={`text-sm ${
                     step.status === "pending"
-                      ? "text-[#9CA3AF]"
-                      : "font-medium text-[#111827]"
+                      ? "text-[#71717A]"
+                      : "font-medium text-[#FAFAFA]"
                   }`}
                 >
                   {step.status === "done" && "Created: "}
@@ -563,7 +563,7 @@ function BuildingPhase({ plan }: { plan: WorkflowPlan }) {
                   {step.label}
                 </p>
                 {step.tool && step.status !== "pending" && (
-                  <p className="text-xs text-[#9CA3AF]">via {step.tool}</p>
+                  <p className="text-xs text-[#71717A]">via {step.tool}</p>
                 )}
               </div>
             </div>
@@ -592,14 +592,14 @@ function DeployedPhase({
   return (
     <div className="mx-auto max-w-2xl space-y-6 pt-6">
       {/* Success header */}
-      <div className="rounded-xl border border-green-200 bg-green-50 p-5">
+      <div className="rounded-xl border border-[#22C55E]/30 bg-[#22C55E]/10 p-5">
         <div className="flex items-center gap-3">
           <CheckCircle2 className="h-6 w-6 text-green-500" />
           <div>
-            <h2 className="text-lg font-semibold text-[#111827]">
+            <h2 className="text-lg font-semibold text-[#FAFAFA]">
               Workflow deployed!
             </h2>
-            <p className="mt-0.5 text-sm text-[#6B7280]">
+            <p className="mt-0.5 text-sm text-[#A1A1AA]">
               "{plan.name}"
             </p>
           </div>
@@ -607,9 +607,9 @@ function DeployedPhase({
       </div>
 
       {/* Summary */}
-      <div className="rounded-xl border border-[#E5E7EB] bg-white p-5 shadow-sm">
+      <div className="rounded-xl border border-[#27272A] bg-[#18181B] p-5 shadow-sm">
         <div className="mb-4 flex items-center justify-between">
-          <h3 className="text-sm font-semibold text-[#111827]">
+          <h3 className="text-sm font-semibold text-[#FAFAFA]">
             {plan.name}
           </h3>
           <Badge variant="success">Active</Badge>
@@ -620,7 +620,7 @@ function DeployedPhase({
           {plan.steps.map((step) => (
             <div key={step.id} className="flex items-center gap-2 text-sm">
               <CheckCircle2 className="h-4 w-4 text-green-500" />
-              <span className="text-[#111827]">{step.label}</span>
+              <span className="text-[#FAFAFA]">{step.label}</span>
               {step.tool && (
                 <Badge variant="default" className="text-[10px]">
                   {step.tool}
@@ -631,9 +631,9 @@ function DeployedPhase({
         </div>
 
         {/* Schedule */}
-        <div className="flex items-center gap-2 rounded-lg bg-[#F9FAFB] px-4 py-2.5">
+        <div className="flex items-center gap-2 rounded-lg bg-[#18181B] px-4 py-2.5">
           <TriggerIcon trigger={plan.trigger} />
-          <span className="text-sm text-[#6B7280]">
+          <span className="text-sm text-[#A1A1AA]">
             Runs {plan.schedule.toLowerCase()}
           </span>
         </div>
@@ -709,45 +709,45 @@ function EditPlanOverlay({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-      <div className="mx-4 w-full max-w-lg rounded-xl border border-[#E5E7EB] bg-white p-6 shadow-xl">
-        <h3 className="mb-4 text-sm font-semibold text-[#111827]">
+      <div className="mx-4 w-full max-w-lg rounded-xl border border-[#27272A] bg-[#18181B] p-6 shadow-xl">
+        <h3 className="mb-4 text-sm font-semibold text-[#FAFAFA]">
           Edit Workflow Plan
         </h3>
 
         {/* Name */}
         <div className="mb-4">
-          <label className="mb-1 block text-xs font-medium text-[#6B7280]">
+          <label className="mb-1 block text-xs font-medium text-[#A1A1AA]">
             Workflow Name
           </label>
           <input
             type="text"
             value={name}
             onChange={(e) => setName(e.target.value)}
-            className="w-full rounded-lg border border-[#E5E7EB] bg-white px-3 py-2 text-sm text-[#111827] focus:border-[#4F46E5] focus:outline-none focus:ring-2 focus:ring-[#4F46E5]/20"
+            className="w-full rounded-lg border border-[#27272A] bg-[#18181B] px-3 py-2 text-sm text-[#FAFAFA] focus:border-[#6366F1] focus:outline-none focus:ring-2 focus:ring-[#6366F1]/20"
           />
         </div>
 
         {/* Steps */}
         <div className="mb-4">
-          <label className="mb-1 block text-xs font-medium text-[#6B7280]">
+          <label className="mb-1 block text-xs font-medium text-[#A1A1AA]">
             Steps
           </label>
           <div className="space-y-2">
             {steps.map((step, i) => (
               <div key={i} className="flex items-center gap-2">
-                <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[#F3F4F6] text-xs font-medium text-[#6B7280]">
+                <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[#27272A] text-xs font-medium text-[#A1A1AA]">
                   {i + 1}
                 </span>
                 <input
                   type="text"
                   value={step}
                   onChange={(e) => updateStep(i, e.target.value)}
-                  className="flex-1 rounded-lg border border-[#E5E7EB] bg-white px-3 py-1.5 text-sm text-[#111827] focus:border-[#4F46E5] focus:outline-none focus:ring-2 focus:ring-[#4F46E5]/20"
+                  className="flex-1 rounded-lg border border-[#27272A] bg-[#18181B] px-3 py-1.5 text-sm text-[#FAFAFA] focus:border-[#6366F1] focus:outline-none focus:ring-2 focus:ring-[#6366F1]/20"
                   placeholder="Describe this step..."
                 />
                 <button
                   onClick={() => removeStep(i)}
-                  className="rounded p-1 text-[#9CA3AF] hover:bg-[#F3F4F6] hover:text-[#6B7280]"
+                  className="rounded p-1 text-[#71717A] hover:bg-[#27272A] hover:text-[#A1A1AA]"
                 >
                   <span className="text-xs">x</span>
                 </button>
@@ -756,7 +756,7 @@ function EditPlanOverlay({
           </div>
           <button
             onClick={addStep}
-            className="mt-2 text-xs font-medium text-[#4F46E5] hover:text-[#4338CA]"
+            className="mt-2 text-xs font-medium text-[#6366F1] hover:text-[#818CF8]"
           >
             + Add step
           </button>
@@ -764,7 +764,7 @@ function EditPlanOverlay({
 
         {/* Trigger */}
         <div className="mb-4">
-          <label className="mb-1 block text-xs font-medium text-[#6B7280]">
+          <label className="mb-1 block text-xs font-medium text-[#A1A1AA]">
             Trigger
           </label>
           <div className="flex gap-2">
@@ -774,8 +774,8 @@ function EditPlanOverlay({
                 onClick={() => setTrigger(t)}
                 className={`flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-xs font-medium transition-colors ${
                   trigger === t
-                    ? "border-[#4F46E5] bg-[#EEF2FF] text-[#4F46E5]"
-                    : "border-[#E5E7EB] text-[#6B7280] hover:bg-[#F9FAFB]"
+                    ? "border-[#6366F1] bg-[#6366F1]/10 text-[#6366F1]"
+                    : "border-[#27272A] text-[#A1A1AA] hover:bg-[#18181B]"
                 }`}
               >
                 <TriggerIcon trigger={t} />
@@ -788,14 +788,14 @@ function EditPlanOverlay({
         {/* Schedule (only if trigger is schedule) */}
         {trigger === "schedule" && (
           <div className="mb-4">
-            <label className="mb-1 block text-xs font-medium text-[#6B7280]">
+            <label className="mb-1 block text-xs font-medium text-[#A1A1AA]">
               Schedule
             </label>
             <input
               type="text"
               value={schedule}
               onChange={(e) => setSchedule(e.target.value)}
-              className="w-full rounded-lg border border-[#E5E7EB] bg-white px-3 py-2 text-sm text-[#111827] focus:border-[#4F46E5] focus:outline-none focus:ring-2 focus:ring-[#4F46E5]/20"
+              className="w-full rounded-lg border border-[#27272A] bg-[#18181B] px-3 py-2 text-sm text-[#FAFAFA] focus:border-[#6366F1] focus:outline-none focus:ring-2 focus:ring-[#6366F1]/20"
               placeholder="e.g., Every Monday 9am"
             />
           </div>
@@ -979,11 +979,11 @@ export default function WorkflowBuilderPage() {
       {/* Phase: Planning (loading) */}
       {phase === "planning" && (
         <div className="mx-auto flex max-w-2xl flex-col items-center justify-center py-20">
-          <Loader2 className="mb-4 h-8 w-8 animate-spin text-[#4F46E5]" />
-          <h2 className="text-lg font-semibold text-[#111827]">
+          <Loader2 className="mb-4 h-8 w-8 animate-spin text-[#6366F1]" />
+          <h2 className="text-lg font-semibold text-[#FAFAFA]">
             Understanding your workflow...
           </h2>
-          <p className="mt-1 text-sm text-[#6B7280]">
+          <p className="mt-1 text-sm text-[#A1A1AA]">
             Analyzing requirements and generating a plan
           </p>
         </div>

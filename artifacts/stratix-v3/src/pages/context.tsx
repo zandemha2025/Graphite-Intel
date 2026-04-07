@@ -74,7 +74,7 @@ const tabs = [
 function Skeleton({ className }: { className?: string }) {
   return (
     <div
-      className={`animate-pulse rounded bg-[#F3F4F6] ${className ?? ""}`}
+      className={`animate-pulse rounded bg-[#27272A] ${className ?? ""}`}
     />
   );
 }
@@ -105,17 +105,17 @@ function ContextHealthScore() {
 
   const scoreColor =
     health.score >= 70
-      ? "text-green-700"
+      ? "text-[#22C55E]"
       : health.score >= 40
-        ? "text-amber-700"
-        : "text-red-700";
+        ? "text-[#F59E0B]"
+        : "text-[#EF4444]";
 
   const barColor =
     health.score >= 70
-      ? "bg-green-500"
+      ? "bg-[#22C55E]/100"
       : health.score >= 40
-        ? "bg-amber-500"
-        : "bg-red-500";
+        ? "bg-[#F59E0B]/100"
+        : "bg-[#EF4444]/100";
 
   return (
     <Card className="mb-6">
@@ -124,10 +124,10 @@ function ContextHealthScore() {
           <div
             className={`flex h-12 w-12 items-center justify-center rounded-full border-2 ${
               health.score >= 70
-                ? "border-green-200 bg-green-50"
+                ? "border-[#22C55E]/30 bg-[#22C55E]/10"
                 : health.score >= 40
-                  ? "border-amber-200 bg-amber-50"
-                  : "border-red-200 bg-red-50"
+                  ? "border-[#F59E0B]/30 bg-[#F59E0B]/10"
+                  : "border-[#EF4444]/30 bg-[#EF4444]/10"
             }`}
           >
             <span className={`text-lg font-bold ${scoreColor}`}>
@@ -135,10 +135,10 @@ function ContextHealthScore() {
             </span>
           </div>
           <div>
-            <p className="text-sm font-medium text-[#111827]">
+            <p className="text-sm font-medium text-[#FAFAFA]">
               Context Health Score
             </p>
-            <p className="text-xs text-[#6B7280]">
+            <p className="text-xs text-[#A1A1AA]">
               How well-calibrated the AI is to your business
             </p>
           </div>
@@ -152,7 +152,7 @@ function ContextHealthScore() {
           />
         </div>
       </div>
-      <div className="mt-3 h-2 w-full overflow-hidden rounded-full bg-[#F3F4F6]">
+      <div className="mt-3 h-2 w-full overflow-hidden rounded-full bg-[#27272A]">
         <div
           className={`h-full rounded-full transition-all ${barColor}`}
           style={{ width: `${health.score}%` }}
@@ -165,8 +165,8 @@ function ContextHealthScore() {
 function BreakdownItem({ label, value }: { label: string; value: number }) {
   return (
     <div className="text-center">
-      <p className="text-sm font-semibold text-[#111827]">{value}%</p>
-      <p className="text-xs text-[#6B7280]">{label}</p>
+      <p className="text-sm font-semibold text-[#FAFAFA]">{value}%</p>
+      <p className="text-xs text-[#A1A1AA]">{label}</p>
     </div>
   );
 }
@@ -334,16 +334,16 @@ function CompanyProfileTab() {
 
         return displayBenchmarks.length > 0 ? (
           <div className="mt-6">
-            <h3 className="text-sm font-medium text-[#111827] mb-3">Industry Benchmarks</h3>
-            <p className="text-xs text-[#6B7280] mb-4">
+            <h3 className="text-sm font-medium text-[#FAFAFA] mb-3">Industry Benchmarks</h3>
+            <p className="text-xs text-[#A1A1AA] mb-4">
               Based on your industry ({profile?.industry || "SaaS"}). These ground every AI response.
             </p>
             <div className="grid grid-cols-2 gap-3">
               {displayBenchmarks.map(b => (
-                <div key={b.metric} className="rounded-lg border border-[#E5E7EB] p-3">
-                  <p className="text-xs text-[#6B7280]">{b.metric}</p>
-                  <p className="text-lg font-semibold text-[#111827]">{b.value}</p>
-                  <p className="text-[10px] text-[#9CA3AF]">{b.source}</p>
+                <div key={b.metric} className="rounded-lg border border-[#27272A] p-3">
+                  <p className="text-xs text-[#A1A1AA]">{b.metric}</p>
+                  <p className="text-lg font-semibold text-[#FAFAFA]">{b.value}</p>
+                  <p className="text-[10px] text-[#71717A]">{b.source}</p>
                 </div>
               ))}
             </div>
@@ -490,9 +490,9 @@ function KnowledgeBaseTab() {
       {/* Search + Upload bar */}
       <div className="flex items-center gap-3">
         <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#9CA3AF]" />
+          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#71717A]" />
           <input
-            className="h-9 w-full rounded-lg border border-[#E5E7EB] bg-white pl-9 pr-3 text-sm text-[#111827] placeholder:text-[#9CA3AF] focus:border-[#4F46E5] focus:outline-none focus:ring-2 focus:ring-[#4F46E5]/20"
+            className="h-9 w-full rounded-lg border border-[#27272A] bg-[#18181B] pl-9 pr-3 text-sm text-[#FAFAFA] placeholder:text-[#71717A] focus:border-[#6366F1] focus:outline-none focus:ring-2 focus:ring-[#6366F1]/20"
             placeholder="Search documents..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
@@ -526,7 +526,7 @@ function KnowledgeBaseTab() {
 
       {searchResults !== null && (
         <div className="flex items-center gap-2">
-          <p className="text-xs text-[#6B7280]">
+          <p className="text-xs text-[#A1A1AA]">
             {searchResults.length} result{searchResults.length !== 1 ? "s" : ""}{" "}
             for &quot;{searchQuery}&quot;
           </p>
@@ -535,7 +535,7 @@ function KnowledgeBaseTab() {
               setSearchResults(null);
               setSearchQuery("");
             }}
-            className="text-xs text-[#4F46E5] hover:underline"
+            className="text-xs text-[#6366F1] hover:underline"
           >
             Clear search
           </button>
@@ -545,35 +545,35 @@ function KnowledgeBaseTab() {
       {/* Document list */}
       {displayDocs.length === 0 ? (
         <div className="text-center py-16">
-          <p className="text-[15px] text-[#6B7280] mb-4">
+          <p className="text-[15px] text-[#A1A1AA] mb-4">
             {searchResults !== null ? "No matching documents" : "No documents yet"}
           </p>
           {searchResults === null ? (
             <button
-              className="text-[13px] text-[#4F46E5] hover:underline"
+              className="text-[13px] text-[#6366F1] hover:underline"
               onClick={() => fileInputRef.current?.click()}
             >
               + Upload your first document
             </button>
           ) : (
-            <p className="text-[13px] text-[#9CA3AF]">Try a different search term.</p>
+            <p className="text-[13px] text-[#71717A]">Try a different search term.</p>
           )}
         </div>
       ) : (
-        <div className="overflow-hidden rounded-lg border border-[#E5E7EB]">
+        <div className="overflow-hidden rounded-lg border border-[#27272A]">
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-[#E5E7EB] bg-[#F9FAFB]">
-                <th className="px-4 py-2.5 text-left font-medium text-[#6B7280]">
+              <tr className="border-b border-[#27272A] bg-[#18181B]">
+                <th className="px-4 py-2.5 text-left font-medium text-[#A1A1AA]">
                   Name
                 </th>
-                <th className="px-4 py-2.5 text-left font-medium text-[#6B7280]">
+                <th className="px-4 py-2.5 text-left font-medium text-[#A1A1AA]">
                   Type
                 </th>
-                <th className="px-4 py-2.5 text-left font-medium text-[#6B7280]">
+                <th className="px-4 py-2.5 text-left font-medium text-[#A1A1AA]">
                   Uploaded
                 </th>
-                <th className="px-4 py-2.5 text-left font-medium text-[#6B7280]">
+                <th className="px-4 py-2.5 text-left font-medium text-[#A1A1AA]">
                   Status
                 </th>
                 <th className="w-12 px-4 py-2.5" />
@@ -583,19 +583,19 @@ function KnowledgeBaseTab() {
               {displayDocs.map((doc) => (
                 <tr
                   key={doc.id}
-                  className="border-b border-[#E5E7EB] last:border-b-0 hover:bg-[#F9FAFB]"
+                  className="border-b border-[#27272A] last:border-b-0 hover:bg-[#18181B]"
                 >
-                  <td className="px-4 py-3 font-medium text-[#111827]">
+                  <td className="px-4 py-3 font-medium text-[#FAFAFA]">
                     {doc.name}
                   </td>
                   <td className="px-4 py-3">{getTypeBadge(doc.type)}</td>
-                  <td className="px-4 py-3 text-[#6B7280]">
+                  <td className="px-4 py-3 text-[#A1A1AA]">
                     {format(new Date(doc.uploadedAt), "MMM d, yyyy")}
                   </td>
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-1.5">
                       {getStatusIcon(doc.status)}
-                      <span className="text-[#6B7280] capitalize">
+                      <span className="text-[#A1A1AA] capitalize">
                         {doc.status}
                       </span>
                     </div>
@@ -603,7 +603,7 @@ function KnowledgeBaseTab() {
                   <td className="px-4 py-3">
                     <button
                       onClick={() => deleteMutation.mutate(doc.id)}
-                      className="rounded p-1 text-[#9CA3AF] hover:bg-[#F3F4F6] hover:text-red-500"
+                      className="rounded p-1 text-[#71717A] hover:bg-[#27272A] hover:text-red-500"
                     >
                       <Trash2 className="h-4 w-4" />
                     </button>
@@ -687,7 +687,7 @@ function StrategicDefinitionsTab() {
     <div className="space-y-4">
       {/* Add new definition */}
       <Card>
-        <p className="mb-3 text-sm font-medium text-[#111827]">
+        <p className="mb-3 text-sm font-medium text-[#FAFAFA]">
           Add Definition
         </p>
         <div className="space-y-3">
@@ -697,7 +697,7 @@ function StrategicDefinitionsTab() {
             onChange={(e) => setNewTerm(e.target.value)}
           />
           <textarea
-            className="h-20 w-full resize-none rounded-lg border border-[#E5E7EB] bg-white px-3 py-2 text-sm text-[#111827] placeholder:text-[#9CA3AF] focus:border-[#4F46E5] focus:outline-none focus:ring-2 focus:ring-[#4F46E5]/20"
+            className="h-20 w-full resize-none rounded-lg border border-[#27272A] bg-[#18181B] px-3 py-2 text-sm text-[#FAFAFA] placeholder:text-[#71717A] focus:border-[#6366F1] focus:outline-none focus:ring-2 focus:ring-[#6366F1]/20"
             placeholder="Definition or context (e.g., Our TAM is $4.2B based on bottom-up analysis of enterprise customers in North America)"
             value={newDefinition}
             onChange={(e) => setNewDefinition(e.target.value)}
@@ -718,8 +718,8 @@ function StrategicDefinitionsTab() {
       {/* Definitions list */}
       {definitions.length === 0 ? (
         <div className="text-center py-16">
-          <p className="text-[15px] text-[#6B7280] mb-4">No definitions yet</p>
-          <p className="text-[13px] text-[#9CA3AF]">
+          <p className="text-[15px] text-[#A1A1AA] mb-4">No definitions yet</p>
+          <p className="text-[13px] text-[#71717A]">
             Define terms, metrics, and relationships that teach the AI your domain language.
           </p>
         </div>
@@ -729,16 +729,16 @@ function StrategicDefinitionsTab() {
             <Card key={def.id} className="group relative">
               <div className="flex items-start justify-between">
                 <div className="flex-1">
-                  <p className="text-sm font-semibold text-[#111827]">
+                  <p className="text-sm font-semibold text-[#FAFAFA]">
                     {def.term}
                   </p>
-                  <p className="mt-1 text-sm text-[#6B7280]">
+                  <p className="mt-1 text-sm text-[#A1A1AA]">
                     {def.definition}
                   </p>
                 </div>
                 <button
                   onClick={() => handleDelete(def.id)}
-                  className="ml-3 rounded p-1 text-[#D1D5DB] opacity-0 group-hover:opacity-100 hover:bg-[#F3F4F6] hover:text-red-500 transition-opacity"
+                  className="ml-3 rounded p-1 text-[#3F3F46] opacity-0 group-hover:opacity-100 hover:bg-[#27272A] hover:text-red-500 transition-opacity"
                 >
                   <X className="h-4 w-4" />
                 </button>

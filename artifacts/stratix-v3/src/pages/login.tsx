@@ -54,23 +54,23 @@ export default function LoginPage() {
   const loading = loginMutation.isPending || signupMutation.isPending;
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-[#F3F4F6] px-4">
+    <div className="flex min-h-screen items-center justify-center bg-[#09090B] px-4">
       <div className="w-full max-w-sm">
         {/* Logo */}
         <div className="mb-8 text-center">
-          <div className="mx-auto mb-3 flex h-10 w-10 items-center justify-center rounded-lg bg-[#4F46E5] text-white font-bold text-sm">
+          <div className="mx-auto mb-3 flex h-10 w-10 items-center justify-center rounded-lg bg-[#6366F1] text-white font-bold text-sm">
             S
           </div>
-          <h1 className="text-xl font-semibold text-[#111827]">Stratix</h1>
-          <p className="mt-1 text-sm text-[#6B7280]">
+          <h1 className="text-xl font-semibold text-[#FAFAFA]">Stratix</h1>
+          <p className="mt-1 text-sm text-[#A1A1AA]">
             Strategic intelligence your team trusts
           </p>
         </div>
 
         {/* Card */}
-        <div className="rounded-xl bg-white p-6 shadow-sm">
+        <div className="rounded-xl bg-[#18181B] p-6 shadow-sm">
           {/* Tabs */}
-          <div className="mb-6 flex rounded-lg bg-[#F3F4F6] p-1">
+          <div className="mb-6 flex rounded-lg bg-[#27272A] p-1">
             {(["signin", "signup"] as const).map((t) => (
               <button
                 key={t}
@@ -81,8 +81,8 @@ export default function LoginPage() {
                 className={cn(
                   "flex-1 rounded-md py-2 text-sm font-medium transition-colors",
                   tab === t
-                    ? "bg-white text-[#111827] shadow-sm"
-                    : "text-[#6B7280] hover:text-[#111827]",
+                    ? "bg-[#18181B] text-[#FAFAFA] shadow-sm"
+                    : "text-[#A1A1AA] hover:text-[#FAFAFA]",
                 )}
               >
                 {t === "signin" ? "Sign In" : "Sign Up"}
