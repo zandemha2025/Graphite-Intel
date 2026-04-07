@@ -303,13 +303,23 @@ function ConnectedAppsSection() {
     (app) => categoryFilter === "all" || app.category === categoryFilter,
   );
 
-  function handleConnect(appId: string) {
+  async function handleConnect(appId: string) {
     if (appId === "google-drive") {
       window.location.href = "/api/integrations/oauth/google/start";
       return;
     }
-    // Pipedream OAuth flow - redirect to connector setup
-    window.location.href = `/api/connectors/connect/${appId}`;
+    // All other apps use Pipedream Connect
+    try {
+      const token = await apiPost<{ token: string; connect_url?: string }>("/connectors/token", { appId });
+      if (token.connect_url) {
+        window.location.href = token.connect_url;
+      } else {
+        toast.info(`${appId} connection initiated via Pipedream. Check your email or return here to verify.`);
+        queryClient.invalidateQueries({ queryKey: ["connectors", "summary"] });
+      }
+    } catch {
+      toast.error("Connection failed. Please check Pipedream credentials in settings.");
+    }
   }
 
   function getSyncBadge(status: ConnectedAccount["syncStatus"]) {

@@ -439,35 +439,32 @@ function InsightStep({
     // Simulate research phase, then stream the response
     const phaseTimer = setTimeout(() => setPhase("generating"), 2000);
 
-    apiSSE(
-      "/openai/conversations/onboarding/messages",
-      { content: prompt, depth: "quick" },
-      (_event, data) => {
-        if (_event === "done") return;
-        try {
-          const parsed = JSON.parse(data);
-          if (parsed.choices?.[0]?.delta?.content) {
-            setInsightContent((prev) => prev + parsed.choices[0].delta.content);
-          } else if (typeof parsed.content === "string") {
-            setInsightContent((prev) => prev + parsed.content);
-          } else if (typeof parsed.token === "string") {
-            setInsightContent((prev) => prev + parsed.token);
-          }
-        } catch {
-          if (data && data !== "[DONE]") {
-            setInsightContent((prev) => prev + data);
-          }
-        }
-      },
-      abortRef.current.signal,
-    )
+    // First create a real conversation, then stream
+    apiPost<{ id: number }>("/openai/conversations", {})
+      .then((conv) => {
+        return apiSSE(
+          `/openai/conversations/${conv.id}/messages`,
+          { content: prompt, depth: "quick" },
+          (event, data) => {
+            if (event === "done" || event === "complete") return;
+            if (event === "error") {
+              try { const p = JSON.parse(data); setInsightContent(p.error || "Analysis unavailable — check API configuration."); } catch {}
+              return;
+            }
+            if (event === "step" || event === "step_complete" || event === "sources") return;
+            try {
+              const parsed = JSON.parse(data);
+              const delta = parsed.delta ?? parsed.content ?? parsed.token ?? "";
+              if (delta) setInsightContent((prev) => prev + delta);
+            } catch {
+              if (data && data !== "[DONE]") setInsightContent((prev) => prev + data);
+            }
+          },
+          abortRef.current!.signal,
+        );
+      })
       .catch(() => {
-        // If streaming fails, show a simulated insight
-        if (!insightContent) {
-          setInsightContent(
-            getSimulatedInsight(connectedAccounts, priorities, competitors, industry),
-          );
-        }
+        setInsightContent("Connect your data sources and try again, or skip to start exploring.");
       })
       .finally(() => {
         setLoading(false);
