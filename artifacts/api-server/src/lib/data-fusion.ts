@@ -211,6 +211,41 @@ export async function fetchCallData(
 }
 
 // ---------------------------------------------------------------------------
+// Chart Opportunity Detection
+// ---------------------------------------------------------------------------
+
+export interface ChartSuggestion {
+  type: string;
+  description: string;
+}
+
+export function detectChartOpportunities(content: string): ChartSuggestion[] {
+  const suggestions: ChartSuggestion[] = [];
+
+  // Detect time-series data
+  if (/\b(Q[1-4]|quarter|monthly|yearly|20\d{2})\b/i.test(content) && /\b(\d+%|\$[\d.]+[MBK]?)\b/.test(content)) {
+    suggestions.push({ type: "Line/Area Chart", description: "Plot the time-series metrics mentioned (quarterly/monthly trends)" });
+  }
+
+  // Detect comparison data
+  if (/\bvs\b|\bcompared to\b|\bversus\b/i.test(content) || (content.match(/\b[A-Z][a-z]+\b/g) || []).length > 5) {
+    suggestions.push({ type: "Bar Chart", description: "Compare the entities/metrics side by side" });
+  }
+
+  // Detect market share / proportion data
+  if (/\b(market share|percentage|portion|segment|breakdown)\b/i.test(content)) {
+    suggestions.push({ type: "Pie/Donut Chart", description: "Show the proportional breakdown" });
+  }
+
+  // Detect funnel/pipeline data
+  if (/\b(funnel|pipeline|conversion|stage|step)\b/i.test(content)) {
+    suggestions.push({ type: "Funnel Chart", description: "Visualize the conversion funnel or pipeline stages" });
+  }
+
+  return suggestions.slice(0, 3);
+}
+
+// ---------------------------------------------------------------------------
 // Fusion Context Builder
 // ---------------------------------------------------------------------------
 

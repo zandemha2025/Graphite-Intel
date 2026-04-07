@@ -44,16 +44,39 @@ Your reports are:
 - Structured with clear headers, bullet points, and numbered findings
 - Anchored in real market data, industry benchmarks, and competitor intelligence
 - Actionable with prioritized recommendations and implementation timelines
-- Valued at $100K+ in consulting engagements
+- Valued at $500K+ in consulting engagements
+
+## Output Structure (Pyramid Principle)
+Always lead with the answer. State the key finding or recommendation in the Executive Summary before building the supporting case.
+
+## Citation Rules
+- Cite every factual claim with [Source: Name] inline
+- Distinguish between 1st-party data (client's own systems) and 3rd-party research
+- If data is estimated or modeled, say so explicitly: [Estimated based on...]
+- Never present AI reasoning as if it were sourced data
+
+## Communication Style
+- Write like a senior McKinsey partner presenting to a C-suite executive
+- Be direct, confident, and specific — not hedging or vague
+- Use "we recommend" not "you might want to consider"
+- Quantify everything possible with specific numbers, percentages, and dollar amounts
+- Keep paragraphs short (2-3 sentences max)
+- Every section must answer "so what?" and "now what?"
+
+## Formatting Rules
+- Use ## headings to separate major sections
+- Use **bold** for key metrics, numbers, and proper nouns
+- Use bullet points for action items and lists
+- When comparing options, use a structured comparison table (not paragraphs)
 
 Format your reports using Markdown with the following structure:
 # [Report Title]
 
 ## Executive Summary
-[3-5 sentence summary of key findings and recommendations]
+[2-3 sentence answer-first summary with the key number/insight highlighted in bold]
 
 ## Key Findings
-[Numbered list of critical findings with supporting data]
+[Numbered list of critical findings — each with a bold metric and [Source: Name] citation]
 
 ## Market Context
 [Industry landscape, trends, and dynamics relevant to the company]
@@ -62,19 +85,20 @@ Format your reports using Markdown with the following structure:
 [Section-specific deep dive based on report type]
 
 ## Strategic Recommendations
-[Prioritized list of actionable recommendations with implementation guidance]
+[Prioritized list of actionable recommendations with implementation guidance and expected impact]
 
 ## Risk Factors
-[Key risks and mitigation strategies]
+[Key risks with Probability x Impact assessment and mitigation strategies]
 
 ## Implementation Roadmap
-[Phased 90-day, 6-month, and 12-month plan]
+[Phased 90-day, 6-month, and 12-month plan with specific milestones]
 
-## Conclusion
-[Executive summary of path forward]
+## So What?
+[The single most important takeaway and the one thing the executive should do first, with a specific timeline]
 
 Include specific data points, market statistics, competitor benchmarks, and industry best practices throughout.
-Reference real companies, case studies, and published research when relevant.`;
+Reference real companies, case studies, and published research when relevant.
+Every claim must have a [Source: Name] citation.`;
 
 async function buildSystemPrompt(req: Request): Promise<string> {
   const userId = req.user!.id;
@@ -111,25 +135,253 @@ function buildUserPrompt(reportType: string, company: string, context?: string):
   const typeLabel = REPORT_TYPE_LABELS[reportType] || reportType;
   
   const typeSpecific: Record<string, string> = {
-    market_intelligence: `Conduct comprehensive market intelligence for ${company}. Include: total addressable market (TAM), serviceable addressable market (SAM), market growth rates, key market segments, emerging trends, regulatory landscape, technology disruptions, and market entry/expansion opportunities.`,
-    competitive_analysis: `Perform a deep competitive analysis for ${company}. Include: direct and indirect competitors, market share estimates, competitive positioning matrices, SWOT analysis, competitor pricing strategies, product/service differentiation, competitive moats, and white space opportunities.`,
-    growth_strategy: `Develop a comprehensive growth strategy for ${company}. Include: growth lever identification, organic vs inorganic growth opportunities, product/market expansion, customer segment analysis, unit economics optimization, growth model forecasting, and go-to-market strategy.`,
-    paid_acquisition: `Build a complete paid acquisition strategy for ${company}. Include: channel mix recommendations (Google, Meta, LinkedIn, programmatic), CAC benchmarks by channel, LTV:CAC ratios, budget allocation framework, creative strategy, audience targeting, attribution models, and scaling playbook.`,
-    brand_positioning: `Create a brand positioning strategy for ${company}. Include: brand architecture, positioning statement, value proposition, competitive differentiation, target audience personas, brand voice and messaging framework, category creation opportunities, and brand health metrics.`,
-    financial_modeling: `Develop a financial model and analysis for ${company}. Include: revenue model breakdown, unit economics, cost structure analysis, margin optimization opportunities, capital efficiency benchmarks, fundraising strategy, valuation multiples, and 3-year financial projections with scenarios.`,
-    cultural_intelligence: `Analyze cultural intelligence and organizational dynamics for ${company}. Include: cultural assessment framework, talent strategy, organizational design, leadership effectiveness, culture-performance correlation, DEI strategy, employee value proposition, and cultural transformation roadmap.`,
-    full_business_audit: `Conduct a comprehensive business audit for ${company}. Include: business model assessment, revenue and cost analysis, operational efficiency, competitive positioning, technology stack evaluation, talent and culture, go-to-market effectiveness, financial health, risk assessment, and prioritized transformation agenda.`,
+    competitive_analysis: `Generate a comprehensive Competitive Analysis for ${company}.
+
+Structure:
+## Executive Summary
+[2-3 sentence overview with key finding]
+
+## Competitive Landscape Overview
+[Market context, key players, market dynamics]
+
+## Competitor Deep-Dives
+For each major competitor:
+### [Competitor Name]
+- **Positioning**: How they position themselves
+- **Key Strengths**: What they do well
+- **Key Weaknesses**: Where they fall short
+- **Recent Moves**: Product launches, pricing changes, partnerships
+- **Estimated Revenue/Market Share**: Best available data with sources
+
+## Competitive Positioning Matrix
+[Feature-by-feature comparison table]
+
+## Strategic Implications for ${company}
+- **Opportunities**: Gaps in the market we can exploit
+- **Threats**: Where competitors are gaining ground
+- **Recommended Actions**: 3-5 specific, prioritized recommendations
+
+## So What?
+[The single most important takeaway and what to do about it]`,
+
+    market_intelligence: `Generate a comprehensive Market Intelligence report for ${company}.
+
+Structure:
+## Executive Summary
+
+## Market Overview
+- TAM/SAM/SOM breakdown with methodology
+- Growth rate and trajectory
+- Key market drivers and headwinds
+
+## Market Segmentation
+[Breakdown by segment, geography, or customer type]
+
+## Trend Analysis
+[3-5 key trends shaping the market]
+
+## Competitive Dynamics
+[Market share distribution, recent M&A, funding rounds]
+
+## Opportunities for ${company}
+[Specific opportunities aligned with company stage and priorities]
+
+## So What?
+[Key recommendation]`,
+
+    growth_strategy: `Generate a Growth Strategy for ${company}.
+
+Structure:
+## Executive Summary
+
+## Current State Assessment
+[Where the company is now — stage, revenue, market position]
+
+## Growth Levers
+### 1. [Lever 1 — e.g., Product-Led Growth]
+- Rationale
+- Expected Impact (quantified)
+- Implementation Timeline
+- Key Risks
+
+### 2. [Lever 2]
+[Same structure]
+
+### 3. [Lever 3]
+[Same structure]
+
+## Prioritization Matrix
+[Effort vs Impact for each lever]
+
+## 90-Day Action Plan
+[Specific actions for the next quarter]
+
+## So What?
+[The one thing to focus on first and why]`,
+
+    paid_acquisition: `Build a complete Paid Acquisition Strategy for ${company}.
+
+Structure:
+## Executive Summary
+[Key recommendation with expected CAC and ROAS targets]
+
+## Channel Mix Recommendations
+For each channel (Google, Meta, LinkedIn, programmatic):
+### [Channel Name]
+- **Recommended Budget Allocation**: % of total spend
+- **Expected CAC**: Benchmark vs target
+- **Best Use Case**: What this channel does best for ${company}
+- **Creative Strategy**: Ad format and messaging approach
+
+## Unit Economics Framework
+- **LTV:CAC Ratios** by channel
+- **Payback Period** targets
+- **Marginal CAC Curve** — when to stop scaling each channel
+
+## Attribution & Measurement
+[Attribution model recommendation with rationale]
+
+## Scaling Playbook
+[Phase 1/2/3 with budget gates and performance thresholds]
+
+## So What?
+[Where to spend the first dollar and why]`,
+
+    brand_positioning: `Create a Brand Positioning Strategy for ${company}.
+
+Structure:
+## Executive Summary
+
+## Current Brand Audit
+[How ${company} is perceived today — strengths and gaps]
+
+## Target Audience Personas
+[2-3 detailed personas with psychographics, not just demographics]
+
+## Positioning Statement
+[Classic format: For [target], [company] is the [category] that [key differentiator] because [reasons to believe]]
+
+## Competitive Positioning Map
+[2x2 positioning map with key competitors plotted]
+
+## Messaging Framework
+| Audience | Key Message | Proof Points | Tone |
+|----------|-------------|--------------|------|
+
+## Category Creation Opportunity
+[If applicable — how to redefine the category]
+
+## So What?
+[The one positioning move that matters most right now]`,
+
+    financial_modeling: `Develop a Financial Model and Analysis for ${company}.
+
+Structure:
+## Executive Summary
+[Key financial insight with the most important number highlighted]
+
+## Revenue Model Breakdown
+- Revenue streams with growth assumptions
+- Unit economics per stream
+
+## Cost Structure Analysis
+- Fixed vs variable cost breakdown
+- Margin analysis by segment
+
+## 3-Year Financial Projections
+| Metric | Year 1 | Year 2 | Year 3 |
+|--------|--------|--------|--------|
+[Revenue, COGS, Gross Margin, OpEx, EBITDA, Net Income]
+
+## Scenario Analysis
+- **Bull Case**: Assumptions and outcomes
+- **Base Case**: Assumptions and outcomes
+- **Bear Case**: Assumptions and outcomes
+
+## Capital Efficiency & Fundraising
+[Burn rate, runway, fundraising timing, valuation benchmarks]
+
+## So What?
+[The most critical financial lever and what to do about it]`,
+
+    cultural_intelligence: `Analyze Cultural Intelligence for ${company}.
+
+Structure:
+## Executive Summary
+
+## Cultural Assessment
+[Current organizational culture using a recognized framework]
+
+## Talent Strategy
+- Key roles needed in next 12 months
+- Retention risks and mitigation
+- Compensation benchmarking
+
+## Organizational Design
+[Structure recommendations aligned with strategy]
+
+## Culture-Performance Correlation
+[How culture is helping or hindering strategic goals]
+
+## Transformation Roadmap
+[Phased plan with specific cultural initiatives]
+
+## So What?
+[The one cultural change that would have the highest strategic impact]`,
+
+    full_business_audit: `Conduct a comprehensive Business Audit for ${company}.
+
+Structure:
+## Executive Summary
+[Overall health score and top 3 findings]
+
+## Business Model Assessment
+[Revenue model, value proposition, competitive moat]
+
+## Financial Health
+[Revenue trends, margins, burn rate, runway]
+
+## Go-to-Market Effectiveness
+[Sales efficiency, marketing ROI, channel performance]
+
+## Product & Technology
+[Tech stack assessment, product-market fit indicators]
+
+## Team & Organization
+[Leadership, talent gaps, organizational design]
+
+## Competitive Position
+[Market share, competitive threats, differentiation]
+
+## Risk Assessment
+| Risk | Probability | Impact | Mitigation |
+|------|-------------|--------|------------|
+
+## Prioritized Transformation Agenda
+[Top 5 initiatives ranked by effort vs impact]
+
+## So What?
+[The single biggest risk and the single biggest opportunity]`,
   };
 
-  const basePrompt = typeSpecific[reportType] || `Generate a comprehensive ${typeLabel} report for ${company}.`;
-  
+  const basePrompt = typeSpecific[reportType] || `Generate a comprehensive ${typeLabel} report for ${company}.
+
+Structure every section with:
+- Clear ## headings
+- Executive Summary at the top
+- Quantified data where possible
+- [Source: Name] citations
+- A "So What?" conclusion with specific recommendations
+
+Write like a McKinsey senior partner. Be direct, specific, and actionable. Every paragraph should answer "so what?" and "now what?"`;
+
   return `${basePrompt}
 
 Company: ${company}
 Report Type: ${typeLabel}
 ${context ? `Additional Context: ${context}` : ""}
 
-Produce a comprehensive, McKinsey-quality ${typeLabel} report. Use specific data, statistics, and insights. Be authoritative and specific — avoid vague generalizations.`;
+Produce a comprehensive, McKinsey-quality ${typeLabel} report. Use specific data, statistics, and insights. Be authoritative and specific — avoid vague generalizations. Cite every factual claim with [Source: Name]. End with a "## So What?" section.`;
 }
 
 router.get("/reports", async (req: Request, res: Response) => {
