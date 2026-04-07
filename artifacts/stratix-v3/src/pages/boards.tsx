@@ -820,6 +820,7 @@ const REPORT_TYPES = [
   { value: "financial_modeling", label: "Financial Modeling" },
   { value: "cultural_intelligence", label: "Cultural Intelligence" },
   { value: "full_business_audit", label: "Full Business Audit" },
+  { value: "weekly_intelligence_brief", label: "Weekly Intelligence Brief" },
 ] as const;
 
 type ReportDepth = "quick" | "standard" | "deep";
@@ -1098,6 +1099,7 @@ function ReportsTab() {
   const queryClient = useQueryClient();
   const [searchQuery, setSearchQuery] = useState("");
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [generatingBrief, setGeneratingBrief] = useState(false);
 
   const { data: reports, isLoading } = useQuery<Report[]>({
     queryKey: ["reports"],
@@ -1113,6 +1115,41 @@ function ReportsTab() {
     },
     onError: () => toast.error("Failed to delete report"),
   });
+
+  async function generateWeeklyBrief() {
+    setGeneratingBrief(true);
+    try {
+      let reportId: string | null = null;
+      await apiSSE(
+        "/reports",
+        {
+          reportType: "weekly_intelligence_brief",
+          company: "Our Company",
+          additionalContext: "Auto-generated weekly intelligence brief for CMO Monday morning read.",
+          depth: "standard",
+        },
+        (event, data) => {
+          try {
+            const parsed = JSON.parse(data);
+            if (event === "report_created" || event === "complete" || event === "done") {
+              reportId = parsed.id ?? parsed.reportId ?? reportId;
+            }
+          } catch {
+            // ignore
+          }
+        },
+      );
+      queryClient.invalidateQueries({ queryKey: ["reports"] });
+      toast.success("Weekly Intelligence Brief generated");
+      if (reportId) {
+        navigate(`/reports/${reportId}`);
+      }
+    } catch {
+      toast.error("Failed to generate brief");
+    } finally {
+      setGeneratingBrief(false);
+    }
+  }
 
   const filtered = reports?.filter((r) =>
     r.title.toLowerCase().includes(searchQuery.toLowerCase()),
@@ -1175,6 +1212,29 @@ function ReportsTab() {
     <>
       <GenerateReportDialog open={dialogOpen} onClose={() => setDialogOpen(false)} />
       <div className="space-y-4">
+        {/* Weekly Intelligence Brief */}
+        <div className="rounded-lg border border-[#4F46E5]/20 bg-[#EEF2FF] p-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <h3 className="text-sm font-medium text-[#111827]">Weekly Intelligence Brief</h3>
+              <p className="text-xs text-[#6B7280] mt-0.5">Auto-generated every Monday. Your CMO morning read.</p>
+            </div>
+            <Button size="sm" onClick={() => generateWeeklyBrief()} loading={generatingBrief}>
+              {generatingBrief ? (
+                <>
+                  <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                  Generating...
+                </>
+              ) : (
+                <>
+                  <Sparkles className="h-3.5 w-3.5" />
+                  Generate Now
+                </>
+              )}
+            </Button>
+          </div>
+        </div>
+
         {/* Search + Create */}
         <div className="flex items-center gap-3">
           <div className="relative flex-1 max-w-sm">

@@ -16,6 +16,7 @@ const REPORT_TYPE_LABELS: Record<string, string> = {
   financial_modeling: "Financial Modeling",
   cultural_intelligence: "Cultural Intelligence",
   full_business_audit: "Full Business Audit",
+  weekly_intelligence_brief: "Weekly Intelligence Brief",
 };
 
 function requireAuth(req: Request, res: Response): boolean {
@@ -362,6 +363,30 @@ Structure:
 
 ## So What?
 [The single biggest risk and the single biggest opportunity]`,
+
+    weekly_intelligence_brief: `Generate a Weekly Intelligence Brief for ${company}.
+
+This is an auto-generated weekly summary designed for a CMO's Monday morning.
+
+Structure:
+## This Week's Key Intelligence
+
+### Urgent Attention
+[1-2 items requiring immediate action — be specific about what changed and why it matters]
+
+### Market Movements
+[Key market changes, competitor moves, industry news from the past week. Cite sources for every claim.]
+
+### Your Performance Signals
+[Based on connected data: pipeline health, campaign performance, account activity. Reference specific metrics.]
+
+### Recommended Actions This Week
+[3 specific actions prioritized by impact. Each action should have a clear owner, timeline, and expected outcome.]
+
+### On The Radar
+[Emerging trends or signals to watch over the next 2-4 weeks. Include early indicators and what to monitor.]
+
+Keep it scannable. A busy CMO should get the full picture in 2 minutes. Use bullet points, bold key numbers, and lead every section with the most important item first.`,
   };
 
   const basePrompt = typeSpecific[reportType] || `Generate a comprehensive ${typeLabel} report for ${company}.

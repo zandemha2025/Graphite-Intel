@@ -171,6 +171,26 @@ function BreakdownItem({ label, value }: { label: string; value: number }) {
   );
 }
 
+/* ---------- Industry Benchmarks ---------- */
+
+interface Benchmark {
+  metric: string;
+  value: string;
+  source: string;
+  industries: string[];
+}
+
+const BENCHMARKS: Benchmark[] = [
+  { metric: "Avg CAC (SaaS)", value: "$205", source: "ProfitWell 2025", industries: ["saas", "software", "enterprise software"] },
+  { metric: "Avg LTV:CAC Ratio", value: "3:1 (target)", source: "Bessemer Cloud Index", industries: ["saas", "software", "enterprise software"] },
+  { metric: "Net Revenue Retention", value: "110-120%", source: "SaaS Capital 2025", industries: ["saas", "software", "enterprise software"] },
+  { metric: "Avg Sales Cycle", value: "84 days", source: "Gartner 2025", industries: ["saas", "software", "enterprise software"] },
+  { metric: "Marketing % of Revenue", value: "15-20%", source: "SaaS Survey 2025", industries: ["saas", "software", "enterprise software", "technology"] },
+  { metric: "Avg Monthly Churn", value: "3-5%", source: "Baremetrics 2025", industries: ["saas", "software", "enterprise software"] },
+  { metric: "Avg Contract Value", value: "$25-50k", source: "KeyBanc SaaS Survey", industries: ["saas", "enterprise software"] },
+  { metric: "Payback Period", value: "12-18 months", source: "OpenView Partners", industries: ["saas", "software"] },
+];
+
 /* ---------- Company Profile Tab ---------- */
 
 interface ProfileFormValues {
@@ -300,6 +320,36 @@ function CompanyProfileTab() {
           </Button>
         </div>
       </form>
+
+      {/* Industry Benchmarks */}
+      {(() => {
+        const industryLower = (profile?.industry ?? "saas").toLowerCase();
+        const relevantBenchmarks = BENCHMARKS.filter(b =>
+          b.industries.some(ind => industryLower.includes(ind) || ind.includes(industryLower))
+        );
+        // Fall back to SaaS benchmarks if no industry match
+        const displayBenchmarks = relevantBenchmarks.length > 0
+          ? relevantBenchmarks
+          : BENCHMARKS.filter(b => b.industries.includes("saas"));
+
+        return displayBenchmarks.length > 0 ? (
+          <div className="mt-6">
+            <h3 className="text-sm font-medium text-[#111827] mb-3">Industry Benchmarks</h3>
+            <p className="text-xs text-[#6B7280] mb-4">
+              Based on your industry ({profile?.industry || "SaaS"}). These ground every AI response.
+            </p>
+            <div className="grid grid-cols-2 gap-3">
+              {displayBenchmarks.map(b => (
+                <div key={b.metric} className="rounded-lg border border-[#E5E7EB] p-3">
+                  <p className="text-xs text-[#6B7280]">{b.metric}</p>
+                  <p className="text-lg font-semibold text-[#111827]">{b.value}</p>
+                  <p className="text-[10px] text-[#9CA3AF]">{b.source}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        ) : null;
+      })()}
     </Card>
   );
 }

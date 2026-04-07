@@ -1,6 +1,7 @@
 import { useState, useCallback, useRef, useEffect } from "react";
+import { useLocation } from "wouter";
 import { cn } from "@/lib/utils";
-import { api, apiPost, apiDelete, apiSSE, ApiError } from "@/lib/api";
+import { api, apiPost, apiPut, apiDelete, apiSSE, ApiError } from "@/lib/api";
 import { ResultCell, type ResultCellData } from "@/components/explore/result-cell";
 import { type Message, type Source } from "@/components/explore/conversation";
 import {
@@ -16,6 +17,9 @@ import {
   Search,
   ArrowRight,
   Check,
+  Lightbulb,
+  TrendingUp,
+  X,
 } from "lucide-react";
 
 type Depth = "quick" | "standard" | "deep";
@@ -198,6 +202,63 @@ function generateFollowUps(content: string): string[] {
   return suggestions.slice(0, 3);
 }
 
+/* ---------- Context Suggestions (Auto-Enrichment) ---------- */
+
+interface ContextSuggestion {
+  type: "competitor" | "definition";
+  value: string;
+  label: string;
+}
+
+function extractContextSuggestions(content: string, existingProfile: { keyCompetitors?: string[] } | null): ContextSuggestion[] {
+  const suggestions: ContextSuggestion[] = [];
+
+  // Extract company names mentioned that aren't in the profile
+  const companies = content.match(/\b[A-Z][a-z]+(?:\s+[A-Z][a-z]+)*\b(?=\s+(?:is|has|offers|provides|launched|announced))/g) || [];
+  const seen = new Set<string>();
+  for (const company of companies) {
+    const lower = company.toLowerCase();
+    if (seen.has(lower)) continue;
+    seen.add(lower);
+    if (!existingProfile?.keyCompetitors?.some(c => c.toLowerCase() === lower)) {
+      suggestions.push({ type: "competitor", value: company, label: `Track "${company}" as a competitor` });
+    }
+  }
+
+  // Extract metrics/KPIs mentioned
+  const metrics = content.match(/\b(?:CAC|LTV|ARR|MRR|NPS|CSAT|NRR|churn rate|conversion rate)\b/gi) || [];
+  const seenMetrics = new Set<string>();
+  for (const metric of metrics) {
+    const upper = metric.toUpperCase();
+    if (seenMetrics.has(upper)) continue;
+    seenMetrics.add(upper);
+    suggestions.push({ type: "definition", value: metric, label: `Define "${metric}" for your business` });
+  }
+
+  return suggestions.slice(0, 3);
+}
+
+/* ---------- Trend Tracking ---------- */
+
+function trackQueryTopic(query: string): Record<string, number> {
+  const topics: Record<string, number> = JSON.parse(localStorage.getItem("stratix:query-topics") || "{}");
+  const words = query.toLowerCase().split(/\s+/).filter(w => w.length > 4);
+  for (const word of words) {
+    topics[word] = (topics[word] || 0) + 1;
+  }
+  localStorage.setItem("stratix:query-topics", JSON.stringify(topics));
+  return topics;
+}
+
+function getFrequentTopics(): { word: string; count: number }[] {
+  const topics: Record<string, number> = JSON.parse(localStorage.getItem("stratix:query-topics") || "{}");
+  return Object.entries(topics)
+    .map(([word, count]) => ({ word, count: count as number }))
+    .filter(t => t.count >= 3)
+    .sort((a, b) => b.count - a.count)
+    .slice(0, 5);
+}
+
 /* ---------- Research Steps component ---------- */
 
 interface ResearchStep {
@@ -217,6 +278,7 @@ function getResearchSteps(phase: ResearchPhase, sourceCount: number): ResearchSt
 /* ---------- Main page ---------- */
 
 export default function ExplorePage() {
+  const [, navigate] = useLocation();
   const [conversations, setConversations] = useState<ApiConversation[]>([]);
   const [activeConvId, setActiveConvId] = useState<string | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
@@ -230,6 +292,10 @@ export default function ExplorePage() {
   const [followUps, setFollowUps] = useState<string[]>([]);
   const [liveResearchSteps, setLiveResearchSteps] = useState<ResearchStep[]>([]);
   const [inputValue, setInputValue] = useState("");
+  const [contextSuggestions, setContextSuggestions] = useState<ContextSuggestion[]>([]);
+  const [dismissedSuggestions, setDismissedSuggestions] = useState(false);
+  const [frequentTopics, setFrequentTopics] = useState<{ word: string; count: number }[]>([]);
+  const [companyProfile, setCompanyProfile] = useState<{ keyCompetitors?: string[] } | null>(null);
   const abortRef = useRef<AbortController | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const { items: recentActivity, loading: recentActivityLoading } = useRecentActivity();
@@ -247,6 +313,14 @@ export default function ExplorePage() {
       .catch(() => {
         // API might not be available yet -- ignore
       });
+
+    // Load company profile for context suggestions
+    api<{ keyCompetitors?: string[] }>("/company-profile")
+      .then(setCompanyProfile)
+      .catch(() => {});
+
+    // Load frequent topics
+    setFrequentTopics(getFrequentTopics());
   }, []);
 
   /* Load messages when active conversation changes */
@@ -379,6 +453,12 @@ export default function ExplorePage() {
       setCollectedSources([]);
       setFollowUps([]);
       setLiveResearchSteps([]);
+      setContextSuggestions([]);
+      setDismissedSuggestions(false);
+
+      // Track query topics for trend tracking
+      trackQueryTopic(content);
+      setFrequentTopics(getFrequentTopics());
 
       let assistantContent = "";
       let localSources: Source[] = [];
@@ -585,6 +665,13 @@ export default function ExplorePage() {
           );
           setCells((prev) => [...newCells, ...prev]);
           setFollowUps(generateFollowUps(assistantContent));
+
+          // Extract context suggestions for auto-enrichment
+          const suggestions = extractContextSuggestions(assistantContent, companyProfile);
+          if (suggestions.length > 0) {
+            setContextSuggestions(suggestions);
+            setDismissedSuggestions(false);
+          }
         }
       }
     },
@@ -605,6 +692,33 @@ export default function ExplorePage() {
       handleSend(suggestion);
     },
     [handleSend],
+  );
+
+  /* Handle context suggestion accept */
+  const handleAcceptSuggestion = useCallback(
+    async (suggestion: ContextSuggestion) => {
+      if (suggestion.type === "competitor") {
+        try {
+          const updatedCompetitors = [
+            ...(companyProfile?.keyCompetitors ?? []),
+            suggestion.value,
+          ];
+          await apiPut("/company-profile", {
+            keyCompetitors: updatedCompetitors,
+          });
+          setCompanyProfile((prev) => ({
+            ...prev,
+            keyCompetitors: updatedCompetitors,
+          }));
+          setContextSuggestions((prev) => prev.filter((s) => s.value !== suggestion.value));
+        } catch {
+          // Silently handle -- non-critical
+        }
+      } else if (suggestion.type === "definition") {
+        navigate(`/context#definitions?term=${encodeURIComponent(suggestion.value)}`);
+      }
+    },
+    [companyProfile, navigate],
   );
 
   const researchSteps = liveResearchSteps.length > 0
@@ -834,6 +948,38 @@ export default function ExplorePage() {
                 </div>
               )}
 
+              {/* Context Suggestions Bar (Auto-Enrichment) */}
+              {contextSuggestions.length > 0 && !dismissedSuggestions && !streaming && (
+                <div className="rounded-lg border border-[#4F46E5]/20 bg-[#EEF2FF] px-4 py-3 mb-2">
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="flex items-start gap-2 flex-1 min-w-0">
+                      <Lightbulb className="h-4 w-4 text-[#4F46E5] mt-0.5 shrink-0" />
+                      <div className="flex-1 min-w-0">
+                        <p className="text-xs font-medium text-[#374151] mb-2">Based on this analysis:</p>
+                        <div className="flex flex-wrap gap-1.5">
+                          {contextSuggestions.map((s) => (
+                            <button
+                              key={`${s.type}-${s.value}`}
+                              onClick={() => handleAcceptSuggestion(s)}
+                              className="inline-flex items-center gap-1 rounded-full border border-[#4F46E5]/30 bg-white px-2.5 py-1 text-xs font-medium text-[#4F46E5] transition-colors hover:bg-[#4F46E5] hover:text-white"
+                            >
+                              <Plus className="h-3 w-3" />
+                              {s.label}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                    <button
+                      onClick={() => setDismissedSuggestions(true)}
+                      className="rounded p-0.5 text-[#9CA3AF] hover:text-[#6B7280] shrink-0"
+                    >
+                      <X className="h-3.5 w-3.5" />
+                    </button>
+                  </div>
+                </div>
+              )}
+
               {cells.map((cell) => (
                 <ResultCell key={cell.id} cell={cell} />
               ))}
@@ -911,6 +1057,35 @@ export default function ExplorePage() {
                     </span>
                   )}
                 </a>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Your Focus Areas (Trend Tracking) */}
+        {frequentTopics.length > 0 && !streaming && (
+          <div className="p-4 border-b border-[#E5E7EB]">
+            <h3 className="text-xs font-semibold text-[#6B7280] uppercase tracking-wide mb-3">
+              <TrendingUp className="inline h-3 w-3 mr-1" />
+              Your Focus Areas
+            </h3>
+            <div className="space-y-1.5">
+              {frequentTopics.map((topic) => (
+                <div
+                  key={topic.word}
+                  className="flex items-center justify-between text-sm py-1"
+                >
+                  <div className="flex items-center gap-2 min-w-0">
+                    <span className="text-[#111827] font-medium truncate">{topic.word}</span>
+                    <span className="text-[10px] text-[#9CA3AF] shrink-0">asked {topic.count}x</span>
+                  </div>
+                  <button
+                    onClick={() => navigate("/boards")}
+                    className="text-[10px] text-[#4F46E5] hover:underline shrink-0 ml-2"
+                  >
+                    Create board
+                  </button>
+                </div>
               ))}
             </div>
           </div>
