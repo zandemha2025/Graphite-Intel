@@ -99,7 +99,7 @@ export class PipedreamConnectClient {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         grant_type: "client_credentials",
-        client_id: this.projectId,
+        client_id: this.projectPublicKey,
         client_secret: this.projectSecret,
       }),
     });
