@@ -31,6 +31,7 @@ import pipedreamWorkflowsRouter from "./pipedream-workflows";
 import boardsRouter from "./boards";
 import notebooksRouter from "./notebooks";
 import contextHealthRouter from "./context-health";
+import intelligenceRouter from "./intelligence";
 
 const router: IRouter = Router();
 
@@ -66,5 +67,6 @@ router.use(pipedreamWorkflowsRouter);
 router.use(boardsRouter);
 router.use(notebooksRouter);
 router.use(contextHealthRouter);
+router.use(intelligenceRouter);
 
 export default router;

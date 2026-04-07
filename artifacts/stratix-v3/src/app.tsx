@@ -15,6 +15,7 @@ import ExplorePage from "@/pages/explore";
 import NotebooksPage from "@/pages/notebooks";
 import NotebookEditPage from "@/pages/notebook-edit";
 import ContextPage from "@/pages/context";
+import IntelligencePage from "@/pages/intelligence";
 import BoardsPage from "@/pages/boards";
 import BoardViewPage from "@/pages/board-view";
 import IntegrationsPage from "@/pages/integrations";
@@ -97,6 +98,7 @@ function AuthenticatedRoutes() {
         <Route path="/notebooks" component={NotebooksPage} />
         <Route path="/notebooks/:id" component={NotebookEditPage} />
         <Route path="/context" component={ContextPage} />
+        <Route path="/intelligence" component={IntelligencePage} />
         <Route path="/reports/:id">
               {() => (
                 <Suspense

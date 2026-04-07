@@ -3,6 +3,7 @@ import {
   Compass,
   BookOpen,
   Brain,
+  Radar,
   LayoutGrid,
   BookMarked,
   Cable,
@@ -17,7 +18,8 @@ const navItems = [
   { path: "/explore", label: "Explore", icon: Compass, alert: false },
   { path: "/notebooks", label: "Notebooks", icon: BookOpen, alert: false },
   { path: "/context", label: "Context", icon: Brain, alert: false },
-  { path: "/boards", label: "Boards", icon: LayoutGrid, alert: true },
+  { path: "/intelligence", label: "Intelligence", icon: Radar, alert: true },
+  { path: "/boards", label: "Boards", icon: LayoutGrid, alert: false },
   { path: "/playbooks", label: "Playbooks", icon: BookMarked, alert: false },
 ] as const;
 
