@@ -821,6 +821,13 @@ const REPORT_TYPES = [
   { value: "cultural_intelligence", label: "Cultural Intelligence" },
   { value: "full_business_audit", label: "Full Business Audit" },
   { value: "weekly_intelligence_brief", label: "Weekly Intelligence Brief" },
+  { value: "win_loss_analysis", label: "Win/Loss Analysis" },
+  { value: "quarterly_review", label: "Quarterly Business Review" },
+  { value: "pricing_analysis", label: "Pricing Strategy Analysis" },
+  { value: "content_strategy", label: "Content Strategy Report" },
+  { value: "demand_gen", label: "Demand Generation Plan" },
+  { value: "product_market_fit", label: "Product-Market Fit Assessment" },
+  { value: "investor_update", label: "Investor Update Brief" },
 ] as const;
 
 type ReportDepth = "quick" | "standard" | "deep";

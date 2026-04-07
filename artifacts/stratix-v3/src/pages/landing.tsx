@@ -391,7 +391,7 @@ export default function LandingPage() {
             Templates
           </p>
           <h2 className="mt-4 text-center text-3xl font-bold text-[#111827] md:text-4xl">
-            Intelligence templates for every strategic question
+            50+ intelligence templates for every strategic question
           </h2>
           <p className="mx-auto mt-4 max-w-xl text-center text-base text-[#6B7280]">
             Start with a proven framework. Customize with your data. Get answers in minutes, not weeks.

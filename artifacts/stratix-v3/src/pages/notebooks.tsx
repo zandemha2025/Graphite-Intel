@@ -17,6 +17,10 @@ import {
   Target,
   Search,
   CalendarDays,
+  DollarSign,
+  Users,
+  Megaphone,
+  TrendingUp,
 } from "lucide-react";
 
 /* ---------- Types ---------- */
@@ -74,6 +78,54 @@ const TEMPLATES: NotebookTemplate[] = [
     name: "Competitive Positioning Analysis",
     description: "Map your positioning vs competitors on messaging, pricing, and feature differentiation.",
     icon: Target,
+  },
+  {
+    id: "win-loss-analysis",
+    name: "Win/Loss Analysis",
+    description: "Analyze closed-won and closed-lost deals to identify patterns and improve win rates.",
+    icon: Target,
+  },
+  {
+    id: "quarterly-business-review",
+    name: "Quarterly Business Review",
+    description: "Compile pipeline health, revenue metrics, and strategic progress for leadership.",
+    icon: BarChart3,
+  },
+  {
+    id: "pricing-strategy",
+    name: "Pricing Strategy Analysis",
+    description: "Evaluate pricing vs competitors, willingness to pay, and packaging optimization.",
+    icon: DollarSign,
+  },
+  {
+    id: "content-audit",
+    name: "Content Audit & Strategy",
+    description: "Audit content performance, identify gaps, and plan editorial calendar.",
+    icon: FileText,
+  },
+  {
+    id: "partner-ecosystem",
+    name: "Partner Ecosystem Map",
+    description: "Map integration partners, co-marketing opportunities, and channel strategy.",
+    icon: Users,
+  },
+  {
+    id: "product-market-fit",
+    name: "Product-Market Fit Analysis",
+    description: "Assess PMF signals: retention, NPS, usage patterns, expansion revenue.",
+    icon: Target,
+  },
+  {
+    id: "demand-gen-playbook",
+    name: "Demand Generation Playbook",
+    description: "Design multi-channel demand gen strategy with budget allocation and KPIs.",
+    icon: Megaphone,
+  },
+  {
+    id: "investor-update",
+    name: "Investor Update",
+    description: "Monthly/quarterly investor update with ARR, burn, metrics, and highlights.",
+    icon: TrendingUp,
   },
   {
     id: "blank",

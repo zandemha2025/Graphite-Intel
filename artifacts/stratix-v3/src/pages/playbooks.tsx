@@ -18,6 +18,14 @@ import {
   CheckCircle2,
   FileText,
   Copy,
+  Globe,
+  Rocket,
+  Swords,
+  Target,
+  Palette,
+  PenTool,
+  TrendingUp,
+  ShieldAlert,
 } from "lucide-react";
 
 /* ---------- Types ---------- */
@@ -351,6 +359,118 @@ function MyPlaybooksTab() {
   );
 }
 
+/* ---------- Client-Side Playbook Templates ---------- */
+
+const CLIENT_TEMPLATES = [
+  {
+    name: "New Market Entry",
+    description: "Step-by-step process for evaluating and entering a new market",
+    icon: Globe,
+    steps: [
+      "Define target market criteria",
+      "Conduct TAM/SAM/SOM analysis",
+      "Map competitive landscape",
+      "Assess regulatory requirements",
+      "Build GTM plan",
+      "Define success metrics",
+    ],
+  },
+  {
+    name: "Product Launch",
+    description: "Complete product launch checklist from positioning to post-launch",
+    icon: Rocket,
+    steps: [
+      "Define positioning & messaging",
+      "Create launch timeline",
+      "Prepare sales enablement",
+      "Set up tracking & analytics",
+      "Execute launch campaigns",
+      "Conduct 30-day retrospective",
+    ],
+  },
+  {
+    name: "Competitor Response",
+    description: "How to respond when a competitor makes a major move",
+    icon: Swords,
+    steps: [
+      "Assess competitor move impact",
+      "Gather customer sentiment",
+      "Identify differentiation opportunities",
+      "Develop response messaging",
+      "Brief sales team",
+      "Monitor market reaction",
+    ],
+  },
+  {
+    name: "ABM Campaign",
+    description: "Account-based marketing campaign from target selection to close",
+    icon: Target,
+    steps: [
+      "Select target accounts",
+      "Research account priorities",
+      "Create personalized content",
+      "Execute multi-channel outreach",
+      "Track engagement signals",
+      "Coordinate with sales",
+      "Measure pipeline impact",
+    ],
+  },
+  {
+    name: "Brand Repositioning",
+    description: "Rebrand or reposition your product in the market",
+    icon: Palette,
+    steps: [
+      "Audit current brand perception",
+      "Define new positioning",
+      "Develop messaging framework",
+      "Update all touchpoints",
+      "Internal rollout",
+      "External launch",
+      "Measure perception shift",
+    ],
+  },
+  {
+    name: "Content Marketing Engine",
+    description: "Build a repeatable content marketing machine",
+    icon: PenTool,
+    steps: [
+      "Audit existing content",
+      "Define content pillars",
+      "Create editorial calendar",
+      "Establish production workflow",
+      "Set distribution channels",
+      "Build measurement framework",
+    ],
+  },
+  {
+    name: "Customer Expansion",
+    description: "Systematic approach to expanding revenue from existing customers",
+    icon: TrendingUp,
+    steps: [
+      "Segment customer base",
+      "Identify expansion signals",
+      "Create upsell playbooks",
+      "Train CS/sales on triggers",
+      "Execute campaigns",
+      "Track expansion ARR",
+    ],
+  },
+  {
+    name: "Crisis Communication",
+    description: "Handle PR crises, outages, or negative press",
+    icon: ShieldAlert,
+    steps: [
+      "Assess situation severity",
+      "Activate response team",
+      "Draft initial statement",
+      "Notify key stakeholders",
+      "Monitor social/media",
+      "Issue follow-up communications",
+      "Conduct post-mortem",
+    ],
+  },
+];
+
 /* ---------- Templates Tab ---------- */
 
 function TemplatesTab() {
@@ -364,9 +484,26 @@ function TemplatesTab() {
   });
 
   const useTemplateMutation = useMutation({
+    mutationFn: (payload: { name: string; description: string; steps: string[] }) =>
+      apiPost<Playbook>("/playbooks", {
+        name: payload.name,
+        description: payload.description,
+        steps: payload.steps.map((s) => ({ title: s, description: "", type: "action" })),
+      }),
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ["playbooks"] });
+      navigate(`/playbooks/${data.id}`);
+      toast.success("Playbook created from template");
+    },
+    onError: () => {
+      toast.error("Failed to create from template");
+    },
+  });
+
+  const useServerTemplateMutation = useMutation({
     mutationFn: (template: Playbook) =>
       apiPost<{ playbook: Playbook }>("/playbooks", {
-        title: template.title,
+        name: template.title,
         description: template.description,
         steps: template.steps,
       }),
@@ -380,60 +517,101 @@ function TemplatesTab() {
     },
   });
 
-  if (isLoading) {
-    return (
-      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-        {Array.from({ length: 6 }).map((_, i) => (
-          <Skeleton key={i} className="h-36 w-full rounded-lg" />
-        ))}
-      </div>
-    );
-  }
-
-  if (!templates || templates.length === 0) {
-    return (
-      <div className="text-center py-16">
-        <p className="text-[15px] text-[#6B7280] mb-4">No templates available</p>
-        <p className="text-[13px] text-[#9CA3AF]">
-          Templates will appear here when configured by your organization.
-        </p>
-      </div>
-    );
-  }
+  const isPending = useTemplateMutation.isPending || useServerTemplateMutation.isPending;
 
   return (
-    <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-      {templates.map((tpl) => (
-        <Card key={tpl.id}>
-          <div className="mb-3">
-            <div className="flex items-center gap-2">
-              <BookMarked className="h-4 w-4 text-[#4F46E5]" />
-              <p className="text-sm font-medium text-[#111827]">
-                {tpl.title}
-              </p>
-            </div>
-            {tpl.description && (
-              <p className="mt-1 text-xs text-[#6B7280] line-clamp-2">
-                {tpl.description}
-              </p>
-            )}
+    <div className="space-y-8">
+      {/* Client-side templates always shown */}
+      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        {CLIENT_TEMPLATES.map((tpl) => {
+          const Icon = tpl.icon;
+          return (
+            <Card key={tpl.name}>
+              <div className="mb-3">
+                <div className="flex items-center gap-2">
+                  <Icon className="h-4 w-4 text-[#4F46E5]" />
+                  <p className="text-sm font-medium text-[#111827]">
+                    {tpl.name}
+                  </p>
+                </div>
+                <p className="mt-1 text-xs text-[#6B7280] line-clamp-2">
+                  {tpl.description}
+                </p>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-xs text-[#9CA3AF]">
+                  {tpl.steps.length} step{tpl.steps.length !== 1 ? "s" : ""}
+                </span>
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  onClick={() =>
+                    useTemplateMutation.mutate({
+                      name: tpl.name,
+                      description: tpl.description,
+                      steps: tpl.steps,
+                    })
+                  }
+                  loading={isPending}
+                >
+                  <Copy className="h-3.5 w-3.5" />
+                  Use Template
+                </Button>
+              </div>
+            </Card>
+          );
+        })}
+      </div>
+
+      {/* Server-side templates if available */}
+      {isLoading && (
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          {Array.from({ length: 3 }).map((_, i) => (
+            <Skeleton key={i} className="h-36 w-full rounded-lg" />
+          ))}
+        </div>
+      )}
+
+      {templates && templates.length > 0 && (
+        <div className="space-y-3">
+          <h3 className="text-sm font-semibold text-[#111827]">
+            Organization Templates
+          </h3>
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            {templates.map((tpl) => (
+              <Card key={tpl.id}>
+                <div className="mb-3">
+                  <div className="flex items-center gap-2">
+                    <BookMarked className="h-4 w-4 text-[#4F46E5]" />
+                    <p className="text-sm font-medium text-[#111827]">
+                      {tpl.title}
+                    </p>
+                  </div>
+                  {tpl.description && (
+                    <p className="mt-1 text-xs text-[#6B7280] line-clamp-2">
+                      {tpl.description}
+                    </p>
+                  )}
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-xs text-[#9CA3AF]">
+                    {tpl.steps.length} step{tpl.steps.length !== 1 ? "s" : ""}
+                  </span>
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    onClick={() => useServerTemplateMutation.mutate(tpl)}
+                    loading={isPending}
+                  >
+                    <Copy className="h-3.5 w-3.5" />
+                    Use Template
+                  </Button>
+                </div>
+              </Card>
+            ))}
           </div>
-          <div className="flex items-center justify-between">
-            <span className="text-xs text-[#9CA3AF]">
-              {tpl.steps.length} step{tpl.steps.length !== 1 ? "s" : ""}
-            </span>
-            <Button
-              variant="secondary"
-              size="sm"
-              onClick={() => useTemplateMutation.mutate(tpl)}
-              loading={useTemplateMutation.isPending}
-            >
-              <Copy className="h-3.5 w-3.5" />
-              Use Template
-            </Button>
-          </div>
-        </Card>
-      ))}
+        </div>
+      )}
     </div>
   );
 }
