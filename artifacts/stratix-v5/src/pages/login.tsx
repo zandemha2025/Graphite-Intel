@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useLocation } from "wouter";
 import { useQueryClient } from "@tanstack/react-query";
 import { getGetCurrentAuthUserQueryKey } from "@workspace/api-client-react";
-import { ArrowUp, Loader2, Github, Mail } from "lucide-react";
+import { Loader2, Github, Mail } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 export function Login() {
@@ -133,7 +133,7 @@ export function Login() {
               <button
                 type="button"
                 onClick={() => handleOAuthClick("Google")}
-                className="w-full h-10 rounded-[var(--radius-md)] border border-[var(--border)] bg-[var(--background)] text-body-sm text-[var(--text-primary)] font-medium hover:bg-[var(--surface-hover)] transition-colors flex items-center justify-center gap-2"
+                className="w-full h-10 rounded-[var(--radius-md)] border border-[var(--border)] bg-[var(--background)] text-body-sm text-[var(--text-primary)] font-medium hover:bg-[var(--surface-secondary)] transition-colors flex items-center justify-center gap-2"
               >
                 <Mail className="h-4 w-4" />
                 Continue with Google
@@ -141,7 +141,7 @@ export function Login() {
               <button
                 type="button"
                 onClick={() => handleOAuthClick("GitHub")}
-                className="w-full h-10 rounded-[var(--radius-md)] border border-[var(--border)] bg-[var(--background)] text-body-sm text-[var(--text-primary)] font-medium hover:bg-[var(--surface-hover)] transition-colors flex items-center justify-center gap-2"
+                className="w-full h-10 rounded-[var(--radius-md)] border border-[var(--border)] bg-[var(--background)] text-body-sm text-[var(--text-primary)] font-medium hover:bg-[var(--surface-secondary)] transition-colors flex items-center justify-center gap-2"
               >
                 <Github className="h-4 w-4" />
                 Continue with GitHub

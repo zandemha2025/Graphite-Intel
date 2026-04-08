@@ -123,12 +123,18 @@ function ResearchPhase({ url, onComplete, onError }: { url: string; onComplete: 
   const [progress, setProgress] = useState(0);
   const startedRef = useRef(false);
   const progressIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  // Store callbacks in refs so useEffect deps stay stable
+  const onCompleteRef = useRef(onComplete);
+  const onErrorRef = useRef(onError);
+  onCompleteRef.current = onComplete;
+  onErrorRef.current = onError;
 
   useEffect(() => {
     if (startedRef.current) return;
     startedRef.current = true;
 
-    const timeout = setTimeout(() => onError("Research took too long."), 60000);
+    timeoutRef.current = setTimeout(() => onErrorRef.current("Research took too long."), 60000);
 
     progressIntervalRef.current = setInterval(() => {
       setProgress((prev) => {
@@ -140,7 +146,7 @@ function ResearchPhase({ url, onComplete, onError }: { url: string; onComplete: 
     (async () => {
       try {
         const res = await fetch("/api/research/company", { method: "POST", headers: { "Content-Type": "application/json" }, credentials: "include", body: JSON.stringify({ url }) });
-        if (!res.ok || !res.body) { onError("Research failed."); return; }
+        if (!res.ok || !res.body) { onErrorRef.current("Research failed."); return; }
         const reader = res.body.getReader(); const decoder = new TextDecoder(); let buffer = "";
         while (true) {
           const { done, value } = await reader.read(); if (done) break;
@@ -149,17 +155,18 @@ function ResearchPhase({ url, onComplete, onError }: { url: string; onComplete: 
             let event = "", data = "";
             for (const line of part.split("\n")) { if (line.startsWith("event: ")) event = line.slice(7).trim(); if (line.startsWith("data: ")) data = line.slice(6).trim(); }
             if (!data) continue;
-            try { const p = JSON.parse(data); if (event === "status") { setLines((prev) => prev.includes(p.message) ? prev : [...prev, p.message]); } else if (event === "complete") { clearTimeout(timeout); if (progressIntervalRef.current) clearInterval(progressIntervalRef.current); setProgress(100); onComplete(p); } else if (event === "error") { clearTimeout(timeout); if (progressIntervalRef.current) clearInterval(progressIntervalRef.current); onError(p.error); } } catch {}
+            try { const p = JSON.parse(data); if (event === "status") { setLines((prev) => prev.includes(p.message) ? prev : [...prev, p.message]); } else if (event === "complete") { if (timeoutRef.current) clearTimeout(timeoutRef.current); if (progressIntervalRef.current) clearInterval(progressIntervalRef.current); setProgress(100); onCompleteRef.current(p); } else if (event === "error") { if (timeoutRef.current) clearTimeout(timeoutRef.current); if (progressIntervalRef.current) clearInterval(progressIntervalRef.current); onErrorRef.current(p.error); } } catch {}
           }
         }
-      } catch { onError("Connection error."); } finally { clearTimeout(timeout); if (progressIntervalRef.current) clearInterval(progressIntervalRef.current); }
+      } catch { onErrorRef.current("Connection error."); } finally { if (timeoutRef.current) clearTimeout(timeoutRef.current); if (progressIntervalRef.current) clearInterval(progressIntervalRef.current); }
     })();
 
     return () => {
-      clearTimeout(timeout);
+      if (timeoutRef.current) clearTimeout(timeoutRef.current);
       if (progressIntervalRef.current) clearInterval(progressIntervalRef.current);
     };
-  }, [url, onComplete, onError]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [url]);
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-[var(--background)] px-4 py-12">

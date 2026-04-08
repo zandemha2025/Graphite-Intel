@@ -40,10 +40,9 @@ export function Build() {
   const items = allItems
     .filter((i) => {
       const isFavorite = favorites.has(`${i.kind}-${i.id}`);
-      if (filter === "favorites") return isFavorite;
+      if (filter === "favorites") return isFavorite && (!search || i.title.toLowerCase().includes(search.toLowerCase()));
       return !search || i.title.toLowerCase().includes(search.toLowerCase());
     })
-    .filter((i) => !search || i.title.toLowerCase().includes(search.toLowerCase()))
     .sort((a, b) =>
       sortBy === "name"
         ? a.title.localeCompare(b.title)

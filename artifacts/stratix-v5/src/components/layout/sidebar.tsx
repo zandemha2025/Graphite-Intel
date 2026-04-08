@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import { Link, useLocation } from "wouter";
 import { cn } from "@/lib/utils";
 import { NAV_ITEMS, BOTTOM_ITEMS } from "@/lib/constants";
-import { Bell, Info, ChevronRight, LogOut, Users, Settings, Plus, Layers, X } from "lucide-react";
+import { Bell, Info, ChevronRight, LogOut, Users, Settings, Plus, Layers } from "lucide-react";
 import { ThemeToggle } from "@/components/shared/theme-toggle";
 
 interface SidebarProps {
@@ -349,30 +349,34 @@ export function Sidebar({ user, orgName, onLogout }: SidebarProps) {
         })}
 
         {/* Help button */}
-        <button
-          title="Help"
-          onClick={() => setHelpOpen((v) => !v)}
-          className="flex h-9 w-9 items-center justify-center rounded-[8px] transition-colors relative"
-        >
-          <Info className="h-[18px] w-[18px] text-[var(--sidebar-text)] hover:text-[var(--text-secondary)]" />
+        <div className="relative">
+          <button
+            title="Help"
+            onClick={() => setHelpOpen((v) => !v)}
+            className="flex h-9 w-9 items-center justify-center rounded-[8px] transition-colors"
+          >
+            <Info className="h-[18px] w-[18px] text-[var(--sidebar-text)] hover:text-[var(--text-secondary)]" />
+          </button>
           <HelpDropdown open={helpOpen} onClose={() => setHelpOpen(false)} />
-        </button>
+        </div>
 
         {/* Theme toggle */}
         <ThemeToggle />
 
         {/* Notifications button */}
-        <button
-          title="Notifications"
-          onClick={() => setNotificationOpen((v) => !v)}
-          className="flex h-9 w-9 items-center justify-center rounded-[8px] transition-colors relative"
-        >
-          <Bell className="h-[18px] w-[18px] text-[var(--sidebar-text)] hover:text-[var(--text-secondary)]" />
-          <span className="absolute -top-1 -right-1 h-5 w-5 rounded-full bg-[var(--accent)] text-white text-[10px] font-semibold flex items-center justify-center">
-            2
-          </span>
+        <div className="relative">
+          <button
+            title="Notifications"
+            onClick={() => setNotificationOpen((v) => !v)}
+            className="relative flex h-9 w-9 items-center justify-center rounded-[8px] transition-colors"
+          >
+            <Bell className="h-[18px] w-[18px] text-[var(--sidebar-text)] hover:text-[var(--text-secondary)]" />
+            <span className="absolute -top-1 -right-1 h-5 w-5 rounded-full bg-[var(--accent)] text-white text-[10px] font-semibold flex items-center justify-center">
+              2
+            </span>
+          </button>
           <NotificationDropdown open={notificationOpen} onClose={() => setNotificationOpen(false)} />
-        </button>
+        </div>
 
         {/* Workspace dropdown trigger */}
         <div
