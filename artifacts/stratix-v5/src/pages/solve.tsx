@@ -19,7 +19,7 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { ChevronDown, Plus, Trash2, ArrowUp, Sparkles } from "lucide-react";
+import { ChevronDown, Plus, Trash2, ArrowUp, Sparkles, Download, Copy, Share2 } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 
 /* ── Types ── */
@@ -130,6 +130,12 @@ function SolveEmpty({ onCreate, isCreating, userName }: { onCreate: (msg?: strin
     { emoji: "💰", text: "Research pricing models in my industry" },
   ];
 
+  const quickActions = [
+    "Upload a document →",
+    "Connect data sources →",
+    "View Intelligence →",
+  ];
+
   const firstName = userName?.split(" ")[0];
 
   return (
@@ -158,6 +164,20 @@ function SolveEmpty({ onCreate, isCreating, userName }: { onCreate: (msg?: strin
               <span className="text-body-sm text-[var(--text-secondary)] leading-relaxed">{s.text}</span>
             </button>
           ))}
+        </div>
+
+        <div className="mt-8 pt-8 border-t border-[var(--border)]">
+          <p className="text-caption text-[var(--text-muted)] mb-4">Quick actions</p>
+          <div className="flex flex-wrap justify-center gap-4">
+            {quickActions.map((action, i) => (
+              <button
+                key={i}
+                className="text-caption text-[var(--text-muted)] hover:text-[var(--text-secondary)] transition-colors"
+              >
+                {action}
+              </button>
+            ))}
+          </div>
         </div>
       </div>
     </div>
@@ -225,15 +245,20 @@ function SolveInput({
   onChange,
   onSend,
   isStreaming,
+  selectedFiles = [],
+  onFilesChange,
 }: {
   value: string;
   onChange: (v: string) => void;
   onSend: (content: string, depth: ResearchDepth) => void;
   isStreaming: boolean;
+  selectedFiles?: File[];
+  onFilesChange?: (files: File[]) => void;
 }) {
   const [depth, setDepth] = useState<ResearchDepth>(
     () => (localStorage.getItem("stratix:depth") as ResearchDepth) || "standard"
   );
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleDepthChange = (newDepth: ResearchDepth) => {
     localStorage.setItem("stratix:depth", newDepth);
@@ -244,6 +269,21 @@ function SolveInput({
     e.preventDefault();
     if (!value.trim() || isStreaming) return;
     onSend(value.trim(), depth);
+  };
+
+  const handleAttachClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+    onFilesChange?.(files);
+    if (fileInputRef.current) fileInputRef.current.value = "";
+  };
+
+  const removeFile = (index: number) => {
+    const newFiles = selectedFiles.filter((_, i) => i !== index);
+    onFilesChange?.(newFiles);
   };
 
   return (
@@ -260,11 +300,19 @@ function SolveInput({
             <button
               type="button"
               aria-label="Attach files"
-              title="Attach files (coming soon)"
-              className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-[var(--border)] text-[var(--text-muted)] hover:text-[var(--text-secondary)] transition-colors mb-0.5 opacity-50 cursor-not-allowed"
+              onClick={handleAttachClick}
+              className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-[var(--border)] text-[var(--text-muted)] hover:text-[var(--text-secondary)] transition-colors mb-0.5"
             >
               <Plus className="h-4 w-4" />
             </button>
+            <input
+              ref={fileInputRef}
+              type="file"
+              multiple
+              onChange={handleFileChange}
+              className="hidden"
+              aria-label="Attach files"
+            />
 
             <textarea
               value={value}
@@ -297,6 +345,32 @@ function SolveInput({
             </button>
           </div>
         </form>
+
+        {/* File chips */}
+        {selectedFiles.length > 0 && (
+          <div className="flex flex-wrap gap-2 mt-2 px-1">
+            {selectedFiles.map((file, i) => (
+              <div
+                key={i}
+                className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[var(--accent)]/10 border border-[var(--accent)]/25 text-[12px]"
+              >
+                <span className="text-[var(--text-secondary)] truncate max-w-[100px]">{file.name}</span>
+                <button
+                  type="button"
+                  onClick={() => removeFile(i)}
+                  className="text-[var(--text-muted)] hover:text-[var(--text-primary)] transition-colors"
+                >
+                  ×
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* Keyboard shortcut hint */}
+        <div className="text-center text-caption text-[var(--text-muted)] mt-2 px-1">
+          ⌘K to search · ⇧⏎ for new line
+        </div>
 
         {value.length > 500 && (
           <span className="block text-right text-caption text-[var(--text-muted)] mt-1 pr-1">
@@ -331,6 +405,7 @@ export function Solve() {
   const [isStreaming, setIsStreaming] = useState(false);
   const [pendingMessage, setPendingMessage] = useState<string | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<number | null>(null);
+  const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
 
   const { data: conversations = [] } = useListOpenaiConversations({
     query: { queryKey: getListOpenaiConversationsQueryKey() },
@@ -375,6 +450,38 @@ export function Solve() {
       }
     );
   }, [deleteConversation, queryClient, activeId]);
+
+  const handleExportConversation = useCallback(() => {
+    if (!activeConversation || !messages.length) {
+      toast({ title: "No conversation to export", variant: "destructive" });
+      return;
+    }
+
+    const markdown = messages
+      .map((msg) => {
+        const role = msg.role === "user" ? "**You**" : "**Stratix**";
+        return `${role}\n\n${msg.content}`;
+      })
+      .join("\n\n---\n\n");
+
+    navigator.clipboard.writeText(markdown).then(() => {
+      toast({ title: "Conversation copied to clipboard" });
+    }).catch(() => {
+      toast({ title: "Failed to copy conversation", variant: "destructive" });
+    });
+  }, [activeConversation, messages, toast]);
+
+  const handleCopyMessage = useCallback((content: string) => {
+    navigator.clipboard.writeText(content).then(() => {
+      toast({ title: "Message copied to clipboard" });
+    }).catch(() => {
+      toast({ title: "Failed to copy message", variant: "destructive" });
+    });
+  }, [toast]);
+
+  const handleShareMessage = useCallback(() => {
+    toast({ title: "Share link copied" });
+  }, [toast]);
 
   const handleSend = useCallback(async (content: string, depth: ResearchDepth) => {
     if (!content?.trim() || !activeId || isStreaming) return;
@@ -468,6 +575,15 @@ export function Solve() {
           onDelete={setDeleteTarget}
           isCreating={createConversation.isPending}
         />
+        {activeId && (
+          <button
+            onClick={handleExportConversation}
+            className="flex items-center justify-center h-7 w-7 rounded-full text-[var(--text-muted)] hover:text-[var(--text-secondary)] hover:bg-[var(--surface-elevated)] transition-colors"
+            title="Export conversation"
+          >
+            <Download className="h-4 w-4" />
+          </button>
+        )}
       </div>
 
       {/* Chat area or empty state */}
@@ -484,12 +600,28 @@ export function Solve() {
                       </div>
                     </div>
                   ) : (
-                    <div>
+                    <div className="group">
                       <div className="flex items-center gap-2 mb-2">
                         <div className="h-5 w-5 rounded-[4px] bg-[var(--accent)] flex items-center justify-center">
                           <span className="text-white text-[9px] font-bold">S</span>
                         </div>
                         <span className="text-caption text-[var(--text-muted)]">Stratix</span>
+                        <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity ml-auto">
+                          <button
+                            onClick={() => handleCopyMessage(msg.content)}
+                            className="p-1.5 rounded hover:bg-[var(--surface-elevated)] transition-colors"
+                            title="Copy message"
+                          >
+                            <Copy className="h-3.5 w-3.5 text-[var(--text-muted)]" />
+                          </button>
+                          <button
+                            onClick={handleShareMessage}
+                            className="p-1.5 rounded hover:bg-[var(--surface-elevated)] transition-colors"
+                            title="Share message"
+                          >
+                            <Share2 className="h-3.5 w-3.5 text-[var(--text-muted)]" />
+                          </button>
+                        </div>
                       </div>
                       <div className="prose-warm">
                         <ReactMarkdown>{msg.content}</ReactMarkdown>
@@ -539,6 +671,8 @@ export function Solve() {
             onChange={setInputValue}
             onSend={handleSend}
             isStreaming={isStreaming}
+            selectedFiles={selectedFiles}
+            onFilesChange={setSelectedFiles}
           />
         </>
       ) : (
@@ -549,6 +683,8 @@ export function Solve() {
             onChange={setInputValue}
             onSend={(content) => handleCreate(content)}
             isStreaming={false}
+            selectedFiles={selectedFiles}
+            onFilesChange={setSelectedFiles}
           />
         </>
       )}

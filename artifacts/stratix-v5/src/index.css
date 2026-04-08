@@ -3,7 +3,7 @@
 
 /* ================================================================
    STRATIX V5 — WARM PARCHMENT DESIGN SYSTEM
-   Editorial intelligence. Paper, not screen. No dark mode.
+   Editorial intelligence. Paper, not screen.
    ================================================================ */
 
 @theme {
@@ -88,6 +88,75 @@
   --card-foreground: #1A1918;
   --input: #DDD9D0;
   --ring: #B85C38;
+}
+
+[data-theme="dark"] {
+  /* ── Surface — dark palette ── */
+  --background: #1A1918;
+  --surface: #242220;
+  --surface-secondary: #2E2C28;
+  --surface-elevated: #333130;
+
+  /* ── Text — light for dark backgrounds ── */
+  --text-primary: #F0EDE6;
+  --text-secondary: #B0ADA5;
+  --text-muted: #7A776F;
+  --text-inverted: #1A1918;
+
+  /* ── Border — dark mode borders ── */
+  --border: #3A3835;
+  --border-subtle: #2E2C28;
+  --border-strong: #504D48;
+
+  /* ── Accent — brighter terracotta for dark mode ── */
+  --accent: #D4734F;
+  --accent-hover: #C4633F;
+  --accent-muted: rgba(212, 115, 79, 0.12);
+  --accent-foreground: #FFFFFF;
+
+  /* ── Semantic — adjusted for dark backgrounds ── */
+  --success: #6FA370;
+  --success-muted: rgba(111, 163, 112, 0.12);
+  --warning: #D9A945;
+  --warning-muted: rgba(217, 169, 69, 0.12);
+  --error: #D85D5D;
+  --error-muted: rgba(216, 93, 93, 0.12);
+
+  /* ── Sidebar — dark mode sidebar ── */
+  --sidebar-bg: #1A1918;
+  --sidebar-text: #7A776F;
+  --sidebar-text-active: #F0EDE6;
+  --sidebar-hover: rgba(255, 255, 255, 0.06);
+  --sidebar-active-bg: rgba(255, 255, 255, 0.08);
+
+  /* ── Charts — adjusted for dark mode ── */
+  --chart-1: #D4734F;
+  --chart-2: #9B8B7A;
+  --chart-3: #D9A945;
+  --chart-4: #6FA370;
+  --chart-5: #AB8E6E;
+  --chart-6: #8BA9A9;
+
+  /* ── Shadows — dark mode shadows ── */
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.24);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.32);
+  --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.40);
+
+  /* ── shadcn compat — dark mode ── */
+  --primary: #F0EDE6;
+  --primary-foreground: #1A1918;
+  --secondary: #2E2C28;
+  --secondary-foreground: #F0EDE6;
+  --muted: #3A3835;
+  --muted-foreground: #B0ADA5;
+  --destructive: #D85D5D;
+  --destructive-foreground: #1A1918;
+  --popover: #242220;
+  --popover-foreground: #F0EDE6;
+  --card: #242220;
+  --card-foreground: #F0EDE6;
+  --input: #3A3835;
+  --ring: #D4734F;
 }
 
 /* ── Base ── */

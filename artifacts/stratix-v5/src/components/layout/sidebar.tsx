@@ -2,12 +2,178 @@ import { useState, useRef, useEffect } from "react";
 import { Link, useLocation } from "wouter";
 import { cn } from "@/lib/utils";
 import { NAV_ITEMS, BOTTOM_ITEMS } from "@/lib/constants";
-import { Bell, Info, ChevronRight, LogOut, Users, Settings, Plus, Layers } from "lucide-react";
+import { Bell, Info, ChevronRight, LogOut, Users, Settings, Plus, Layers, X } from "lucide-react";
+import { ThemeToggle } from "@/components/shared/theme-toggle";
 
 interface SidebarProps {
   user?: { name?: string; email?: string } | null;
   orgName?: string | null;
   onLogout?: () => void;
+}
+
+interface Notification {
+  id: string;
+  title: string;
+  time: string;
+  read: boolean;
+  icon?: string;
+}
+
+interface HelpItem {
+  label: string;
+  shortcut?: string;
+}
+
+function NotificationDropdown({
+  open,
+  onClose,
+}: {
+  open: boolean;
+  onClose: () => void;
+}) {
+  const ref = useRef<HTMLDivElement>(null);
+  const [notifications, setNotifications] = useState<Notification[]>([
+    {
+      id: "1",
+      title: "Market Radar detected a new competitor entry",
+      time: "2 hours ago",
+      read: false,
+    },
+    {
+      id: "2",
+      title: "Weekly intelligence report is ready",
+      time: "1 day ago",
+      read: false,
+    },
+    {
+      id: "3",
+      title: "Onboarding complete! Start exploring.",
+      time: "3 days ago",
+      read: true,
+    },
+  ]);
+
+  useEffect(() => {
+    if (!open) return;
+    const handler = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) onClose();
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, [open, onClose]);
+
+  if (!open) return null;
+
+  const unreadCount = notifications.filter((n) => !n.read).length;
+
+  const handleMarkAllRead = () => {
+    setNotifications(notifications.map((n) => ({ ...n, read: true })));
+  };
+
+  return (
+    <div
+      ref={ref}
+      className="absolute top-12 right-[-210px] w-[240px] rounded-[var(--radius-lg)] border border-[var(--border)] bg-[var(--surface-elevated)] shadow-lg z-50 overflow-hidden"
+    >
+      {/* Header */}
+      <div className="flex items-center justify-between px-3 py-2.5 border-b border-[var(--border)]">
+        <p className="text-body-sm font-semibold text-[var(--text-primary)]">
+          Notifications
+        </p>
+        <button
+          onClick={handleMarkAllRead}
+          className="text-[11px] font-medium text-[var(--accent)] hover:text-[var(--accent)]/80 transition-colors"
+        >
+          Mark all read
+        </button>
+      </div>
+
+      {/* Notifications list */}
+      <div className="max-h-[280px] overflow-y-auto">
+        {notifications.map((notification) => (
+          <div
+            key={notification.id}
+            className={cn(
+              "px-3 py-2.5 border-b border-[var(--border)] last:border-b-0 hover:bg-[var(--surface-secondary)] transition-colors cursor-pointer",
+              !notification.read && "bg-[var(--surface-secondary)]/30"
+            )}
+          >
+            <div className="flex items-start gap-2">
+              {!notification.read && (
+                <div className="mt-1.5 flex-shrink-0 h-2 w-2 rounded-full bg-[var(--accent)]" />
+              )}
+              <div className="flex-1 min-w-0">
+                <p className="text-body-sm text-[var(--text-primary)] leading-tight">
+                  {notification.title}
+                </p>
+                <p className="text-[11px] text-[var(--text-muted)] mt-1">
+                  {notification.time}
+                </p>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Footer */}
+      <div className="px-3 py-2 border-t border-[var(--border)]">
+        <button className="w-full text-center text-[12px] font-medium text-[var(--accent)] hover:text-[var(--accent)]/80 transition-colors py-1">
+          View all
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function HelpDropdown({
+  open,
+  onClose,
+}: {
+  open: boolean;
+  onClose: () => void;
+}) {
+  const ref = useRef<HTMLDivElement>(null);
+
+  const helpItems: HelpItem[] = [
+    { label: "Documentation" },
+    { label: "Keyboard shortcuts", shortcut: "⌘K" },
+    { label: "What's new" },
+    { label: "Contact support" },
+  ];
+
+  useEffect(() => {
+    if (!open) return;
+    const handler = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) onClose();
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, [open, onClose]);
+
+  if (!open) return null;
+
+  return (
+    <div
+      ref={ref}
+      className="absolute top-12 right-[-130px] w-[160px] rounded-[var(--radius-lg)] border border-[var(--border)] bg-[var(--surface-elevated)] shadow-lg z-50 overflow-hidden"
+    >
+      <div className="py-1">
+        {helpItems.map((item, idx) => (
+          <button
+            key={idx}
+            className="w-full flex items-center justify-between px-3 py-2 text-body-sm text-[var(--text-primary)] hover:bg-[var(--surface-secondary)] transition-colors"
+          >
+            <span>{item.label}</span>
+            {item.shortcut && (
+              <span className="text-[10px] font-medium text-[var(--text-muted)]">
+                {item.shortcut}
+              </span>
+            )}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
 }
 
 function WorkspaceDropdown({
@@ -118,6 +284,8 @@ function WorkspaceDropdown({
 export function Sidebar({ user, orgName, onLogout }: SidebarProps) {
   const [location] = useLocation();
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [notificationOpen, setNotificationOpen] = useState(false);
+  const [helpOpen, setHelpOpen] = useState(false);
 
   const initials = user?.name
     ? user.name.split(" ").map((n) => n[0]).join("").slice(0, 2).toUpperCase()
@@ -180,12 +348,30 @@ export function Sidebar({ user, orgName, onLogout }: SidebarProps) {
           );
         })}
 
-        <button title="Help" className="flex h-9 w-9 items-center justify-center rounded-[8px] transition-colors">
+        {/* Help button */}
+        <button
+          title="Help"
+          onClick={() => setHelpOpen((v) => !v)}
+          className="flex h-9 w-9 items-center justify-center rounded-[8px] transition-colors relative"
+        >
           <Info className="h-[18px] w-[18px] text-[var(--sidebar-text)] hover:text-[var(--text-secondary)]" />
+          <HelpDropdown open={helpOpen} onClose={() => setHelpOpen(false)} />
         </button>
 
-        <button title="Notifications" className="flex h-9 w-9 items-center justify-center rounded-[8px] transition-colors">
+        {/* Theme toggle */}
+        <ThemeToggle />
+
+        {/* Notifications button */}
+        <button
+          title="Notifications"
+          onClick={() => setNotificationOpen((v) => !v)}
+          className="flex h-9 w-9 items-center justify-center rounded-[8px] transition-colors relative"
+        >
           <Bell className="h-[18px] w-[18px] text-[var(--sidebar-text)] hover:text-[var(--text-secondary)]" />
+          <span className="absolute -top-1 -right-1 h-5 w-5 rounded-full bg-[var(--accent)] text-white text-[10px] font-semibold flex items-center justify-center">
+            2
+          </span>
+          <NotificationDropdown open={notificationOpen} onClose={() => setNotificationOpen(false)} />
         </button>
 
         {/* Workspace dropdown trigger */}

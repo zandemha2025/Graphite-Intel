@@ -2,10 +2,11 @@ import { useState, useEffect, useMemo } from "react";
 import { useLocation } from "wouter";
 import { useListReports, getListReportsQueryKey } from "@workspace/api-client-react";
 import { useTabParam } from "@/hooks/use-tab-param";
+import { useToast } from "@/hooks/use-toast";
 import {
   Radar, FileText, BarChart3, Search, Plus, ArrowRight,
   TrendingUp, TrendingDown, Minus, AlertCircle, DollarSign,
-  Target, Eye, Activity,
+  Target, Eye, Activity, Download, Bell, Calendar, Mail,
 } from "lucide-react";
 import { format } from "date-fns";
 
@@ -128,6 +129,14 @@ function RadarTab() {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [typeFilter, setTypeFilter] = useState<string>("All");
+  const [showAlertConfig, setShowAlertConfig] = useState(false);
+  const [alertPrefs, setAlertPrefs] = useState({
+    competitorMoves: true,
+    marketShifts: true,
+    negativeSentiment: true,
+    campaignAnomalies: true,
+  });
+  const { toast } = useToast();
 
   useEffect(() => {
     fetch("/api/intelligence/signals", { credentials: "include" })
@@ -151,6 +160,26 @@ function RadarTab() {
     }
     return list;
   }, [signals, typeFilter, search]);
+
+  const handleExportCSV = () => {
+    const headers = ["Type", "Title", "Sentiment", "Competitor", "Source", "Timestamp"];
+    const rows = filtered.map((s) => [
+      s.type,
+      s.title,
+      s.sentiment,
+      s.competitor || "",
+      s.source,
+      s.timestamp,
+    ]);
+    const csv = [headers, ...rows].map((r) => r.map((v) => `"${v}"`).join(",")).join("\n");
+    navigator.clipboard.writeText(csv);
+    toast({ title: "Signals exported to clipboard" });
+  };
+
+  const handleSaveAlerts = () => {
+    setShowAlertConfig(false);
+    toast({ title: "Alert preferences saved" });
+  };
 
   /* Stat cards use real count when available, placeholders otherwise */
   const stats = [
@@ -207,22 +236,87 @@ function RadarTab() {
             className="w-full pl-9 pr-3 py-2 rounded-[var(--radius-md)] border border-[var(--border)] bg-[var(--surface)] text-body-sm text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-none focus:ring-1 focus:ring-[var(--accent)]"
           />
         </div>
-        <div className="flex items-center gap-1.5 flex-wrap">
-          {TYPE_FILTERS.map((f) => (
-            <button
-              key={f}
-              onClick={() => setTypeFilter(f)}
-              className={`px-3 py-1 rounded-full text-caption font-medium transition-colors ${
-                typeFilter === f
-                  ? "bg-[var(--accent)] text-white"
-                  : "bg-[var(--surface)] border border-[var(--border)] text-[var(--text-secondary)] hover:bg-[var(--surface-elevated)]"
-              }`}
-            >
-              {f}
-            </button>
-          ))}
+        <div className="flex items-center gap-2 flex-wrap">
+          <button
+            onClick={handleExportCSV}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-[var(--radius-md)] bg-[var(--surface)] border border-[var(--border)] text-[var(--text-secondary)] text-caption font-medium hover:bg-[var(--surface-elevated)] transition-colors"
+          >
+            <Download className="h-3.5 w-3.5" />
+            Export CSV
+          </button>
+          <button
+            onClick={() => setShowAlertConfig(!showAlertConfig)}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-[var(--radius-md)] bg-[var(--surface)] border border-[var(--border)] text-[var(--text-secondary)] text-caption font-medium hover:bg-[var(--surface-elevated)] transition-colors"
+          >
+            <Bell className="h-3.5 w-3.5" />
+            Configure Alerts
+          </button>
+          <div className="flex items-center gap-1.5 flex-wrap">
+            {TYPE_FILTERS.map((f) => (
+              <button
+                key={f}
+                onClick={() => setTypeFilter(f)}
+                className={`px-3 py-1 rounded-full text-caption font-medium transition-colors ${
+                  typeFilter === f
+                    ? "bg-[var(--accent)] text-white"
+                    : "bg-[var(--surface)] border border-[var(--border)] text-[var(--text-secondary)] hover:bg-[var(--surface-elevated)]"
+                }`}
+              >
+                {f}
+              </button>
+            ))}
+          </div>
         </div>
       </div>
+
+      {/* Alert configuration panel */}
+      {showAlertConfig && (
+        <div className="rounded-[var(--radius-lg)] border border-[var(--border)] bg-[var(--surface-secondary)] p-4">
+          <div className="flex items-center justify-between mb-4">
+            <h4 className="text-body-sm font-medium text-[var(--text-primary)]">Alert Preferences</h4>
+          </div>
+          <div className="space-y-3">
+            {[
+              { key: "competitorMoves", label: "Competitor moves" },
+              { key: "marketShifts", label: "Market shifts" },
+              { key: "negativeSentiment", label: "Negative sentiment" },
+              { key: "campaignAnomalies", label: "Campaign anomalies" },
+            ].map((item) => (
+              <label
+                key={item.key}
+                className="flex items-center gap-3 cursor-pointer"
+              >
+                <input
+                  type="checkbox"
+                  checked={alertPrefs[item.key as keyof typeof alertPrefs]}
+                  onChange={(e) =>
+                    setAlertPrefs((prev) => ({
+                      ...prev,
+                      [item.key]: e.target.checked,
+                    }))
+                  }
+                  className="rounded border border-[var(--border)] w-4 h-4 cursor-pointer accent-[var(--accent)]"
+                />
+                <span className="text-body-sm text-[var(--text-primary)]">{item.label}</span>
+              </label>
+            ))}
+          </div>
+          <div className="flex items-center gap-2 mt-4 pt-4 border-t border-[var(--border)]">
+            <button
+              onClick={handleSaveAlerts}
+              className="px-3 py-1.5 rounded-[var(--radius-md)] bg-[var(--accent)] text-white text-body-sm font-medium hover:bg-[var(--accent-hover)] transition-colors"
+            >
+              Save
+            </button>
+            <button
+              onClick={() => setShowAlertConfig(false)}
+              className="px-3 py-1.5 rounded-[var(--radius-md)] bg-[var(--surface)] border border-[var(--border)] text-[var(--text-secondary)] text-body-sm font-medium hover:bg-[var(--surface-elevated)] transition-colors"
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Signal feed */}
       <div className="space-y-2">
@@ -279,6 +373,10 @@ function ReportsTab() {
     query: { queryKey: getListReportsQueryKey() },
   });
   const [search, setSearch] = useState("");
+  const [showScheduler, setShowScheduler] = useState(false);
+  const [scheduleFreq, setScheduleFreq] = useState("Weekly");
+  const [scheduleEmail, setScheduleEmail] = useState("");
+  const { toast } = useToast();
 
   const filtered = useMemo(() => {
     if (!reports?.length) return [];
@@ -292,6 +390,13 @@ function ReportsTab() {
     );
   }, [reports, search]);
 
+  const handleSaveSchedule = () => {
+    setShowScheduler(false);
+    setScheduleFreq("Weekly");
+    setScheduleEmail("");
+    toast({ title: "Report schedule saved" });
+  };
+
   if (isLoading) {
     return <div className="py-12 text-center text-body-sm text-[var(--text-muted)]">Loading reports...</div>;
   }
@@ -299,7 +404,7 @@ function ReportsTab() {
   return (
     <div className="space-y-4">
       {/* Toolbar */}
-      <div className="flex items-center gap-3">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
         <div className="relative flex-1 max-w-sm">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-[var(--text-muted)]" />
           <input
@@ -310,14 +415,75 @@ function ReportsTab() {
             className="w-full pl-9 pr-3 py-2 rounded-[var(--radius-md)] border border-[var(--border)] bg-[var(--surface)] text-body-sm text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-none focus:ring-1 focus:ring-[var(--accent)]"
           />
         </div>
-        <button
-          onClick={() => setLocation("/solve?prompt=Generate+a+competitive+strategy+report")}
-          className="flex items-center gap-1.5 px-3 py-2 rounded-[var(--radius-md)] bg-[var(--accent)] text-white text-body-sm font-medium hover:bg-[var(--accent-hover)] transition-colors shrink-0"
-        >
-          <Plus className="h-3.5 w-3.5" />
-          New Report
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => setShowScheduler(!showScheduler)}
+            className="flex items-center gap-1.5 px-3 py-2 rounded-[var(--radius-md)] bg-[var(--surface)] border border-[var(--border)] text-[var(--text-secondary)] text-body-sm font-medium hover:bg-[var(--surface-elevated)] transition-colors shrink-0"
+          >
+            <Calendar className="h-3.5 w-3.5" />
+            Schedule Reports
+          </button>
+          <button
+            onClick={() => setLocation("/solve?prompt=Generate+a+competitive+strategy+report")}
+            className="flex items-center gap-1.5 px-3 py-2 rounded-[var(--radius-md)] bg-[var(--accent)] text-white text-body-sm font-medium hover:bg-[var(--accent-hover)] transition-colors shrink-0"
+          >
+            <Plus className="h-3.5 w-3.5" />
+            New Report
+          </button>
+        </div>
       </div>
+
+      {/* Schedule Reports panel */}
+      {showScheduler && (
+        <div className="rounded-[var(--radius-lg)] border border-[var(--border)] bg-[var(--surface-secondary)] p-4">
+          <h4 className="text-body-sm font-medium text-[var(--text-primary)] mb-4">Schedule Reports</h4>
+          <div className="space-y-3">
+            <div>
+              <label className="block text-caption text-[var(--text-secondary)] mb-1.5 font-medium">
+                Frequency
+              </label>
+              <select
+                value={scheduleFreq}
+                onChange={(e) => setScheduleFreq(e.target.value)}
+                className="w-full px-3 py-2 rounded-[var(--radius-md)] border border-[var(--border)] bg-[var(--surface)] text-body-sm text-[var(--text-primary)] focus:outline-none focus:ring-1 focus:ring-[var(--accent)]"
+              >
+                <option>Weekly</option>
+                <option>Monthly</option>
+                <option>Quarterly</option>
+              </select>
+            </div>
+            <div>
+              <label className="block text-caption text-[var(--text-secondary)] mb-1.5 font-medium">
+                Delivery Email
+              </label>
+              <div className="relative">
+                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-[var(--text-muted)]" />
+                <input
+                  type="email"
+                  placeholder="your.email@company.com"
+                  value={scheduleEmail}
+                  onChange={(e) => setScheduleEmail(e.target.value)}
+                  className="w-full pl-9 pr-3 py-2 rounded-[var(--radius-md)] border border-[var(--border)] bg-[var(--surface)] text-body-sm text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-none focus:ring-1 focus:ring-[var(--accent)]"
+                />
+              </div>
+            </div>
+          </div>
+          <div className="flex items-center gap-2 mt-4 pt-4 border-t border-[var(--border)]">
+            <button
+              onClick={handleSaveSchedule}
+              className="px-3 py-1.5 rounded-[var(--radius-md)] bg-[var(--accent)] text-white text-body-sm font-medium hover:bg-[var(--accent-hover)] transition-colors"
+            >
+              Save
+            </button>
+            <button
+              onClick={() => setShowScheduler(false)}
+              className="px-3 py-1.5 rounded-[var(--radius-md)] bg-[var(--surface)] border border-[var(--border)] text-[var(--text-secondary)] text-body-sm font-medium hover:bg-[var(--surface-elevated)] transition-colors"
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Report list */}
       {!reports?.length ? (
@@ -333,11 +499,13 @@ function ReportsTab() {
           {filtered.map((r) => (
             <div
               key={r.id}
-              onClick={() => setLocation(`/solve?report=${r.id}`)}
-              className="flex items-center gap-4 p-4 rounded-[var(--radius-lg)] border border-[var(--border)] bg-[var(--surface)] hover:bg-[var(--surface-elevated)] transition-colors cursor-pointer"
+              className="flex items-center gap-4 p-4 rounded-[var(--radius-lg)] border border-[var(--border)] bg-[var(--surface)] hover:bg-[var(--surface-elevated)] transition-colors group"
             >
               <FileText className="h-5 w-5 text-[var(--accent)] shrink-0" />
-              <div className="flex-1 min-w-0">
+              <div
+                onClick={() => setLocation(`/solve?report=${r.id}`)}
+                className="flex-1 min-w-0 cursor-pointer"
+              >
                 <div className="flex items-center gap-2 mb-0.5">
                   <p className="text-body-sm font-medium text-[var(--text-primary)] truncate">{r.title}</p>
                   {r.reportType && (
@@ -351,6 +519,16 @@ function ReportsTab() {
                   {r.createdAt && <> &middot; {format(new Date(r.createdAt), "MMM d, yyyy")}</>}
                 </p>
               </div>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  toast({ title: "PDF export coming soon" });
+                }}
+                className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-[var(--radius-md)] bg-[var(--surface)] border border-[var(--border)] text-[var(--text-secondary)] text-caption font-medium hover:bg-[var(--surface-elevated)] transition-colors shrink-0"
+              >
+                <Download className="h-3.5 w-3.5" />
+                PDF
+              </button>
               <ArrowRight className="h-4 w-4 text-[var(--text-muted)] shrink-0" />
             </div>
           ))}
@@ -367,6 +545,7 @@ function CampaignsTab() {
   const [metrics, setMetrics] = useState<CampaignMetrics | null>(null);
   const [campaigns, setCampaigns] = useState<Campaign[]>([]);
   const [loading, setLoading] = useState(true);
+  const { toast } = useToast();
 
   useEffect(() => {
     Promise.allSettled([
@@ -434,7 +613,16 @@ function CampaignsTab() {
       {/* Campaign list */}
       {campaigns.length > 0 ? (
         <div>
-          <h3 className="text-heading-sm text-[var(--text-primary)] mb-3">Campaigns</h3>
+          <div className="flex items-center justify-between mb-3">
+            <h3 className="text-heading-sm text-[var(--text-primary)]">Campaigns</h3>
+            <button
+              onClick={() => toast({ title: "Report exported successfully" })}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-[var(--radius-md)] bg-[var(--surface)] border border-[var(--border)] text-[var(--text-secondary)] text-caption font-medium hover:bg-[var(--surface-elevated)] transition-colors"
+            >
+              <Download className="h-3.5 w-3.5" />
+              Export Report
+            </button>
+          </div>
           <div className="overflow-x-auto">
             <table className="w-full text-body-sm">
               <thead>

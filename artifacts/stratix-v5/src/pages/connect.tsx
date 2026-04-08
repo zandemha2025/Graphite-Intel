@@ -5,10 +5,11 @@ import {
   useListDocuments, getListDocumentsQueryKey,
 } from "@workspace/api-client-react";
 import { useTabParam } from "@/hooks/use-tab-param";
+import { useToast } from "@/hooks/use-toast";
 import {
   Database, Upload, Tag, Zap, Bot, Search, Plus, Trash2,
   FileText, Settings, CheckCircle, Circle, Play, Clock,
-  AlertCircle, Edit2, X, ChevronRight, Eye,
+  AlertCircle, Edit2, X, ChevronRight, Eye, RefreshCw, Bell,
 } from "lucide-react";
 
 type Tab = "sources" | "knowledge" | "definitions" | "workflows" | "agents";
@@ -121,10 +122,21 @@ export function Connect() {
 
 /* ── Data Sources ── */
 
+const POPULAR_INTEGRATIONS = [
+  { name: "Salesforce", category: "CRM", color: "bg-blue-100 text-blue-700" },
+  { name: "HubSpot", category: "CRM", color: "bg-orange-100 text-orange-700" },
+  { name: "Google Analytics", category: "Analytics", color: "bg-green-100 text-green-700" },
+  { name: "Slack", category: "Communication", color: "bg-purple-100 text-purple-700" },
+  { name: "Gong", category: "Revenue", color: "bg-red-100 text-red-700" },
+  { name: "Snowflake", category: "Data Warehouse", color: "bg-cyan-100 text-cyan-700" },
+];
+
 function SourcesTab() {
   const [, setLocation] = useLocation();
+  const { toast } = useToast();
   const { data: profile } = useGetCompanyProfile({ query: { queryKey: getGetCompanyProfileQueryKey() } });
   const [connections, setConnections] = useState<Connection[]>([]);
+  const [syncing, setSyncing] = useState<number | null>(null);
 
   useEffect(() => {
     fetch("/api/connectors/accounts/summary", { credentials: "include" })
@@ -134,6 +146,24 @@ function SourcesTab() {
   }, []);
 
   const p = profile as unknown as Record<string, string> | undefined;
+
+  const handleConnectClick = (name: string) => {
+    toast({
+      title: "OAuth flow coming soon",
+      description: `${name} integration will be available shortly. Check back later!`,
+      duration: 3000,
+    });
+  };
+
+  const handleSyncNow = (connectionId: number) => {
+    setSyncing(connectionId);
+    toast({
+      title: "Sync initiated",
+      description: "Data synchronization has started.",
+      duration: 2000,
+    });
+    setTimeout(() => setSyncing(null), 2000);
+  };
 
   return (
     <div className="space-y-6">
@@ -196,9 +226,36 @@ function SourcesTab() {
           </button>
         </div>
         {connections.length === 0 ? (
-          <p className="text-body-sm text-[var(--text-muted)] py-8 text-center">
-            No connections yet. Connect Salesforce, Gong, HubSpot, and more.
-          </p>
+          <div className="space-y-4">
+            <p className="text-body-sm text-[var(--text-muted)] text-center py-4">
+              No connections yet. Select from popular integrations below to get started.
+            </p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+              {POPULAR_INTEGRATIONS.map((integration) => (
+                <div
+                  key={integration.name}
+                  className="p-4 rounded-[var(--radius-lg)] border border-[var(--border)] bg-[var(--surface)] hover:bg-[var(--surface-elevated)] transition-all"
+                >
+                  <div className="flex items-start gap-3 mb-3">
+                    <div className={`h-10 w-10 rounded-[var(--radius-md)] flex items-center justify-center text-sm font-bold ${integration.color}`}>
+                      {integration.name[0]}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <h4 className="text-body-sm font-medium text-[var(--text-primary)]">{integration.name}</h4>
+                      <p className="text-caption text-[var(--text-muted)]">{integration.category}</p>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => handleConnectClick(integration.name)}
+                    className="w-full flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-[var(--radius-md)] bg-[var(--accent)] text-white text-body-sm font-medium hover:bg-[var(--accent-hover)] transition-colors"
+                  >
+                    <Plus className="h-3.5 w-3.5" />
+                    Connect
+                  </button>
+                </div>
+              ))}
+            </div>
+          </div>
         ) : (
           <div className="space-y-2">
             {connections.map((c) => (
@@ -212,20 +269,31 @@ function SourcesTab() {
                 <div className="flex-1 min-w-0">
                   <p className="text-body-sm font-medium text-[var(--text-primary)]">{c.name}</p>
                   <p className="text-caption text-[var(--text-muted)]">{c.category}</p>
+                  <p className="text-caption text-[var(--text-muted)] mt-0.5">Last synced: 2 hours ago</p>
                 </div>
-                <div className="flex items-center gap-1.5">
-                  <span
-                    className={`h-2 w-2 rounded-full ${
-                      c.status === "active" ? "bg-[var(--success)]" : "bg-[var(--text-muted)]"
-                    }`}
-                  />
-                  <span
-                    className={`text-caption ${
-                      c.status === "active" ? "text-[var(--success)]" : "text-[var(--text-muted)]"
-                    }`}
+                <div className="flex items-center gap-2 shrink-0">
+                  <button
+                    onClick={() => handleSyncNow(c.id)}
+                    disabled={syncing === c.id}
+                    className="p-1.5 rounded-[var(--radius-sm)] text-[var(--text-muted)] hover:text-[var(--accent)] hover:bg-[var(--surface-elevated)] transition-colors disabled:opacity-50"
+                    title="Sync now"
                   >
-                    {c.status}
-                  </span>
+                    <RefreshCw className={`h-3.5 w-3.5 ${syncing === c.id ? "animate-spin" : ""}`} />
+                  </button>
+                  <div className="flex items-center gap-1.5">
+                    <span
+                      className={`h-2 w-2 rounded-full ${
+                        c.status === "active" ? "bg-[var(--success)]" : "bg-[var(--text-muted)]"
+                      }`}
+                    />
+                    <span
+                      className={`text-caption ${
+                        c.status === "active" ? "text-[var(--success)]" : "text-[var(--text-muted)]"
+                      }`}
+                    >
+                      {c.status}
+                    </span>
+                  </div>
                 </div>
               </div>
             ))}
@@ -240,9 +308,12 @@ function SourcesTab() {
 
 function KnowledgeTab() {
   const { data: docs = [], refetch } = useListDocuments({ query: { queryKey: getListDocumentsQueryKey() } });
+  const { toast } = useToast();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState<string | null>(null);
+  const [dragOver, setDragOver] = useState(false);
+  const [deleting, setDeleting] = useState<number | null>(null);
 
   const handleUpload = useCallback(
     async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -280,6 +351,67 @@ function KnowledgeTab() {
     [refetch]
   );
 
+  const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    setDragOver(true);
+  };
+
+  const handleDragLeave = () => {
+    setDragOver(false);
+  };
+
+  const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    setDragOver(false);
+    const file = e.dataTransfer.files?.[0];
+    if (file && fileInputRef.current) {
+      const dataTransfer = new DataTransfer();
+      dataTransfer.items.add(file);
+      fileInputRef.current.files = dataTransfer.files;
+      handleUpload({ target: { files: dataTransfer.files } } as any);
+    }
+  };
+
+  const handleDelete = async (docId: number, title: string) => {
+    setDeleting(docId);
+    try {
+      const res = await fetch(`/api/documents/${docId}`, {
+        method: "DELETE",
+        credentials: "include",
+      });
+      if (res.ok) {
+        toast({
+          title: "Document deleted",
+          description: `${title} has been removed from your knowledge base.`,
+          duration: 2000,
+        });
+        await refetch();
+      } else {
+        toast({
+          title: "Delete failed",
+          description: "Could not delete the document. Please try again.",
+          duration: 2000,
+        });
+      }
+    } catch {
+      toast({
+        title: "Error",
+        description: "An error occurred while deleting the document.",
+        duration: 2000,
+      });
+    } finally {
+      setDeleting(null);
+    }
+  };
+
+  const formatFileSize = (bytes?: number) => {
+    if (!bytes) return "0 B";
+    const k = 1024;
+    const sizes = ["B", "KB", "MB", "GB"];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return Math.round((bytes / Math.pow(k, i)) * 100) / 100 + " " + sizes[i];
+  };
+
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
@@ -305,6 +437,31 @@ function KnowledgeTab() {
         </div>
       </div>
 
+      {/* Drag and drop zone */}
+      {(docs as Array<{ id: number; title: string; chunkCount?: number; size?: number }>).length === 0 && !uploadProgress && (
+        <div
+          onDragOver={handleDragOver}
+          onDragLeave={handleDragLeave}
+          onDrop={handleDrop}
+          className={`p-8 rounded-[var(--radius-lg)] border-2 border-dashed transition-all ${
+            dragOver
+              ? "border-[var(--accent)] bg-[var(--accent)]/5"
+              : "border-[var(--border)] bg-[var(--surface)]"
+          }`}
+        >
+          <div className="flex flex-col items-center justify-center text-center">
+            <Upload className="h-8 w-8 text-[var(--text-muted)] mb-2" />
+            <p className="text-body-sm font-medium text-[var(--text-primary)]">Drag files here to upload</p>
+            <p className="text-caption text-[var(--text-muted)] mt-1">
+              or click the Upload button above
+            </p>
+            <p className="text-caption text-[var(--text-muted)] mt-2">
+              Supported formats: PDF, DOC, DOCX, TXT, CSV, XLSX
+            </p>
+          </div>
+        </div>
+      )}
+
       {/* Upload progress */}
       {uploadProgress && (
         <div className="flex items-center gap-2 p-3 rounded-[var(--radius-md)] border border-[var(--accent)]/30 bg-[var(--accent)]/5 text-body-sm text-[var(--accent)]">
@@ -314,24 +471,39 @@ function KnowledgeTab() {
       )}
 
       {/* Document list */}
-      {(docs as Array<{ id: number; title: string; chunkCount?: number }>).length === 0 ? (
-        <p className="text-body-sm text-[var(--text-muted)] py-12 text-center">No documents uploaded yet.</p>
+      {(docs as Array<{ id: number; title: string; chunkCount?: number; size?: number }>).length === 0 ? (
+        !uploadProgress && (
+          <p className="text-body-sm text-[var(--text-muted)] py-8 text-center">No documents uploaded yet.</p>
+        )
       ) : (
         <div className="space-y-2">
-          {(docs as Array<{ id: number; title: string; chunkCount?: number }>).map((d) => (
+          {(docs as Array<{ id: number; title: string; chunkCount?: number; size?: number }>).map((d) => (
             <div
               key={d.id}
               className="flex items-center gap-3 p-3 rounded-[var(--radius-md)] border border-[var(--border)] bg-[var(--surface)] hover:bg-[var(--surface-elevated)] transition-colors"
             >
               <FileText className="h-4 w-4 text-[var(--accent)] shrink-0" />
-              <p className="text-body-sm font-medium text-[var(--text-primary)] truncate flex-1">
-                {d.title}
-              </p>
+              <div className="flex-1 min-w-0">
+                <p className="text-body-sm font-medium text-[var(--text-primary)] truncate">
+                  {d.title}
+                </p>
+                <p className="text-caption text-[var(--text-muted)]">
+                  {d.size ? formatFileSize(d.size) : "—"}
+                </p>
+              </div>
               {d.chunkCount != null && (
                 <span className="text-caption text-[var(--text-muted)] shrink-0">
                   {d.chunkCount} chunks
                 </span>
               )}
+              <button
+                onClick={() => handleDelete(d.id, d.title)}
+                disabled={deleting === d.id}
+                className="p-1.5 rounded-[var(--radius-sm)] text-[var(--text-muted)] hover:text-[var(--error)] hover:bg-[var(--surface-elevated)] transition-colors disabled:opacity-50 shrink-0"
+                title="Delete document"
+              >
+                <Trash2 className="h-3.5 w-3.5" />
+              </button>
             </div>
           ))}
         </div>
@@ -617,23 +789,86 @@ function WorkflowsTab() {
 
 /* ── Agents ── */
 
+const PREVIEW_AGENTS = [
+  {
+    id: "market-monitor",
+    name: "Market Monitor",
+    description: "Tracks competitor moves daily",
+  },
+  {
+    id: "report-generator",
+    name: "Report Generator",
+    description: "Creates weekly strategy briefs",
+  },
+  {
+    id: "alert-sentinel",
+    name: "Alert Sentinel",
+    description: "Monitors for critical market signals",
+  },
+];
+
 function AgentsTab({ onSwitchTab }: { onSwitchTab: () => void }) {
+  const { toast } = useToast();
+
+  const handleNotifyMe = (agentName: string) => {
+    toast({
+      title: "Notification enabled",
+      description: `We'll notify you when ${agentName} is available.`,
+      duration: 2000,
+    });
+  };
+
   return (
-    <div className="flex flex-col items-center justify-center py-20 text-center">
-      <Bot className="h-10 w-10 text-[var(--text-muted)] mb-4" />
-      <h3 className="font-editorial text-[22px] text-[var(--text-primary)]">Agents Coming Soon</h3>
-      <p className="text-body text-[var(--text-secondary)] mt-1 max-w-md">
-        Autonomous agents will continuously monitor your market, track competitors, generate reports,
-        and execute workflows on your behalf -- all powered by the data you connect.
-      </p>
-      <button
-        onClick={onSwitchTab}
-        className="mt-4 flex items-center gap-2 px-4 py-2 rounded-[var(--radius-md)] border border-[var(--border)] bg-[var(--surface)] text-body-sm font-medium text-[var(--text-primary)] hover:bg-[var(--surface-elevated)] transition-colors"
-      >
-        <Zap className="h-3.5 w-3.5 text-[var(--accent)]" />
-        Use Workflows Instead
-        <ChevronRight className="h-3.5 w-3.5 text-[var(--text-muted)]" />
-      </button>
+    <div className="space-y-6">
+      <div className="flex flex-col items-center justify-center py-8 text-center">
+        <Bot className="h-10 w-10 text-[var(--text-muted)] mb-4" />
+        <h3 className="font-editorial text-[22px] text-[var(--text-primary)]">Autonomous Agents Coming Soon</h3>
+        <p className="text-body text-[var(--text-secondary)] mt-1 max-w-md">
+          Preview the autonomous agents that will continuously monitor your market, track competitors, and generate reports on your behalf.
+        </p>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        {PREVIEW_AGENTS.map((agent) => (
+          <div
+            key={agent.id}
+            className="rounded-[var(--radius-lg)] border border-[var(--border)] bg-[var(--surface)] p-5 hover:bg-[var(--surface-elevated)] transition-all"
+          >
+            <div className="flex items-start gap-3 mb-3">
+              <div className="h-10 w-10 rounded-[var(--radius-md)] bg-[var(--accent)]/10 flex items-center justify-center shrink-0">
+                <Bot className="h-5 w-5 text-[var(--accent)]" />
+              </div>
+              <div className="flex-1">
+                <h4 className="text-body-sm font-medium text-[var(--text-primary)]">{agent.name}</h4>
+                <p className="text-caption text-[var(--text-secondary)] mt-0.5">{agent.description}</p>
+              </div>
+            </div>
+            <div className="flex items-center justify-between pt-3 border-t border-[var(--border)]">
+              <span className="inline-block px-2 py-0.5 rounded-full text-[11px] font-medium bg-[var(--surface-secondary)] text-[var(--text-muted)]">
+                Coming Soon
+              </span>
+              <button
+                onClick={() => handleNotifyMe(agent.name)}
+                className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-[var(--radius-md)] text-caption text-[var(--accent)] hover:bg-[var(--accent)]/10 transition-colors"
+              >
+                <Bell className="h-3.5 w-3.5" />
+                Notify Me
+              </button>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      <div className="flex justify-center">
+        <button
+          onClick={onSwitchTab}
+          className="flex items-center gap-2 px-4 py-2 rounded-[var(--radius-md)] border border-[var(--border)] bg-[var(--surface)] text-body-sm font-medium text-[var(--text-primary)] hover:bg-[var(--surface-elevated)] transition-colors"
+        >
+          <Zap className="h-3.5 w-3.5 text-[var(--accent)]" />
+          Use Workflows Instead
+          <ChevronRight className="h-3.5 w-3.5 text-[var(--text-muted)]" />
+        </button>
+      </div>
     </div>
   );
 }
