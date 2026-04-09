@@ -216,7 +216,7 @@ export function ResponseActions({ content, conversationId }: ResponseActionsProp
       await fetch(`/api/notebooks/${nb.id}/cells`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ type: "markdown", content, order: 0 }),
+        body: JSON.stringify({ prompt: content, title: firstLine, cellIndex: 0 }),
         credentials: "include",
       });
 

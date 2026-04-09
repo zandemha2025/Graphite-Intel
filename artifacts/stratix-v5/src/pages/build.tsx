@@ -180,12 +180,14 @@ export function Build() {
       const nb = await res.json();
 
       // Populate cells from template
-      for (const cell of template.cells) {
+      for (let i = 0; i < template.cells.length; i++) {
+        const cell = template.cells[i];
+        const title = cell.type === "markdown" ? `Section ${i + 1}` : cell.type === "ai-prompt" ? `AI Analysis ${i + 1}` : `Code ${i + 1}`;
         await fetch(`/api/notebooks/${nb.id}/cells`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           credentials: "include",
-          body: JSON.stringify({ type: cell.type, content: cell.content }),
+          body: JSON.stringify({ prompt: cell.content, title, cellIndex: i }),
         });
       }
 

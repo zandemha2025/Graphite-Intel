@@ -112,7 +112,7 @@ export function CodeBlock({
       await fetch(`/api/notebooks/${nb.id}/cells`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ type: "code", content: code, language, order: 0 }),
+        body: JSON.stringify({ prompt: code, title: `${language.toUpperCase()} snippet`, cellIndex: 0 }),
         credentials: "include",
       });
 

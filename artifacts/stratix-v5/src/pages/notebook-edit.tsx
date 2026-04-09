@@ -93,7 +93,13 @@ export function NotebookEdit() {
         if (data) {
           setNotebook(data);
           setTitle(data.title);
-          setCells((data.cells ?? []).map((c: Cell) => ({ ...c, status: "idle" as const })));
+          setCells((data.cells ?? []).map((c: Record<string, unknown>) => ({
+            id: String(c.id ?? c.cellId ?? ""),
+            type: (c.type as CellType) || "markdown",
+            content: String(c.content ?? c.prompt ?? ""),
+            output: c.output ? String(c.output) : undefined,
+            status: "idle" as const,
+          })));
         }
       })
       .catch(() => {})
@@ -247,11 +253,12 @@ export function NotebookEdit() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
-        body: JSON.stringify({ type, content: "" }),
+        body: JSON.stringify({ prompt: "", title: type === "ai" ? "AI Prompt" : type === "sql" ? "SQL Query" : type === "code" ? "Code" : "Notes" }),
       });
       if (!res.ok) throw new Error();
-      const newCell = await res.json();
-      setCells((prev) => [...prev, { ...newCell, status: "idle" as const, output: "" }]);
+      const raw = await res.json();
+      const newCell: Cell = { id: String(raw.id ?? raw.cellId ?? Date.now()), type, content: String(raw.prompt ?? raw.content ?? ""), output: raw.output ? String(raw.output) : undefined, status: "idle" };
+      setCells((prev) => [...prev, newCell]);
     } catch { toast({ title: "Failed to add cell", variant: "destructive" }); }
   }, [id, toast]);
 
