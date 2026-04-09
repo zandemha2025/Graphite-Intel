@@ -3,24 +3,75 @@ import { useLocation } from "wouter";
 import { useListBoards, useCreateBoard, getListBoardsQueryKey } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
-import { Plus, Search, BookText, LayoutGrid, Star, List, Grid3X3, Sparkles, FileBarChart, CalendarDays, Megaphone } from "lucide-react";
+import {
+  Plus, Search, BookText, LayoutGrid, Star, List, Grid3X3,
+  Sparkles, FileBarChart, CalendarDays, Megaphone, Globe, Target,
+  Shield, TrendingUp, BarChart3, Link, Rocket, Eye, MessageCircle,
+  Newspaper, PieChart, Heart, DollarSign, GitBranch, Palette, Filter,
+  Users, Mail, Calculator, ClipboardList, Coins, Flame, FileSpreadsheet,
+  SlidersHorizontal, Scale, MessageSquare, UserCircle, Maximize, Cpu,
+  GitCompare, ClipboardCheck, Radar, FileKey, BookOpen, X, Waves,
+  Crosshair, Sunrise,
+} from "lucide-react";
 import { format } from "date-fns";
+import {
+  TEMPLATES,
+  TEMPLATE_CATEGORIES,
+  searchTemplates,
+  type Template,
+  type TemplateCategory,
+} from "@/lib/templates";
+
+const ICON_MAP: Record<string, React.ComponentType<{ className?: string }>> = {
+  Sparkles, FileBarChart, CalendarDays, Megaphone, Globe, Target,
+  Shield, TrendingUp, BarChart3, Link, Rocket, Eye, MessageCircle,
+  Newspaper, PieChart, Heart, DollarSign, GitBranch, Palette, Filter,
+  Users, Mail, Calculator, ClipboardList, Coins, Flame, FileSpreadsheet,
+  SlidersHorizontal, Scale, MessageSquare, UserCircle, Maximize, Cpu,
+  GitCompare, ClipboardCheck, Radar, FileKey, BookOpen, LayoutGrid,
+  Waves, Crosshair, Sunrise,
+};
+
+function getIcon(name: string) {
+  return ICON_MAP[name] || Sparkles;
+}
+
+const CATEGORY_COLORS: Record<TemplateCategory, string> = {
+  strategy: "bg-indigo-100 text-indigo-700",
+  intelligence: "bg-amber-100 text-amber-700",
+  marketing: "bg-emerald-100 text-emerald-700",
+  finance: "bg-rose-100 text-rose-700",
+  research: "bg-sky-100 text-sky-700",
+};
 
 interface NotebookItem { id: number; title: string; updatedAt: string; cellCount: number; }
 
-type Filter = "all" | "notebooks" | "boards" | "favorites";
+type ItemFilter = "all" | "notebooks" | "boards" | "favorites";
 type ViewMode = "grid" | "list";
 
 export function Build() {
   const [, setLocation] = useLocation();
   const queryClient = useQueryClient();
   const { toast } = useToast();
-  const [filter, setFilter] = useState<Filter>("all");
+  const [filter, setFilter] = useState<ItemFilter>("all");
   const [search, setSearch] = useState("");
   const [sortBy, setSortBy] = useState<"edited" | "name">("edited");
   const [notebooks, setNotebooks] = useState<NotebookItem[]>([]);
   const [viewMode, setViewMode] = useState<ViewMode>("grid");
-  const [favorites, setFavorites] = useState<Set<string>>(new Set());
+  const [favorites, setFavorites] = useState<Set<string>>(() => {
+    try {
+      return new Set(JSON.parse(localStorage.getItem("stratix:favorites") || "[]"));
+    } catch {
+      return new Set();
+    }
+  });
+
+  // Template browser state
+  const [templateCategory, setTemplateCategory] = useState<TemplateCategory | "all">("all");
+  const [templateSearch, setTemplateSearch] = useState("");
+  const [previewTemplate, setPreviewTemplate] = useState<Template | null>(null);
+
+  const filteredTemplates = searchTemplates(templateSearch, templateCategory);
 
   const { data: boards = [], isError: boardsError, refetch: refetchBoards } = useListBoards();
   const createBoard = useCreateBoard();
@@ -28,13 +79,24 @@ export function Build() {
   useEffect(() => {
     fetch("/api/notebooks", { credentials: "include" })
       .then((r) => r.ok ? r.json() : [])
-      .then((d) => setNotebooks(d))
-      .catch(() => {});
+      .then((d) => setNotebooks(Array.isArray(d) ? d : []))
+      .catch(() => setNotebooks([]));
   }, []);
 
+  useEffect(() => {
+    try {
+      localStorage.setItem("stratix:favorites", JSON.stringify([...favorites]));
+    } catch {
+      // localStorage unavailable
+    }
+  }, [favorites]);
+
+  const safeBoards = Array.isArray(boards) ? boards as Array<{ id: number; title: string; updatedAt: string }> : [];
+  const safeNotebooks = Array.isArray(notebooks) ? notebooks : [];
+
   const allItems = [
-    ...((filter === "all" || filter === "notebooks" || filter === "favorites") ? notebooks.map((n) => ({ ...n, kind: "notebook" as const, href: `/build/notebooks/${n.id}` })) : []),
-    ...((filter === "all" || filter === "boards" || filter === "favorites") ? (boards as Array<{ id: number; title: string; updatedAt: string }>).map((b) => ({ ...b, kind: "board" as const, cellCount: 0, href: `/build/boards/${b.id}` })) : []),
+    ...((filter === "all" || filter === "notebooks" || filter === "favorites") ? safeNotebooks.map((n) => ({ ...n, kind: "notebook" as const, href: `/build/notebooks/${n.id}` })) : []),
+    ...((filter === "all" || filter === "boards" || filter === "favorites") ? safeBoards.map((b) => ({ ...b, kind: "board" as const, cellCount: 0, href: `/build/boards/${b.id}` })) : []),
   ];
 
   const items = allItems
@@ -62,7 +124,6 @@ export function Build() {
 
   const handleNewNotebook = async () => {
     try {
-      // Auto-increment: find next available "Untitled Notebook" name
       const base = "Untitled Notebook";
       const existing = new Set(notebooks.map((n) => n.title));
       let computedTitle = base;
@@ -88,13 +149,16 @@ export function Build() {
           queryClient.invalidateQueries({ queryKey: getListBoardsQueryKey() });
           setLocation(`/build/boards/${board.id}`);
         },
+        onError: () => {
+          toast({ title: "Failed to create board", variant: "destructive" });
+        },
       }
     );
   };
 
-  const handleUseTemplate = async (templateName: string) => {
+  const handleUseTemplate = async (template: Template) => {
     try {
-      const base = templateName;
+      const base = template.title;
       const existing = new Set(notebooks.map((n) => n.title));
       let computedTitle = base;
       if (existing.has(base)) {
@@ -105,24 +169,32 @@ export function Build() {
 
       const res = await fetch("/api/notebooks", {
         method: "POST", headers: { "Content-Type": "application/json" }, credentials: "include",
-        body: JSON.stringify({ title: computedTitle, description: "" }),
+        body: JSON.stringify({ title: computedTitle, description: template.description }),
       });
-      if (res.ok) {
-        const nb = await res.json();
-        toast({ title: "Template applied", description: `Created "${computedTitle}"` });
-        setLocation(`/build/notebooks/${nb.id}`);
+
+      if (!res.ok) {
+        toast({ title: "Failed to create notebook", variant: "destructive" });
+        return;
       }
+
+      const nb = await res.json();
+
+      // Populate cells from template
+      for (const cell of template.cells) {
+        await fetch(`/api/notebooks/${nb.id}/cells`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          credentials: "include",
+          body: JSON.stringify({ type: cell.type, content: cell.content }),
+        });
+      }
+
+      toast({ title: "Template applied", description: `Created "${computedTitle}" with ${template.cells.length} cells` });
+      setLocation(`/build/notebooks/${nb.id}`);
     } catch {
       toast({ title: "Failed to apply template", variant: "destructive" });
     }
   };
-
-  const templates = [
-    { icon: Sparkles, title: "Competitive Analysis", description: "Pre-built notebook template" },
-    { icon: FileBarChart, title: "Market Report", description: "Strategy report dashboard" },
-    { icon: CalendarDays, title: "Weekly Brief", description: "Automated weekly summary" },
-    { icon: Megaphone, title: "Campaign Review", description: "Ad performance analysis" },
-  ];
 
   return (
     <div>
@@ -141,7 +213,7 @@ export function Build() {
 
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-1">
-            {(["all", "notebooks", "boards", "favorites"] as Filter[]).map((f) => (
+            {(["all", "notebooks", "boards", "favorites"] as ItemFilter[]).map((f) => (
               <button key={f} onClick={() => setFilter(f)} className={`px-3 py-1.5 text-body-sm rounded-[var(--radius-sm)] transition-colors ${filter === f ? "text-[var(--text-primary)] font-medium bg-[var(--surface)]" : "text-[var(--text-muted)] hover:text-[var(--text-secondary)]"}`}>
                 {f === "favorites" ? "Favorites" : f.charAt(0).toUpperCase() + f.slice(1)}
               </button>
@@ -188,23 +260,74 @@ export function Build() {
       {/* Templates Section */}
       {(filter === "all" || filter === "notebooks") && (
         <div className="mt-8 mb-8">
-          <h2 className="text-[18px] font-medium text-[var(--text-primary)] mb-4">Start from Template</h2>
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-3">
+              <h2 className="text-[18px] font-medium text-[var(--text-primary)]">Start from Template</h2>
+              <span className="px-2.5 py-0.5 text-[11px] font-medium rounded-full bg-[var(--accent)]/10 text-[var(--accent)]">
+                {TEMPLATES.length}+ templates
+              </span>
+            </div>
+          </div>
+
+          {/* Category pills */}
+          <div className="flex items-center gap-2 mb-4">
+            {TEMPLATE_CATEGORIES.map((cat) => (
+              <button
+                key={cat.key}
+                onClick={() => setTemplateCategory(cat.key)}
+                className={`px-3 py-1.5 text-body-sm rounded-[var(--radius-sm)] transition-colors ${
+                  templateCategory === cat.key
+                    ? "text-[var(--text-primary)] font-medium bg-[var(--surface)] border border-[var(--border-strong)]"
+                    : "text-[var(--text-muted)] hover:text-[var(--text-secondary)] border border-transparent"
+                }`}
+              >
+                {cat.label}
+              </button>
+            ))}
+          </div>
+
+          {/* Template search */}
+          <div className="relative max-w-xs mb-4">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[var(--text-muted)]" />
+            <input
+              value={templateSearch}
+              onChange={(e) => setTemplateSearch(e.target.value)}
+              placeholder="Filter templates..."
+              className="w-full pl-10 pr-4 h-9 rounded-[var(--radius-md)] border border-[var(--border)] bg-[var(--surface)] text-body-sm text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/20"
+            />
+          </div>
+
+          {/* Template grid */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            {templates.map((template) => {
-              const Icon = template.icon;
+            {filteredTemplates.map((template) => {
+              const Icon = getIcon(template.icon);
               return (
                 <div
-                  key={template.title}
-                  className="flex flex-col rounded-[var(--radius-lg)] border border-[var(--border)] bg-[var(--surface)] hover:bg-[var(--surface-elevated)] transition-all overflow-hidden"
+                  key={template.id}
+                  className="flex flex-col rounded-[var(--radius-lg)] border border-[var(--border)] bg-[var(--surface)] hover:bg-[var(--surface-elevated)] transition-all overflow-hidden group"
                 >
-                  <div className="flex-1 flex items-center justify-center bg-[var(--surface-secondary)] py-6">
+                  <div className="flex-1 flex items-center justify-center bg-[var(--surface-secondary)] py-6 relative">
                     <Icon className="h-8 w-8 text-[var(--accent)]" />
+                    <button
+                      onClick={() => setPreviewTemplate(template)}
+                      className="absolute top-2 right-2 px-2 py-1 text-[10px] font-medium rounded-[var(--radius-sm)] bg-white/80 hover:bg-white text-[var(--text-secondary)] opacity-0 group-hover:opacity-100 transition-all"
+                    >
+                      Preview
+                    </button>
                   </div>
                   <div className="px-3 py-3">
-                    <p className="text-body-sm font-medium text-[var(--text-primary)]">{template.title}</p>
-                    <p className="text-[11px] text-[var(--text-muted)] mt-1">{template.description}</p>
+                    <div className="flex items-center gap-2 mb-1">
+                      <p className="text-body-sm font-medium text-[var(--text-primary)] truncate">{template.title}</p>
+                    </div>
+                    <p className="text-[11px] text-[var(--text-muted)] mt-0.5 line-clamp-2">{template.description}</p>
+                    <div className="flex items-center justify-between mt-2">
+                      <span className={`px-2 py-0.5 text-[10px] font-medium rounded-full ${CATEGORY_COLORS[template.category]}`}>
+                        {template.category}
+                      </span>
+                      <span className="text-[10px] text-[var(--text-muted)]">{template.cells.length} cells</span>
+                    </div>
                     <button
-                      onClick={() => handleUseTemplate(template.title)}
+                      onClick={() => handleUseTemplate(template)}
                       className="mt-3 w-full px-3 py-1.5 text-[11px] font-medium rounded-[var(--radius-sm)] bg-[var(--accent)] text-white hover:opacity-90 transition-opacity"
                     >
                       Use Template
@@ -213,6 +336,75 @@ export function Build() {
                 </div>
               );
             })}
+          </div>
+
+          {filteredTemplates.length === 0 && (
+            <div className="flex flex-col items-center py-8 text-center">
+              <Search className="h-8 w-8 text-[var(--text-muted)] mb-2" />
+              <p className="text-body-sm text-[var(--text-muted)]">No templates match your search.</p>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Template Preview Modal */}
+      {previewTemplate && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm" onClick={() => setPreviewTemplate(null)}>
+          <div
+            className="relative w-full max-w-2xl max-h-[80vh] overflow-y-auto rounded-[var(--radius-lg)] border border-[var(--border)] bg-[var(--bg)] shadow-2xl mx-4"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="sticky top-0 z-10 flex items-center justify-between px-6 py-4 border-b border-[var(--border)] bg-[var(--bg)]">
+              <div>
+                <h3 className="text-[18px] font-medium text-[var(--text-primary)]">{previewTemplate.title}</h3>
+                <p className="text-body-sm text-[var(--text-muted)] mt-0.5">{previewTemplate.description}</p>
+              </div>
+              <button
+                onClick={() => setPreviewTemplate(null)}
+                className="p-2 rounded-[var(--radius-sm)] hover:bg-[var(--surface-secondary)] transition-colors"
+              >
+                <X className="h-5 w-5 text-[var(--text-muted)]" />
+              </button>
+            </div>
+            <div className="px-6 py-4 space-y-3">
+              {previewTemplate.cells.map((cell, idx) => (
+                <div
+                  key={idx}
+                  className="rounded-[var(--radius-md)] border border-[var(--border)] overflow-hidden"
+                >
+                  <div className="flex items-center gap-2 px-3 py-1.5 bg-[var(--surface-secondary)] border-b border-[var(--border)]">
+                    <span className={`px-2 py-0.5 text-[10px] font-medium rounded-full ${
+                      cell.type === "markdown" ? "bg-blue-100 text-blue-700" :
+                      cell.type === "ai-prompt" ? "bg-purple-100 text-purple-700" :
+                      "bg-green-100 text-green-700"
+                    }`}>
+                      {cell.type === "ai-prompt" ? "AI Prompt" : cell.type === "markdown" ? "Markdown" : "Code"}
+                    </span>
+                    <span className="text-[10px] text-[var(--text-muted)]">Cell {idx + 1}</span>
+                  </div>
+                  <pre className="px-3 py-2.5 text-[12px] text-[var(--text-secondary)] whitespace-pre-wrap font-mono leading-relaxed max-h-40 overflow-y-auto bg-[var(--surface)]">
+                    {cell.content}
+                  </pre>
+                </div>
+              ))}
+            </div>
+            <div className="sticky bottom-0 flex items-center justify-end gap-3 px-6 py-4 border-t border-[var(--border)] bg-[var(--bg)]">
+              <button
+                onClick={() => setPreviewTemplate(null)}
+                className="px-4 py-2 text-body-sm rounded-[var(--radius-sm)] border border-[var(--border)] text-[var(--text-secondary)] hover:bg-[var(--surface-secondary)] transition-colors"
+              >
+                Close
+              </button>
+              <button
+                onClick={() => {
+                  handleUseTemplate(previewTemplate);
+                  setPreviewTemplate(null);
+                }}
+                className="px-4 py-2 text-body-sm font-medium rounded-[var(--radius-sm)] bg-[var(--accent)] text-white hover:opacity-90 transition-opacity"
+              >
+                Use Template
+              </button>
+            </div>
           </div>
         </div>
       )}
@@ -228,10 +420,9 @@ export function Build() {
         </div>
       )}
 
-      {/* Items Grid/List View */}
+      {/* Items Grid View */}
       {items.length > 0 && viewMode === "grid" && (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 mt-6">
-        {/* New cards — filtered to match active filter */}
         {(filter === "all" || filter === "notebooks") && (
           <button onClick={handleNewNotebook} className="flex flex-col items-center justify-center h-40 rounded-[var(--radius-lg)] border-2 border-dashed border-[var(--border)] hover:border-[var(--border-strong)] transition-colors">
             <Plus className="h-6 w-6 text-[var(--text-muted)] mb-2" />
@@ -245,7 +436,6 @@ export function Build() {
           </button>
         )}
 
-          {/* Items */}
           {items.map((item) => {
             const Icon = item.kind === "notebook" ? BookText : LayoutGrid;
             const itemKey = `${item.kind}-${item.id}`;

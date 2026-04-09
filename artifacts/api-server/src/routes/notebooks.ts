@@ -683,7 +683,81 @@ router.post("/notebooks/:id/execute", async (req: Request, res: Response) => {
 });
 
 // ---------------------------------------------------------------------------
-// POST /notebooks/:id/publish — toggle isPublished
+// POST /notebooks/:id/cells/:cellId/generate -- AI-generate content for a cell
+// ---------------------------------------------------------------------------
+
+router.post("/notebooks/:id/cells/:cellId/generate", async (req: Request, res: Response) => {
+  if (!requireAuth(req, res)) return;
+  const orgId = req.user!.orgId!;
+  const notebookId = parseInt(req.params.id as string);
+  const cellId = parseInt(req.params.cellId as string);
+
+  if (isNaN(notebookId) || isNaN(cellId)) {
+    res.status(400).json({ error: "Invalid ids" });
+    return;
+  }
+
+  try {
+    const [notebook] = await db
+      .select()
+      .from(notebooks)
+      .where(and(eq(notebooks.id, notebookId), eq(notebooks.orgId, orgId)));
+
+    if (!notebook) {
+      res.status(404).json({ error: "Notebook not found" });
+      return;
+    }
+
+    const [cell] = await db
+      .select()
+      .from(notebookCells)
+      .where(and(eq(notebookCells.id, cellId), eq(notebookCells.notebookId, notebookId)));
+
+    if (!cell) {
+      res.status(404).json({ error: "Cell not found" });
+      return;
+    }
+
+    const { prompt } = req.body;
+    if (!prompt || typeof prompt !== "string") {
+      res.status(400).json({ error: "prompt is required" });
+      return;
+    }
+
+    const completion = await (getOpenAIClient() as any).chat.completions.create({
+      model: "gpt-4o",
+      messages: [
+        {
+          role: "system",
+          content: "You are a code and content generator for an analytical notebook cell. Return clean, well-structured code or analysis based on the user prompt. If generating code, include the language in your response. Format your response as JSON with fields: code (string) and language (string, e.g. python, sql, markdown).",
+        },
+        { role: "user", content: prompt },
+      ],
+      max_tokens: 2048,
+      temperature: 0.3,
+      response_format: { type: "json_object" },
+    });
+
+    const raw = completion.choices[0]?.message?.content ?? "{}";
+    let parsed: { code?: string; language?: string };
+    try {
+      parsed = JSON.parse(raw);
+    } catch {
+      parsed = { code: raw, language: "markdown" };
+    }
+
+    res.json({
+      code: parsed.code ?? "",
+      language: parsed.language ?? "markdown",
+    });
+  } catch (err) {
+    req.log.error({ err }, "Failed to generate cell content");
+    res.status(500).json({ error: "Failed to generate cell content" });
+  }
+});
+
+// ---------------------------------------------------------------------------
+// POST /notebooks/:id/publish -- toggle isPublished
 // ---------------------------------------------------------------------------
 
 router.post("/notebooks/:id/publish", async (req: Request, res: Response) => {

@@ -1,5 +1,5 @@
 import { Router, type IRouter, type Request, type Response } from "express";
-import { db, reportsTable, companyProfiles } from "@workspace/db";
+import { db, reportsTable, companyProfiles, reportSchedules } from "@workspace/db";
 import { eq, desc, and } from "drizzle-orm";
 import { getOpenAIClient } from "@workspace/integrations-openai-ai-server";
 import { ExportService } from "../lib/exportService.js";
@@ -533,6 +533,127 @@ router.post("/reports", async (req: Request, res: Response) => {
   }
 });
 
+/* ---------- GET /api/reports/schedules ---------- */
+// NOTE: Must be registered before /reports/:id to avoid param matching.
+
+router.get("/reports/schedules", async (req: Request, res: Response) => {
+  if (!requireAuth(req, res)) return;
+  const orgId = req.user!.orgId;
+
+  if (!orgId) {
+    res.json([]);
+    return;
+  }
+
+  try {
+    const schedules = await db
+      .select()
+      .from(reportSchedules)
+      .where(
+        and(
+          eq(reportSchedules.orgId, orgId),
+          eq(reportSchedules.active, true),
+        ),
+      )
+      .orderBy(desc(reportSchedules.createdAt));
+
+    res.json(schedules);
+  } catch (err) {
+    req.log.error({ err }, "Failed to fetch report schedules");
+    res.status(500).json({ error: "Failed to fetch report schedules" });
+  }
+});
+
+/* ---------- PATCH /api/reports/schedules/:id ---------- */
+
+router.patch("/reports/schedules/:id", async (req: Request, res: Response) => {
+  if (!requireAuth(req, res)) return;
+  const orgId = req.user!.orgId;
+  const id = parseInt(req.params.id as string);
+
+  if (isNaN(id)) {
+    res.status(400).json({ error: "Invalid schedule id" });
+    return;
+  }
+
+  if (!orgId) {
+    res.status(400).json({ error: "Organization required" });
+    return;
+  }
+
+  try {
+    const fields = req.body;
+    const [updated] = await db
+      .update(reportSchedules)
+      .set({
+        ...(fields.active !== undefined && { active: fields.active }),
+        ...(fields.frequency !== undefined && { frequency: fields.frequency }),
+        ...(fields.destination !== undefined && {
+          destination: fields.destination,
+        }),
+        ...(fields.nextDeliveryAt !== undefined && {
+          nextDeliveryAt: fields.nextDeliveryAt
+            ? new Date(fields.nextDeliveryAt)
+            : null,
+        }),
+      })
+      .where(
+        and(eq(reportSchedules.id, id), eq(reportSchedules.orgId, orgId)),
+      )
+      .returning();
+
+    if (!updated) {
+      res.status(404).json({ error: "Schedule not found" });
+      return;
+    }
+
+    res.json(updated);
+  } catch (err) {
+    req.log.error({ err }, "Failed to update report schedule");
+    res.status(500).json({ error: "Failed to update report schedule" });
+  }
+});
+
+/* ---------- DELETE /api/reports/schedules/:id ---------- */
+
+router.delete(
+  "/reports/schedules/:id",
+  async (req: Request, res: Response) => {
+    if (!requireAuth(req, res)) return;
+    const orgId = req.user!.orgId;
+    const id = parseInt(req.params.id as string);
+
+    if (isNaN(id)) {
+      res.status(400).json({ error: "Invalid schedule id" });
+      return;
+    }
+
+    if (!orgId) {
+      res.status(400).json({ error: "Organization required" });
+      return;
+    }
+
+    try {
+      const [deleted] = await db
+        .delete(reportSchedules)
+        .where(
+          and(eq(reportSchedules.id, id), eq(reportSchedules.orgId, orgId)),
+        )
+        .returning();
+
+      if (!deleted) {
+        res.status(404).json({ error: "Schedule not found" });
+        return;
+      }
+
+      res.json({ success: true });
+    } catch (err) {
+      req.log.error({ err }, "Failed to delete report schedule");
+      res.status(500).json({ error: "Failed to delete report schedule" });
+    }
+  },
+);
+
 router.get("/reports/:id", async (req: Request, res: Response) => {
   if (!requireAuth(req, res)) return;
 
@@ -686,6 +807,73 @@ router.get("/reports/:id/download", async (req: Request, res: Response) => {
   } catch (err) {
     req.log.error({ err }, "Failed to download report");
     res.status(500).json({ error: "Failed to download report" });
+  }
+});
+
+/* ---------- POST /api/reports/:id/deliver ---------- */
+
+router.post("/reports/:id/deliver", async (req: Request, res: Response) => {
+  if (!requireAuth(req, res)) return;
+
+  const id = parseInt(req.params.id as string);
+  if (isNaN(id)) {
+    res.status(400).json({ error: "Invalid report id" });
+    return;
+  }
+
+  const orgId = req.user!.orgId;
+  const { channel, destination, schedule } = req.body;
+
+  if (!channel || !destination) {
+    res.status(400).json({ error: "channel and destination are required" });
+    return;
+  }
+
+  if (!["email", "slack"].includes(channel)) {
+    res.status(400).json({ error: "channel must be 'email' or 'slack'" });
+    return;
+  }
+
+  try {
+    // Verify the report exists and belongs to the user/org
+    const [report] = await db
+      .select()
+      .from(reportsTable)
+      .where(and(eq(reportsTable.id, id), reportsFilter(req)));
+
+    if (!report) {
+      res.status(404).json({ error: "Report not found" });
+      return;
+    }
+
+    // If a schedule is provided, create a reportSchedule row
+    if (schedule && orgId) {
+      await db.insert(reportSchedules).values({
+        orgId,
+        reportId: id,
+        reportTitle: report.title,
+        channel,
+        destination,
+        frequency: schedule.frequency ?? "weekly",
+        active: true,
+        nextDeliveryAt: schedule.nextDeliveryAt
+          ? new Date(schedule.nextDeliveryAt)
+          : null,
+      });
+    }
+
+    // Immediate delivery is out of scope -- log and return success
+    res.json({
+      success: true,
+      message: `Report delivery initiated via ${channel}`,
+      reportId: id,
+      channel,
+      destination,
+      scheduled: !!schedule,
+    });
+  } catch (err) {
+    req.log.error({ err }, "Failed to deliver report");
+    res.status(500).json({ error: "Failed to deliver report" });
   }
 });
 

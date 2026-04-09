@@ -85,22 +85,38 @@ class ErrorBoundary extends React.Component<
           >
             {this.state.error?.message || "An unexpected error occurred."}
           </p>
-          <button
-            onClick={() => this.setState({ hasError: false, error: null })}
-            style={{
-              marginTop: 16,
-              padding: "8px 16px",
-              fontSize: 14,
-              fontWeight: 500,
-              color: "var(--accent-foreground)",
-              backgroundColor: "var(--accent)",
-              border: "none",
-              borderRadius: "var(--radius-md)",
-              cursor: "pointer",
-            }}
-          >
-            Try again
-          </button>
+          <div style={{ display: "flex", gap: 8, marginTop: 16 }}>
+            <button
+              onClick={() => this.setState({ hasError: false, error: null })}
+              style={{
+                padding: "8px 16px",
+                fontSize: 14,
+                fontWeight: 500,
+                color: "var(--accent-foreground)",
+                backgroundColor: "var(--accent)",
+                border: "none",
+                borderRadius: "var(--radius-md)",
+                cursor: "pointer",
+              }}
+            >
+              Try again
+            </button>
+            <button
+              onClick={() => { window.location.href = "/solve"; }}
+              style={{
+                padding: "8px 16px",
+                fontSize: 14,
+                fontWeight: 500,
+                color: "var(--text-secondary)",
+                backgroundColor: "transparent",
+                border: "1px solid var(--border)",
+                borderRadius: "var(--radius-md)",
+                cursor: "pointer",
+              }}
+            >
+              Go home
+            </button>
+          </div>
         </div>
       )
     }

@@ -63,18 +63,11 @@ router.post("/boards", async (req: Request, res: Response) => {
       return;
     }
 
-    // Board schema uses integer createdByUserId — look up org member ID
-    const [member] = await db
-      .select()
-      .from(orgMembers)
-      .where(and(eq(orgMembers.userId, authUserId), eq(orgMembers.orgId, orgId)));
-    const memberIdInt = member?.id ?? 0;
-
     const [board] = await db
       .insert(boards)
       .values({
         orgId,
-        createdByUserId: memberIdInt,
+        createdByUserId: authUserId,
         title,
         description: description ?? null,
         type: type ?? "live",
@@ -244,6 +237,73 @@ router.post("/boards/:id/refresh", async (req: Request, res: Response) => {
   } catch (err) {
     req.log.error({ err }, "Failed to refresh board");
     res.status(500).json({ error: "Failed to refresh board" });
+  }
+});
+
+/**
+ * POST /boards/:id/cards
+ * Add a card to the board's config.cards array.
+ */
+router.post("/boards/:id/cards", async (req: Request, res: Response) => {
+  if (!requireAuth(req, res)) return;
+  const orgId = req.user!.orgId!;
+  const userId = req.user!.id;
+  const id = parseInt(req.params.id as string);
+
+  if (isNaN(id)) {
+    res.status(400).json({ error: "Invalid board id" });
+    return;
+  }
+
+  try {
+    const [board] = await db
+      .select()
+      .from(boards)
+      .where(
+        and(
+          eq(boards.id, id),
+          eq(boards.orgId, orgId),
+          or(
+            eq(boards.createdByUserId, userId),
+            eq(boards.isShared, true),
+          ),
+        ),
+      );
+
+    if (!board) {
+      res.status(404).json({ error: "Board not found" });
+      return;
+    }
+
+    const card = req.body;
+    if (!card || typeof card !== "object") {
+      res.status(400).json({ error: "Card object is required in the request body" });
+      return;
+    }
+
+    const config = (board.config as { cards?: unknown[]; [k: string]: unknown } | null) ?? {};
+    if (!Array.isArray(config.cards)) {
+      config.cards = [];
+    }
+
+    // Assign an id to the card if not provided
+    if (!card.id) {
+      card.id = `card_${Date.now()}`;
+    }
+    card.createdAt = new Date().toISOString();
+
+    config.cards.push(card);
+
+    const [updated] = await db
+      .update(boards)
+      .set({ config })
+      .where(eq(boards.id, id))
+      .returning();
+
+    res.status(201).json(updated);
+  } catch (err) {
+    req.log.error({ err }, "Failed to add card to board");
+    res.status(500).json({ error: "Failed to add card to board" });
   }
 });
 

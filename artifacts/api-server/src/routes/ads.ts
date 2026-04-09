@@ -490,6 +490,75 @@ router.get("/ads/metrics/overview", async (req: Request, res: Response) => {
 });
 
 // ═══════════════════════════════════════════════════════════════════════════
+// METRIC TRENDS
+// ═══════════════════════════════════════════════════════════════════════════
+
+/** GET /ads/metrics/trend — Return trend arrays for the requested period */
+router.get("/ads/metrics/trend", async (req: Request, res: Response) => {
+  if (!requireAuth(req, res)) return;
+  const orgId = req.user!.orgId!;
+
+  try {
+    const periodParam = (req.query.period as string) ?? "7d";
+    const days = parseInt(periodParam.replace(/\D/g, "")) || 7;
+    const fromDate = new Date();
+    fromDate.setDate(fromDate.getDate() - days);
+
+    // Get campaign IDs for this org
+    const orgCampaigns = await db
+      .select({ id: adCampaigns.id })
+      .from(adCampaigns)
+      .where(eq(adCampaigns.orgId, orgId));
+
+    const campaignIds = orgCampaigns.map((c) => c.id);
+
+    if (campaignIds.length === 0) {
+      // Return sample trend data when no real campaigns exist
+      const emptyArr = new Array(days).fill(0);
+      res.json({
+        spend: emptyArr,
+        revenue: emptyArr,
+        roas: emptyArr,
+        conversions: emptyArr,
+        period: periodParam,
+        days,
+      });
+      return;
+    }
+
+    const dailyAgg = await db
+      .select({
+        date: adMetrics.date,
+        totalSpend: sql<number>`sum(${adMetrics.spend}::numeric)`,
+        totalRevenue: sql<number>`sum(${adMetrics.revenue}::numeric)`,
+        totalConversions: sql<number>`sum(${adMetrics.conversions})`,
+      })
+      .from(adMetrics)
+      .where(
+        and(
+          inArray(adMetrics.campaignId, campaignIds),
+          sql`${adMetrics.date} >= ${fromDate}`,
+        ),
+      )
+      .groupBy(adMetrics.date)
+      .orderBy(adMetrics.date);
+
+    const spend = dailyAgg.map((d) => Number(d.totalSpend ?? 0));
+    const revenue = dailyAgg.map((d) => Number(d.totalRevenue ?? 0));
+    const roas = dailyAgg.map((d) => {
+      const s = Number(d.totalSpend ?? 0);
+      return s > 0 ? Number(d.totalRevenue ?? 0) / s : 0;
+    });
+    const conversions = dailyAgg.map((d) => Number(d.totalConversions ?? 0));
+
+    res.json({ spend, revenue, roas, conversions, period: periodParam, days });
+  } catch (err) {
+    req.log.error({ err }, "Failed to get metrics trend");
+    res.status(500).json({ error: "Failed to get metrics trend" });
+  }
+});
+
+// ═══════════════════════════════════════════════════════════════════════════
 // OPTIMIZATION
 // ═══════════════════════════════════════════════════════════════════════════
 

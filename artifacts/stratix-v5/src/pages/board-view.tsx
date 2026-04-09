@@ -16,21 +16,32 @@ import {
   GripVertical,
   Trash2,
   Copy,
-  BarChart3,
-  Hash,
-  FileText,
+  Settings,
+  RefreshCw,
+  Maximize2,
 } from "lucide-react";
 import ReactMarkdown from "react-markdown";
+import {
+  BarChart,
+  LineChart,
+  PieChart,
+  ProgressCard,
+  MetricTrend,
+  AIInsightCard,
+  CardSettingsPanel,
+  FullscreenModal,
+  AddCardPicker,
+  useAutoRefresh,
+  makeDefaultCard,
+  TYPE_ICONS,
+  CHART_COLORS,
+  type CardConfig,
+  type CardType,
+} from "@/components/build/charts";
 
 /* ── Types ── */
 
-interface BoardCard {
-  id: string;
-  type: "stat" | "chart" | "text";
-  title: string;
-  data?: Record<string, unknown>;
-  content?: string;
-}
+interface BoardCard extends CardConfig {}
 
 interface BoardConfig {
   cards: BoardCard[];
@@ -45,6 +56,7 @@ function makeSeedCards(): BoardCard[] {
       id: "c1",
       type: "stat",
       title: "Total Revenue",
+      dataSource: "manual",
       data: {
         value: "$246K",
         label: "Total Revenue (YTD)",
@@ -54,10 +66,10 @@ function makeSeedCards(): BoardCard[] {
     },
     {
       id: "c2",
-      type: "chart",
+      type: "bar",
       title: "Revenue by Quarter",
+      dataSource: "manual",
       data: {
-        type: "bar",
         data: [
           { name: "Q1", value: 42000 },
           { name: "Q2", value: 68000 },
@@ -68,18 +80,56 @@ function makeSeedCards(): BoardCard[] {
     },
     {
       id: "c3",
-      type: "text",
+      type: "markdown",
       title: "Board Instructions",
+      dataSource: "manual",
+      data: {},
       content:
         "Pin insights from **Explore** using the *Save to Board* button, or add manual cards.",
+    },
+    {
+      id: "c4",
+      type: "line",
+      title: "Monthly Trend",
+      dataSource: "manual",
+      data: { values: [12, 19, 14, 25, 22, 30, 28, 35, 32, 40, 38, 45] },
+    },
+    {
+      id: "c5",
+      type: "pie",
+      title: "Channel Mix",
+      dataSource: "manual",
+      data: {
+        segments: [
+          { label: "Organic", value: 40, color: CHART_COLORS[0] },
+          { label: "Paid", value: 30, color: CHART_COLORS[1] },
+          { label: "Social", value: 20, color: CHART_COLORS[2] },
+          { label: "Email", value: 10, color: CHART_COLORS[3] },
+        ],
+      },
+    },
+    {
+      id: "c6",
+      type: "metric-trend",
+      title: "Pipeline Velocity",
+      dataSource: "manual",
+      data: {
+        value: "$1.4M",
+        label: "Active Pipeline",
+        trend: 12,
+        sparkData: [80, 90, 85, 110, 105, 120, 130, 140],
+      },
     },
   ];
 }
 
 const SEED_LAYOUT: GridLayout.Layout[] = [
   { i: "c1", x: 0, y: 0, w: 4, h: 3 },
-  { i: "c2", x: 4, y: 0, w: 8, h: 4 },
-  { i: "c3", x: 0, y: 3, w: 4, h: 3 },
+  { i: "c2", x: 4, y: 0, w: 4, h: 4 },
+  { i: "c3", x: 8, y: 0, w: 4, h: 3 },
+  { i: "c4", x: 0, y: 3, w: 6, h: 4 },
+  { i: "c5", x: 6, y: 3, w: 3, h: 4 },
+  { i: "c6", x: 9, y: 3, w: 3, h: 3 },
 ];
 
 /* ── Card Renderer ── */
@@ -89,17 +139,27 @@ function CardRenderer({
   editMode,
   onRemove,
   onDuplicate,
+  onConfigure,
+  onRefreshCard,
+  onFullscreen,
+  isRefreshing,
 }: {
   card: BoardCard;
   editMode: boolean;
   onRemove: (id: string) => void;
   onDuplicate: (id: string) => void;
+  onConfigure: (id: string) => void;
+  onRefreshCard: (id: string) => void;
+  onFullscreen: (id: string) => void;
+  isRefreshing: boolean;
 }) {
-  const TypeIcon =
-    card.type === "stat" ? Hash : card.type === "chart" ? BarChart3 : FileText;
+  const TypeIcon = TYPE_ICONS[card.type] || TYPE_ICONS["stat"];
+  const d = card.data as Record<string, unknown>;
+  const hasRefresh = card.dataSource !== "manual" || card.type === "ai-insight";
+  const lastUpdated = (d?.lastUpdated as string) || "";
 
   return (
-    <div className="h-full rounded-[var(--radius-lg)] border border-[var(--border)] bg-[var(--surface)] flex flex-col overflow-hidden group">
+    <div className={`h-full rounded-[var(--radius-lg)] border border-[var(--border)] bg-[var(--surface)] flex flex-col overflow-hidden group ${isRefreshing ? "animate-pulse" : ""}`}>
       {/* Card header */}
       <div className="flex items-center gap-2 px-3 py-2 border-b border-[var(--border)] bg-[var(--surface-secondary)] shrink-0">
         {editMode && (
@@ -109,69 +169,114 @@ function CardRenderer({
         <span className="text-[12px] font-medium text-[var(--text-primary)] truncate flex-1">
           {card.title}
         </span>
-        {editMode && (
-          <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-            <button
-              onClick={() => onDuplicate(card.id)}
-              className="p-0.5 text-[var(--text-muted)] hover:text-[var(--text-primary)]"
-            >
-              <Copy className="h-3 w-3" />
-            </button>
-            <button
-              onClick={() => onRemove(card.id)}
-              className="p-0.5 text-[var(--text-muted)] hover:text-[var(--error)]"
-            >
-              <Trash2 className="h-3 w-3" />
-            </button>
-          </div>
+        {lastUpdated && (
+          <span className="text-[8px] text-[var(--text-muted)] hidden sm:inline">{lastUpdated}</span>
         )}
+        <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
+          {hasRefresh && (
+            <button
+              onClick={() => onRefreshCard(card.id)}
+              className="p-0.5 text-[var(--text-muted)] hover:text-[var(--accent)]"
+              title="Refresh"
+            >
+              <RefreshCw className={`h-3 w-3 ${isRefreshing ? "animate-spin" : ""}`} />
+            </button>
+          )}
+          <button
+            onClick={() => onFullscreen(card.id)}
+            className="p-0.5 text-[var(--text-muted)] hover:text-[var(--text-primary)]"
+            title="Expand"
+          >
+            <Maximize2 className="h-3 w-3" />
+          </button>
+          {editMode && (
+            <>
+              <button
+                onClick={() => onConfigure(card.id)}
+                className="p-0.5 text-[var(--text-muted)] hover:text-[var(--text-primary)]"
+                title="Settings"
+              >
+                <Settings className="h-3 w-3" />
+              </button>
+              <button
+                onClick={() => onDuplicate(card.id)}
+                className="p-0.5 text-[var(--text-muted)] hover:text-[var(--text-primary)]"
+              >
+                <Copy className="h-3 w-3" />
+              </button>
+              <button
+                onClick={() => onRemove(card.id)}
+                className="p-0.5 text-[var(--text-muted)] hover:text-[var(--error)]"
+              >
+                <Trash2 className="h-3 w-3" />
+              </button>
+            </>
+          )}
+        </div>
       </div>
 
       {/* Card body */}
       <div className="flex-1 p-3 overflow-hidden">
-        {card.type === "stat" && card.data && (
+        {card.type === "stat" && d && (
           <div>
             <p className="text-[28px] font-bold text-[var(--text-primary)] leading-none">
-              {card.data.value as string}
+              {d.value as string}
             </p>
             <p className="text-[12px] text-[var(--text-muted)] mt-1">
-              {card.data.label as string}
+              {d.label as string}
             </p>
-            {typeof card.data.change === "string" && (
-              <p
-                className={`text-[12px] mt-1 ${(card.data.positive as boolean) ? "text-[var(--success)]" : "text-[var(--error)]"}`}
-              >
-                {card.data.change}
+            {typeof d.change === "string" && d.change && (
+              <p className={`text-[12px] mt-1 ${(d.positive as boolean) ? "text-[var(--success)]" : "text-[var(--error)]"}`}>
+                {d.change}
               </p>
             )}
           </div>
         )}
 
-        {card.type === "chart" && card.data && (
-          <div className="h-full flex items-end gap-1 pb-2">
-            {(
-              (card.data.data as Array<{ name: string; value: number }>) || []
-            ).map((d, i) => (
-              <div key={i} className="flex-1 flex flex-col items-center gap-1">
-                <div
-                  className="w-full rounded-t-[3px] bg-[var(--accent)] transition-all"
-                  style={{
-                    height: `${(d.value / 100000) * 100}%`,
-                    minHeight: 4,
-                  }}
-                />
-                <span className="text-[9px] text-[var(--text-muted)]">
-                  {d.name}
-                </span>
-              </div>
-            ))}
-          </div>
+        {card.type === "bar" && d && (
+          <BarChart data={(d.data as Array<{ name: string; value: number }>) || []} />
         )}
 
-        {card.type === "text" && card.content && (
+        {card.type === "line" && d && (
+          <LineChart data={(d.values as number[]) || []} />
+        )}
+
+        {card.type === "pie" && d && (
+          <PieChart segments={(d.segments as Array<{ label: string; value: number; color: string }>) || []} />
+        )}
+
+        {card.type === "progress" && d && (
+          <ProgressCard
+            label={(d.label as string) || "Progress"}
+            current={(d.current as number) || 0}
+            target={(d.target as number) || 100}
+            color={(d.color as string) || CHART_COLORS[0]}
+          />
+        )}
+
+        {card.type === "markdown" && card.content && (
           <div className="prose prose-sm max-w-none text-[13px] text-[var(--text-secondary)] prose-strong:text-[var(--text-primary)]">
             <ReactMarkdown>{card.content}</ReactMarkdown>
           </div>
+        )}
+
+        {card.type === "ai-insight" && d && (
+          <AIInsightCard
+            prompt={(d.prompt as string) || ""}
+            content={(d.content as string) || ""}
+            lastUpdated={(d.lastUpdated as string) || "Never"}
+            onRefresh={() => onRefreshCard(card.id)}
+            isRefreshing={isRefreshing}
+          />
+        )}
+
+        {card.type === "metric-trend" && d && (
+          <MetricTrend
+            label={(d.label as string) || ""}
+            value={(d.value as string) || "0"}
+            trend={(d.trend as number) || 0}
+            sparkData={(d.sparkData as number[]) || []}
+          />
         )}
       </div>
     </div>
@@ -195,7 +300,6 @@ export function BoardView() {
   const updateBoard = useUpdateBoard();
   const [loadingTimedOut, setLoadingTimedOut] = useState(false);
 
-  /* Loading timeout — if loading takes > 10s, show error state */
   useEffect(() => {
     if (!isLoading) {
       setLoadingTimedOut(false);
@@ -211,6 +315,10 @@ export function BoardView() {
   const [layout, setLayout] = useState<GridLayout.Layout[]>([]);
   const [containerWidth, setContainerWidth] = useState(900);
   const [initialized, setInitialized] = useState(false);
+  const [configCardId, setConfigCardId] = useState<string | null>(null);
+  const [fullscreenCardId, setFullscreenCardId] = useState<string | null>(null);
+  const [refreshingCards, setRefreshingCards] = useState<Set<string>>(new Set());
+  const [showAddPicker, setShowAddPicker] = useState(false);
   const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   /* Initialize from API data */
@@ -258,6 +366,74 @@ export function BoardView() {
     ro.observe(node);
   }, []);
 
+  /* Refresh a card (fetch from API or AI endpoint) */
+  const handleRefreshCard = useCallback(
+    async (cardId: string) => {
+      const card = cards.find((c) => c.id === cardId);
+      if (!card) return;
+
+      setRefreshingCards((prev) => new Set(prev).add(cardId));
+
+      try {
+        if (card.type === "ai-insight") {
+          const prompt = (card.data as Record<string, unknown>)?.prompt as string;
+          const res = await fetch("/api/openai/conversations", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ message: prompt }),
+          });
+          if (res.ok) {
+            const json = await res.json();
+            const content = json?.choices?.[0]?.message?.content || json?.content || json?.response || "No response received.";
+            const updated = cards.map((c) =>
+              c.id === cardId
+                ? { ...c, data: { ...c.data as object, content, lastUpdated: new Date().toLocaleTimeString() } }
+                : c
+            );
+            setCards(updated);
+            persistConfig(updated, layout);
+          }
+        } else if (card.dataSource === "api" && card.apiEndpoint) {
+          const res = await fetch(card.apiEndpoint);
+          if (res.ok) {
+            const json = await res.json();
+            const updated = cards.map((c) =>
+              c.id === cardId
+                ? { ...c, data: { ...c.data as object, ...json, lastUpdated: new Date().toLocaleTimeString() } }
+                : c
+            );
+            setCards(updated);
+            persistConfig(updated, layout);
+          }
+        } else if (card.dataSource === "connected" && card.connectedSourceId) {
+          const res = await fetch(`/api/connectors/accounts/${card.connectedSourceId}/data`);
+          if (res.ok) {
+            const json = await res.json();
+            const updated = cards.map((c) =>
+              c.id === cardId
+                ? { ...c, data: { ...c.data as object, ...json, lastUpdated: new Date().toLocaleTimeString() } }
+                : c
+            );
+            setCards(updated);
+            persistConfig(updated, layout);
+          }
+        }
+      } catch {
+        // Silently handle fetch errors — card retains existing data
+      } finally {
+        setRefreshingCards((prev) => {
+          const next = new Set(prev);
+          next.delete(cardId);
+          return next;
+        });
+      }
+    },
+    [cards, layout, persistConfig]
+  );
+
+  /* Auto-refresh hook */
+  useAutoRefresh(cards, handleRefreshCard);
+
   /* Event handlers */
   const handleLayoutChange = (nl: GridLayout.Layout[]) => {
     setLayout([...nl]);
@@ -287,22 +463,27 @@ export function BoardView() {
     persistConfig(c, l);
   };
 
-  const handleAddCard = () => {
+  const handleAddCard = (type: CardType) => {
     const cid = `c-${Date.now()}`;
-    const c = [
-      ...cards,
-      {
-        id: cid,
-        type: "text" as const,
-        title: "New Card",
-        content: "Edit this card...",
-      },
-    ];
+    const defaults = makeDefaultCard(type);
+    const c = [...cards, { id: cid, ...defaults }];
     const l = [...layout, { i: cid, x: 0, y: Infinity, w: 6, h: 4 }];
     setCards(c);
     setLayout(l);
     persistConfig(c, l);
+    setShowAddPicker(false);
   };
+
+  const handleSaveConfig = (config: CardConfig) => {
+    const updated = cards.map((c) =>
+      c.id === config.id ? { ...c, ...config } : c
+    );
+    setCards(updated);
+    persistConfig(updated, layout);
+    setConfigCardId(null);
+  };
+
+  const fullscreenCard = fullscreenCardId ? cards.find((c) => c.id === fullscreenCardId) : null;
 
   /* Loading (with timeout guard) */
   if (isLoading && !loadingTimedOut) {
@@ -341,7 +522,7 @@ export function BoardView() {
     );
   }
 
-  /* Board not found (data is null/undefined but no error) */
+  /* Board not found */
   if (!board && boardId) {
     return (
       <div className="flex flex-col h-full items-center justify-center gap-3">
@@ -377,7 +558,6 @@ export function BoardView() {
           )}
         </div>
         <div className="flex items-center gap-2">
-          {/* View/Edit toggle */}
           <div className="flex items-center gap-0.5 p-0.5 rounded-[var(--radius-md)] bg-[var(--surface-secondary)] border border-[var(--border)]">
             {(["layout", "edit"] as const).map((m) => (
               <button
@@ -393,11 +573,40 @@ export function BoardView() {
               </button>
             ))}
           </div>
-          <Button variant="outline" size="sm" onClick={handleAddCard}>
-            <Plus className="h-3.5 w-3.5 mr-1.5" />
-            Add Card
-          </Button>
-          <Button variant="outline" size="sm" className="hidden sm:flex">
+          <div className="relative">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setShowAddPicker(!showAddPicker)}
+            >
+              <Plus className="h-3.5 w-3.5 mr-1.5" />
+              Add Card
+            </Button>
+            {showAddPicker && (
+              <div className="absolute top-full right-0 mt-1 z-50 p-2 rounded-[var(--radius-lg)] border border-[var(--border)] bg-[var(--surface)] shadow-lg">
+                <AddCardPicker onAdd={handleAddCard} />
+              </div>
+            )}
+          </div>
+          <Button
+            variant="outline"
+            size="sm"
+            className="hidden sm:flex"
+            onClick={() => {
+              const config: BoardConfig = { cards, layout };
+              const blob = new Blob([JSON.stringify(config, null, 2)], {
+                type: "application/json",
+              });
+              const url = URL.createObjectURL(blob);
+              const a = document.createElement("a");
+              a.href = url;
+              a.download = `${title.replace(/\s+/g, "-").toLowerCase()}-board.json`;
+              document.body.appendChild(a);
+              a.click();
+              document.body.removeChild(a);
+              URL.revokeObjectURL(url);
+            }}
+          >
             <Download className="h-3.5 w-3.5 mr-1.5" />
             Export
           </Button>
@@ -408,14 +617,11 @@ export function BoardView() {
       <div className="flex-1 overflow-auto p-4" ref={containerRef}>
         {cards.length === 0 ? (
           <div className="h-full min-h-[400px] rounded-[var(--radius-lg)] border-2 border-dashed border-[var(--border)] flex items-center justify-center">
-            <div className="text-center">
-              <p className="text-[14px] text-[var(--text-muted)] mb-2">
+            <div className="text-center space-y-3">
+              <p className="text-[14px] text-[var(--text-muted)]">
                 No cards yet
               </p>
-              <Button variant="accent" size="sm" onClick={handleAddCard}>
-                <Plus className="h-3.5 w-3.5 mr-1.5" />
-                Add First Card
-              </Button>
+              <AddCardPicker onAdd={handleAddCard} />
             </div>
           </div>
         ) : (
@@ -434,18 +640,50 @@ export function BoardView() {
             resizeHandles={["se"]}
           >
             {cards.map((card) => (
-              <div key={card.id}>
+              <div key={card.id} className="relative">
                 <CardRenderer
                   card={card}
                   editMode={viewMode === "edit"}
                   onRemove={handleRemove}
                   onDuplicate={handleDuplicate}
+                  onConfigure={setConfigCardId}
+                  onRefreshCard={handleRefreshCard}
+                  onFullscreen={setFullscreenCardId}
+                  isRefreshing={refreshingCards.has(card.id)}
                 />
+                {configCardId === card.id && (
+                  <CardSettingsPanel
+                    config={card}
+                    onSave={handleSaveConfig}
+                    onCancel={() => setConfigCardId(null)}
+                  />
+                )}
               </div>
             ))}
           </GridLayout>
         )}
       </div>
+
+      {/* ── Fullscreen Modal ── */}
+      {fullscreenCard && (
+        <FullscreenModal
+          title={fullscreenCard.title}
+          onClose={() => setFullscreenCardId(null)}
+        >
+          <div className="h-full">
+            <CardRenderer
+              card={fullscreenCard}
+              editMode={false}
+              onRemove={() => {}}
+              onDuplicate={() => {}}
+              onConfigure={() => {}}
+              onRefreshCard={handleRefreshCard}
+              onFullscreen={() => setFullscreenCardId(null)}
+              isRefreshing={refreshingCards.has(fullscreenCard.id)}
+            />
+          </div>
+        </FullscreenModal>
+      )}
     </div>
   );
 }

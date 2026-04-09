@@ -41,8 +41,19 @@ export function Onboarding() {
   const [urlError, setUrlError] = useState("");
   const saveProfile = useSaveCompanyProfile();
 
+  const normalizeUrl = (input: string): string => {
+    let u = input.trim();
+    // Strip protocol if present
+    u = u.replace(/^https?:\/\//, "");
+    // Strip trailing slashes
+    u = u.replace(/\/+$/, "");
+    return u;
+  };
+
   const isValidDomain = (url: string): boolean => {
-    return url.includes(".");
+    const normalized = normalizeUrl(url);
+    // Must have at least one dot, no spaces, and some length
+    return normalized.length > 2 && normalized.includes(".") && !normalized.includes(" ");
   };
 
   if (phase === "url-entry") {
@@ -50,7 +61,7 @@ export function Onboarding() {
       <div className="flex min-h-screen items-center justify-center bg-[var(--background)] px-4 py-12">
         <div className="w-full max-w-lg">
           <ProgressStepper currentPhase={phase} />
-          <form onSubmit={(e) => { e.preventDefault(); if (!isValidDomain(companyUrl.trim())) { setUrlError("Please enter a valid domain (e.g., acmecorp.com)"); return; } setPhase("researching"); }} className="text-center">
+          <form onSubmit={(e) => { e.preventDefault(); if (!isValidDomain(companyUrl)) { setUrlError("Please enter a valid domain (e.g., acmecorp.com)"); return; } setCompanyUrl(normalizeUrl(companyUrl)); setPhase("researching"); }} className="text-center">
             <h1 className="font-editorial text-display-lg text-[var(--text-primary)] mb-3">Enter your company's website</h1>
             <p className="text-body text-[var(--text-secondary)] mb-8">We'll research your company and build your intelligence profile automatically.</p>
             <div className="relative mb-2">
@@ -102,23 +113,60 @@ export function Onboarding() {
   }
 
   if (phase === "researching") {
-    return <ResearchPhase url={companyUrl} onComplete={(r) => { setResult(r); setPhase("review"); }} onError={(err) => { toast({ title: err, variant: "destructive" }); setPhase("url-entry"); }} />;
+    return <ResearchPhase url={companyUrl} onComplete={(r) => { setResult(r); setPhase("review"); }} onError={(err) => { toast({ title: "Research failed", description: err, variant: "destructive" }); setPhase("url-entry"); }} onSkip={() => { setResult({ companyName: "", industry: "", stage: "", revenueRange: "", competitors: "", strategicPriorities: "", researchSummary: "", followUpQuestions: [] }); setPhase("review"); }} />;
   }
 
   if (phase === "review" && result) {
-    return <ReviewPhase result={result} onSubmit={async (data) => {
+    return <ReviewPhase result={result} onBack={() => setPhase("url-entry")} onSubmit={async (data) => {
       setIsSubmitting(true);
+      const profileData = {
+        companyName: data.companyName,
+        industry: data.industry,
+        stage: data.stage,
+        revenueRange: data.revenueRange,
+        competitors: data.competitors,
+        strategicPriorities: data.strategicPriorities,
+        companyUrl,
+        researchSummary: data.researchSummary,
+      };
       saveProfile.mutate(
-        { data: { companyName: data.companyName, industry: data.industry, stage: data.stage, revenueRange: data.revenueRange, competitors: data.competitors, strategicPriorities: data.strategicPriorities, companyUrl, researchSummary: data.researchSummary } },
-        { onSuccess: async (saved) => { await queryClient.invalidateQueries({ queryKey: getGetCompanyProfileQueryKey() }); setLocation("/solve"); }, onError: () => { toast({ title: "Failed to save", variant: "destructive" }); setIsSubmitting(false); } }
+        { data: profileData },
+        {
+          onSuccess: async () => {
+            await queryClient.invalidateQueries({ queryKey: getGetCompanyProfileQueryKey() });
+            toast({ title: "Profile saved", description: "Welcome to Stratix!" });
+            setLocation("/solve");
+          },
+          onError: async () => {
+            // Fallback: try direct API call
+            try {
+              const res = await fetch("/api/company-profile", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                credentials: "include",
+                body: JSON.stringify(profileData),
+              });
+              if (res.ok) {
+                await queryClient.invalidateQueries({ queryKey: getGetCompanyProfileQueryKey() });
+                toast({ title: "Profile saved", description: "Welcome to Stratix!" });
+                setLocation("/solve");
+                return;
+              }
+            } catch {
+              // ignore fallback failure
+            }
+            toast({ title: "Failed to save profile", description: "Please try again.", variant: "destructive" });
+            setIsSubmitting(false);
+          },
+        }
       );
-    }} isSubmitting={isSubmitting} />;
+    }} isSubmitting={isSubmitting} onSkip={() => setLocation("/solve")} />;
   }
 
   return null;
 }
 
-function ResearchPhase({ url, onComplete, onError }: { url: string; onComplete: (r: ResearchResult) => void; onError: (e: string) => void }) {
+function ResearchPhase({ url, onComplete, onError, onSkip }: { url: string; onComplete: (r: ResearchResult) => void; onError: (e: string) => void; onSkip?: () => void }) {
   const [lines, setLines] = useState<string[]>([]);
   const [progress, setProgress] = useState(0);
   const startedRef = useRef(false);
@@ -134,7 +182,7 @@ function ResearchPhase({ url, onComplete, onError }: { url: string; onComplete: 
     if (startedRef.current) return;
     startedRef.current = true;
 
-    timeoutRef.current = setTimeout(() => onErrorRef.current("Research took too long."), 60000);
+    timeoutRef.current = setTimeout(() => onErrorRef.current("Research took too long. You can try again or fill in your profile manually."), 60000);
 
     progressIntervalRef.current = setInterval(() => {
       setProgress((prev) => {
@@ -145,8 +193,9 @@ function ResearchPhase({ url, onComplete, onError }: { url: string; onComplete: 
 
     (async () => {
       try {
-        const res = await fetch("/api/research/company", { method: "POST", headers: { "Content-Type": "application/json" }, credentials: "include", body: JSON.stringify({ url }) });
-        if (!res.ok || !res.body) { onErrorRef.current("Research failed."); return; }
+        const normalizedUrl = url.startsWith("http") ? url : `https://${url}`;
+        const res = await fetch("/api/research/company", { method: "POST", headers: { "Content-Type": "application/json" }, credentials: "include", body: JSON.stringify({ url: normalizedUrl }) });
+        if (!res.ok || !res.body) { onErrorRef.current("Research failed. Please try again or enter your details manually."); return; }
         const reader = res.body.getReader(); const decoder = new TextDecoder(); let buffer = "";
         while (true) {
           const { done, value } = await reader.read(); if (done) break;
@@ -158,7 +207,7 @@ function ResearchPhase({ url, onComplete, onError }: { url: string; onComplete: 
             try { const p = JSON.parse(data); if (event === "status") { setLines((prev) => prev.includes(p.message) ? prev : [...prev, p.message]); } else if (event === "complete") { if (timeoutRef.current) clearTimeout(timeoutRef.current); if (progressIntervalRef.current) clearInterval(progressIntervalRef.current); setProgress(100); onCompleteRef.current(p); } else if (event === "error") { if (timeoutRef.current) clearTimeout(timeoutRef.current); if (progressIntervalRef.current) clearInterval(progressIntervalRef.current); onErrorRef.current(p.error); } } catch {}
           }
         }
-      } catch { onErrorRef.current("Connection error."); } finally { if (timeoutRef.current) clearTimeout(timeoutRef.current); if (progressIntervalRef.current) clearInterval(progressIntervalRef.current); }
+      } catch { onErrorRef.current("Connection error. Please check your internet and try again."); } finally { if (timeoutRef.current) clearTimeout(timeoutRef.current); if (progressIntervalRef.current) clearInterval(progressIntervalRef.current); }
     })();
 
     return () => {
@@ -187,12 +236,19 @@ function ResearchPhase({ url, onComplete, onError }: { url: string; onComplete: 
           {lines.length === 0 && <p className="text-body-sm text-[var(--text-muted)] italic">Initiating research...</p>}
           {lines.map((l, i) => <div key={i} className="flex items-center gap-2"><Check className="h-4 w-4 text-[var(--accent)]" /><span className="text-body text-[var(--text-secondary)]">{l}</span></div>)}
         </div>
+        {onSkip && (
+          <div className="mt-8 text-center">
+            <button type="button" onClick={onSkip} className="text-body-sm text-[var(--text-muted)] underline hover:text-[var(--text-secondary)]">
+              Skip and fill in manually
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );
 }
 
-function ReviewPhase({ result, onSubmit, isSubmitting }: { result: ResearchResult; onSubmit: (d: ResearchResult) => void; isSubmitting: boolean }) {
+function ReviewPhase({ result, onSubmit, isSubmitting, onSkip, onBack }: { result: ResearchResult; onSubmit: (d: ResearchResult) => void; isSubmitting: boolean; onSkip?: () => void; onBack?: () => void }) {
   const [data, setData] = useState(result);
   return (
     <div className="flex min-h-screen items-center justify-center bg-[var(--background)] px-4 py-12">
@@ -213,7 +269,15 @@ function ReviewPhase({ result, onSubmit, isSubmitting }: { result: ResearchResul
         </div>
         <div><label className="text-caption text-[var(--text-muted)] mb-1 block">Competitors</label><textarea value={data.competitors} onChange={(e) => setData({ ...data, competitors: e.target.value })} rows={2} className="w-full px-3 py-2 rounded-[var(--radius-md)] border border-[var(--border)] bg-[var(--surface)] text-body-sm resize-none" /></div>
         <div><label className="text-caption text-[var(--text-muted)] mb-1 block">Strategic Priorities</label><textarea value={data.strategicPriorities} onChange={(e) => setData({ ...data, strategicPriorities: e.target.value })} rows={3} className="w-full px-3 py-2 rounded-[var(--radius-md)] border border-[var(--border)] bg-[var(--surface)] text-body-sm resize-none" /></div>
-        <div className="flex justify-end">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            {onBack && (
+              <button type="button" onClick={onBack} className="text-body-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors">Back</button>
+            )}
+            {onSkip && (
+              <button type="button" onClick={onSkip} className="text-body-sm text-[var(--text-muted)] underline hover:text-[var(--text-secondary)]">Skip for now</button>
+            )}
+          </div>
           <button type="submit" disabled={isSubmitting} className="flex items-center gap-2 px-6 py-3 rounded-[var(--radius-lg)] bg-[var(--accent)] text-white text-body-sm font-medium hover:bg-[var(--accent-hover)] disabled:opacity-50">
             {isSubmitting ? <Loader2 className="h-4 w-4 animate-spin" /> : null} Enter Platform <ArrowRight className="h-4 w-4" />
           </button>

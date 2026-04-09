@@ -30,7 +30,59 @@ export async function runStartupMigrations(): Promise<void> {
     CREATE INDEX IF NOT EXISTS "IDX_session_expire" ON sessions (expire)
   `);
 
-  // Ensure boards table exists (idempotent)
+  // ── Organizations + members (must exist before boards/notebooks reference them) ──
+  await db.execute(sql`
+    CREATE TABLE IF NOT EXISTS organizations (
+      id SERIAL PRIMARY KEY,
+      name TEXT NOT NULL,
+      slug VARCHAR NOT NULL UNIQUE,
+      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    )
+  `);
+
+  await db.execute(sql`
+    CREATE TABLE IF NOT EXISTS org_members (
+      id SERIAL PRIMARY KEY,
+      org_id INTEGER NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,
+      user_id VARCHAR NOT NULL,
+      role VARCHAR NOT NULL DEFAULT 'member',
+      joined_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    )
+  `);
+
+  await db.execute(sql`
+    CREATE TABLE IF NOT EXISTS org_invites (
+      id SERIAL PRIMARY KEY,
+      org_id INTEGER NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,
+      token VARCHAR NOT NULL UNIQUE,
+      email VARCHAR,
+      created_by_user_id VARCHAR NOT NULL,
+      used_at TIMESTAMPTZ,
+      expires_at TIMESTAMPTZ NOT NULL,
+      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    )
+  `);
+
+  // ── Company profiles ──
+  await db.execute(sql`
+    CREATE TABLE IF NOT EXISTS company_profiles (
+      id SERIAL PRIMARY KEY,
+      user_id VARCHAR NOT NULL,
+      org_id INTEGER UNIQUE REFERENCES organizations(id) ON DELETE CASCADE,
+      company_name TEXT NOT NULL,
+      industry TEXT NOT NULL,
+      stage VARCHAR NOT NULL,
+      revenue_range VARCHAR NOT NULL,
+      competitors TEXT NOT NULL DEFAULT '',
+      strategic_priorities TEXT NOT NULL DEFAULT '',
+      company_url TEXT,
+      research_summary TEXT,
+      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+      updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    )
+  `);
+
+  // ── Boards ──
   await db.execute(sql`
     CREATE TABLE IF NOT EXISTS boards (
       id SERIAL PRIMARY KEY,

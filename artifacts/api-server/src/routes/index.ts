@@ -32,6 +32,14 @@ import boardsRouter from "./boards";
 import notebooksRouter from "./notebooks";
 import contextHealthRouter from "./context-health";
 import intelligenceRouter from "./intelligence";
+import intelligenceInsightsRouter from "./intelligence-insights";
+import exportsRouter from "./exports";
+import contextDefinitionsRouter from "./context-definitions";
+import notificationsRouter from "./notifications";
+import mcpRouter from "./mcp";
+import agentMemoryRouter from "./agent-memory";
+import scheduledQueriesApiRouter from "./scheduled-queries";
+import genericWebhooksRouter from "./generic-webhooks";
 
 const router: IRouter = Router();
 
@@ -68,5 +76,13 @@ router.use(boardsRouter);
 router.use(notebooksRouter);
 router.use(contextHealthRouter);
 router.use(intelligenceRouter);
+router.use(intelligenceInsightsRouter);
+router.use(exportsRouter);
+router.use(contextDefinitionsRouter);
+router.use(notificationsRouter);
+router.use(mcpRouter);
+router.use(agentMemoryRouter);
+router.use(scheduledQueriesApiRouter);
+router.use(genericWebhooksRouter);
 
 export default router;

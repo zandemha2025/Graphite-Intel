@@ -1,0 +1,11 @@
+{
+  "name": "Stratix Intelligence",
+  "short_name": "Stratix",
+  "start_url": "/solve",
+  "display": "standalone",
+  "background_color": "#F0EDE6",
+  "theme_color": "#B85C38",
+  "icons": [
+    { "src": "/favicon.svg", "sizes": "any", "type": "image/svg+xml" }
+  ]
+}

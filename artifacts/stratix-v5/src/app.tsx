@@ -70,7 +70,7 @@ export function useAuth() {
 }
 
 function AuthProvider({ children }: { children: React.ReactNode }) {
-  const { data: auth, isLoading: authLoading, isFetched } = useGetCurrentAuthUser();
+  const { data: auth, isLoading: authLoading, isFetched, isError: authError } = useGetCurrentAuthUser();
   const user = (auth?.user as AuthUserWithOrg) || null;
 
   // Fetch profile (fire-and-forget, don't block rendering)
@@ -82,13 +82,21 @@ function AuthProvider({ children }: { children: React.ReactNode }) {
   const [orgName, setOrgName] = useState<string | null>(null);
   useEffect(() => {
     if (!user) return;
-    fetch("/api/org").then((r) => r.ok ? r.json() : null).then((d) => { if (d?.name) setOrgName(d.name); }).catch(() => {});
+    fetch("/api/org", { credentials: "include" })
+      .then((r) => r.ok ? r.json() : null)
+      .then((d) => { if (d?.name) setOrgName(d.name); })
+      .catch(() => {});
   }, [user]);
 
-  const isLoading = authLoading || !isFetched;
+  // If auth fetch errored (API down), treat as not loading so the app doesn't hang on spinner
+  const isLoading = authError ? false : (authLoading || !isFetched);
 
   const logout = async () => {
-    await fetch("/api/logout", { method: "POST" });
+    try {
+      await fetch("/api/logout", { method: "POST", credentials: "include" });
+    } catch {
+      // even if logout fails, redirect
+    }
     window.location.href = "/";
   };
 
@@ -112,24 +120,35 @@ function ProtectedRoute({ component: Component }: { component: React.ComponentTy
   const { user, isLoading, isAuthenticated, orgName, logout } = useAuth();
   const [, setLocation] = useLocation();
 
+  useEffect(() => {
+    if (isLoading) return;
+    if (!isAuthenticated) {
+      setLocation("/login");
+    } else if (!user?.orgId) {
+      // New user without org — must complete setup first
+      setLocation("/org-setup");
+    }
+  }, [isLoading, isAuthenticated, user, setLocation]);
+
   if (isLoading) return <Spinner />;
 
-  if (!isAuthenticated) {
-    // Not logged in — show nothing, the route will fall through to HomeRedirect on /
-    return null;
+  if (!isAuthenticated || !user?.orgId) {
+    return <Spinner />; // redirect in progress
   }
 
   return (
-    <AppShell
-      user={{
-        name: (user as unknown as Record<string, string>)?.name || user?.email || "User",
-        email: user?.email || "",
-      }}
-      orgName={orgName}
-      onLogout={logout}
-    >
-      <Component />
-    </AppShell>
+    <ErrorBoundary>
+      <AppShell
+        user={{
+          name: (user as unknown as Record<string, string>)?.name || user?.email || "User",
+          email: user?.email || "",
+        }}
+        orgName={orgName}
+        onLogout={logout}
+      >
+        <Component />
+      </AppShell>
+    </ErrorBoundary>
   );
 }
 

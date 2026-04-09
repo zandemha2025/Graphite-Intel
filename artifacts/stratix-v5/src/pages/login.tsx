@@ -65,21 +65,15 @@ export function Login() {
         return;
       }
       await queryClient.invalidateQueries({ queryKey: getGetCurrentAuthUserQueryKey() });
+      // Let HomeRedirect decide: new user → /org-setup, existing → /solve
       setLocation("/");
     } catch {
-      setError("Network error");
+      setError("Unable to connect. Please check your internet connection and try again.");
       setShakeError(true);
       setTimeout(() => setShakeError(false), 500);
     } finally {
       setLoading(false);
     }
-  };
-
-  const handleOAuthClick = (provider: string) => {
-    toast({
-      title: "Coming soon",
-      description: `${provider} OAuth integration is coming soon. Use email/password for now.`,
-    });
   };
 
   const handleForgotPassword = () => {
@@ -128,23 +122,25 @@ export function Login() {
           `}</style>
 
           <form onSubmit={handleSubmit} className="space-y-4">
-            {/* OAuth Buttons */}
+            {/* OAuth via Pipedream Connect */}
             <div className="space-y-3">
               <button
                 type="button"
-                onClick={() => handleOAuthClick("Google")}
-                className="w-full h-10 rounded-[var(--radius-md)] border border-[var(--border)] bg-[var(--background)] text-body-sm text-[var(--text-primary)] font-medium hover:bg-[var(--surface-secondary)] transition-colors flex items-center justify-center gap-2"
+                disabled
+                className="w-full h-10 rounded-[var(--radius-md)] border border-[var(--border)] bg-[var(--background)] text-body-sm text-[var(--text-muted)] font-medium flex items-center justify-center gap-2 cursor-not-allowed opacity-60"
               >
                 <Mail className="h-4 w-4" />
                 Continue with Google
+                <span className="text-[10px] ml-1 opacity-70">Coming soon</span>
               </button>
               <button
                 type="button"
-                onClick={() => handleOAuthClick("GitHub")}
-                className="w-full h-10 rounded-[var(--radius-md)] border border-[var(--border)] bg-[var(--background)] text-body-sm text-[var(--text-primary)] font-medium hover:bg-[var(--surface-secondary)] transition-colors flex items-center justify-center gap-2"
+                disabled
+                className="w-full h-10 rounded-[var(--radius-md)] border border-[var(--border)] bg-[var(--background)] text-body-sm text-[var(--text-muted)] font-medium flex items-center justify-center gap-2 cursor-not-allowed opacity-60"
               >
                 <Github className="h-4 w-4" />
                 Continue with GitHub
+                <span className="text-[10px] ml-1 opacity-70">Coming soon</span>
               </button>
             </div>
 

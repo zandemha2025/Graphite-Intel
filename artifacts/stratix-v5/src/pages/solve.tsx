@@ -10,6 +10,8 @@ import {
   useGetCurrentAuthUser,
 } from "@workspace/api-client-react";
 import { useToast } from "@/hooks/use-toast";
+import { useDefinitions } from "@/hooks/use-definitions";
+import { useLocation } from "wouter";
 import {
   Dialog,
   DialogContent,
@@ -19,8 +21,40 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { ChevronDown, Plus, Trash2, ArrowUp, Sparkles, Download, Copy, Share2 } from "lucide-react";
+import {
+  ChevronDown, Plus, Trash2, ArrowUp, Sparkles, Download, Copy, Share2,
+  Info, ArrowRight,
+} from "lucide-react";
 import ReactMarkdown from "react-markdown";
+import { ErrorBoundary } from "@/components/shared/error-boundary";
+import { CodeBlock } from "@/components/solve/code-block";
+import { ConfidenceBadge } from "@/components/solve/confidence-badge";
+import { SourcePanel } from "@/components/solve/source-panel";
+import { QueryInspector } from "@/components/solve/query-inspector";
+import { ShareModal } from "@/components/solve/share-modal";
+import { AnalysisModes, getPlaceholderForMode, type AnalysisMode } from "@/components/solve/analysis-modes";
+import { ResponseActions } from "@/components/solve/response-actions";
+
+/* ── Safe Markdown — catches rendering errors ── */
+
+function SafeMarkdown({ children }: { children: string }) {
+  if (!children || typeof children !== "string") {
+    return <p className="text-body-sm text-[var(--text-muted)]">No content</p>;
+  }
+  return (
+    <ErrorBoundary fallback={<pre className="whitespace-pre-wrap text-body-sm text-[var(--text-secondary)]">{children}</pre>}>
+      <ReactMarkdown components={{
+        code: ({ className, children: codeChildren, ...props }) => {
+          const match = /language-(\w+)/.exec(className || "");
+          if (match) {
+            return <CodeBlock language={match[1]} code={String(codeChildren).replace(/\n$/, "")} />;
+          }
+          return <code className={className} {...props}>{codeChildren}</code>;
+        }
+      }}>{children}</ReactMarkdown>
+    </ErrorBoundary>
+  );
+}
 
 /* ── Types ── */
 
@@ -37,6 +71,8 @@ type Message = {
   role: string;
   content: string;
   sources?: SourceChunk[] | null;
+  confidence?: number;
+  dataSources?: string[];
 };
 
 type ResearchDepth = "quick" | "standard" | "deep";
@@ -92,7 +128,7 @@ function SessionDropdown({
             New Session
           </button>
           <div className="max-h-64 overflow-y-auto py-1">
-            {sessions.length === 0 ? (
+            {!Array.isArray(sessions) || sessions.length === 0 ? (
               <p className="px-3 py-4 text-center text-caption text-[var(--text-muted)]">No sessions yet</p>
             ) : (
               sessions.map((s) => (
@@ -130,11 +166,7 @@ function SolveEmpty({ onCreate, isCreating, userName }: { onCreate: (msg?: strin
     { emoji: "💰", text: "Research pricing models in my industry" },
   ];
 
-  const quickActions = [
-    "Upload a document →",
-    "Connect data sources →",
-    "View Intelligence →",
-  ];
+  const quickActions: string[] = [];
 
   const firstName = userName?.split(" ")[0];
 
@@ -158,10 +190,17 @@ function SolveEmpty({ onCreate, isCreating, userName }: { onCreate: (msg?: strin
               key={i}
               onClick={() => onCreate(s.text)}
               disabled={isCreating}
-              className="flex items-start gap-3 text-left p-4 rounded-[var(--radius-lg)] border border-[var(--border)] bg-[var(--surface)] hover:bg-[var(--surface-elevated)] hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 disabled:opacity-50"
+              className="flex items-start gap-3 text-left p-4 rounded-[var(--radius-lg)] border border-[var(--border)] bg-[var(--surface)] hover:bg-[var(--surface-elevated)] hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 disabled:opacity-50 disabled:cursor-wait"
             >
-              <span className="text-lg">{s.emoji}</span>
-              <span className="text-body-sm text-[var(--text-secondary)] leading-relaxed">{s.text}</span>
+              <span className="text-lg">{isCreating ? "" : s.emoji}</span>
+              {isCreating ? (
+                <span className="text-body-sm text-[var(--text-muted)] leading-relaxed flex items-center gap-2">
+                  <span className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-[var(--border)] border-t-[var(--accent)]" />
+                  Starting session...
+                </span>
+              ) : (
+                <span className="text-body-sm text-[var(--text-secondary)] leading-relaxed">{s.text}</span>
+              )}
             </button>
           ))}
         </div>
@@ -179,6 +218,10 @@ function SolveEmpty({ onCreate, isCreating, userName }: { onCreate: (msg?: strin
             ))}
           </div>
         </div>
+
+        <p className="mt-6 text-[12px] text-[var(--text-muted)] leading-relaxed">
+          Connect data sources in Settings for more personalized results.
+        </p>
       </div>
     </div>
   );
@@ -219,21 +262,91 @@ function DepthToggle({
   );
 }
 
-/* ── Source Attribution Badges ── */
+/* ── Data Source Badges ── */
 
-function SourceBadges({ sources }: { sources: SourceChunk[] }) {
+function DataSourceBadges({ dataSources }: { dataSources: string[] }) {
+  if (!Array.isArray(dataSources) || dataSources.length === 0) return null;
   return (
-    <div className="flex flex-wrap gap-1.5 mt-3 pt-3 border-t border-[var(--border)]">
-      <span className="text-[11px] text-[var(--text-muted)] leading-6">Sources:</span>
-      {sources.map((s, i) => (
+    <div className="flex flex-wrap gap-1.5 mt-2">
+      <span className="text-[11px] text-[var(--text-muted)] leading-6">Data sources:</span>
+      {dataSources.map((source, i) => (
         <span
-          key={`${s.documentId}-${s.chunkIndex}-${i}`}
-          className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-[var(--accent)]/8 border border-[var(--accent)]/15 text-[11px] text-[var(--text-secondary)]"
+          key={`${source}-${i}`}
+          className="inline-flex items-center px-2 py-0.5 rounded-full bg-[var(--surface-secondary)] border border-[var(--border)] text-[11px] font-medium text-[var(--text-secondary)]"
         >
-          <span className="truncate max-w-[140px]">{s.documentTitle}</span>
-          <span className="text-[var(--accent)] font-medium">{Math.round(s.similarity * 100)}%</span>
+          {source}
         </span>
       ))}
+    </div>
+  );
+}
+
+/* ── Context Indicator ── */
+
+function ContextIndicator({
+  sources,
+  hasProfile,
+  researchDepth,
+}: {
+  sources?: SourceChunk[] | null;
+  hasProfile: boolean;
+  researchDepth: ResearchDepth;
+}) {
+  const badges: { label: string; color: string }[] = [];
+
+  if (hasProfile) {
+    badges.push({ label: "Company Profile", color: "bg-[#e8ddd3] text-[#6b5744]" });
+  }
+
+  const docCount = sources?.length ?? 0;
+  if (docCount > 0) {
+    const uniqueDocs = new Set(sources!.map((s) => s.documentId)).size;
+    badges.push({
+      label: `${uniqueDocs} document${uniqueDocs !== 1 ? "s" : ""}`,
+      color: "bg-[#dde4e8] text-[#4a5c6b]",
+    });
+  }
+
+  if (researchDepth === "standard" || researchDepth === "deep") {
+    badges.push({ label: "Web research", color: "bg-[#e3dde8] text-[#5c4a6b]" });
+  }
+
+  if (badges.length === 0) return null;
+
+  return (
+    <div className="flex items-center gap-1.5 mb-1.5 flex-wrap">
+      <span className="text-[11px] text-[var(--text-muted)]">Grounded in:</span>
+      {badges.map((b, i) => (
+        <span
+          key={i}
+          className={`inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-medium ${b.color}`}
+        >
+          {b.label}
+        </span>
+      ))}
+    </div>
+  );
+}
+
+/* ── Context Nudge ── */
+
+function ContextNudge({ hasProfile }: { hasProfile: boolean }) {
+  const [, setLocation] = useLocation();
+
+  if (hasProfile) return null;
+
+  return (
+    <div className="mt-4 flex items-center gap-3 px-4 py-3 rounded-[var(--radius-lg)] border border-[#ddd3c4] bg-[#f5efe8]">
+      <Info className="h-4 w-4 text-[#9a7b5a] shrink-0" />
+      <span className="text-[13px] text-[#6b5744] flex-1">
+        Connect your data for insights specific to <strong>your</strong> business
+      </span>
+      <button
+        onClick={() => setLocation("/connect")}
+        className="inline-flex items-center gap-1 px-3 py-1.5 rounded-[var(--radius)] bg-[var(--accent)] text-white text-[12px] font-medium hover:opacity-90 transition-opacity shrink-0"
+      >
+        Connect <ArrowRight className="h-3 w-3" />
+      </button>
     </div>
   );
 }
@@ -247,6 +360,8 @@ function SolveInput({
   isStreaming,
   selectedFiles = [],
   onFilesChange,
+  analysisMode,
+  onAnalysisModeChange,
 }: {
   value: string;
   onChange: (v: string) => void;
@@ -254,6 +369,8 @@ function SolveInput({
   isStreaming: boolean;
   selectedFiles?: File[];
   onFilesChange?: (files: File[]) => void;
+  analysisMode: AnalysisMode;
+  onAnalysisModeChange: (m: AnalysisMode) => void;
 }) {
   const [depth, setDepth] = useState<ResearchDepth>(
     () => (localStorage.getItem("stratix:depth") as ResearchDepth) || "standard"
@@ -289,10 +406,13 @@ function SolveInput({
   return (
     <div className="shrink-0 px-2 sm:px-4 pb-4">
       <div className="max-w-[720px] mx-auto">
-        {/* Depth toggle row */}
+        {/* Depth toggle + analysis modes */}
         <div className="flex items-center justify-between mb-2 px-1">
-          <span className="text-[12px] text-[var(--text-muted)]">Research depth</span>
+          <span className="text-[12px] text-[var(--text-muted)] shrink-0">Depth</span>
           <DepthToggle depth={depth} onChange={handleDepthChange} />
+        </div>
+        <div className="mb-2 px-1">
+          <AnalysisModes mode={analysisMode} onChange={onAnalysisModeChange} />
         </div>
 
         <form onSubmit={handleSubmit}>
@@ -329,7 +449,7 @@ function SolveInput({
                   handleSubmit(e as unknown as React.FormEvent);
                 }
               }}
-              placeholder="Ask me..."
+              placeholder={getPlaceholderForMode(analysisMode)}
               rows={1}
               aria-label="Message input"
               className="flex-1 bg-transparent text-[15px] text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-none resize-none min-h-[28px] max-h-[120px] leading-7 overflow-y-auto"
@@ -399,6 +519,8 @@ export function Solve() {
     : undefined;
   const userName = rawName || formattedPrefix;
 
+  const { definitions } = useDefinitions();
+
   const [activeId, setActiveId] = useState<number | null>(null);
   const [inputValue, setInputValue] = useState("");
   const [streamingContent, setStreamingContent] = useState("");
@@ -406,10 +528,24 @@ export function Solve() {
   const [pendingMessage, setPendingMessage] = useState<string | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<number | null>(null);
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
+  const [lastDepth, setLastDepth] = useState<ResearchDepth>("standard");
+  const [analysisMode, setAnalysisMode] = useState<AnalysisMode>("general");
+  const [hasProfile, setHasProfile] = useState(false);
+  const [nudgeShown, setNudgeShown] = useState(false);
+  const [shareModalOpen, setShareModalOpen] = useState(false);
 
-  const { data: conversations = [] } = useListOpenaiConversations({
+  // Check if company profile exists
+  useEffect(() => {
+    fetch("/api/context/health", { credentials: "include" })
+      .then((r) => r.ok ? r.json() : null)
+      .then((d) => { if (d?.hasProfile) setHasProfile(true); })
+      .catch(() => {});
+  }, []);
+
+  const { data: rawConversations, isError: conversationsError } = useListOpenaiConversations({
     query: { queryKey: getListOpenaiConversationsQueryKey() },
   });
+  const conversations = Array.isArray(rawConversations) ? rawConversations : [];
 
   const { data: activeConversation } = useGetOpenaiConversation(
     activeId as number,
@@ -435,9 +571,18 @@ export function Solve() {
           queryClient.invalidateQueries({ queryKey: getListOpenaiConversationsQueryKey() });
           setActiveId(newConv.id);
         },
+        onError: (err) => {
+          const status = (err as { status?: number })?.status;
+          if (status === 401) {
+            toast({ title: "Session expired", description: "Please log in again." });
+            window.location.href = "/login";
+          } else {
+            toast({ title: "Failed to create session", variant: "destructive" });
+          }
+        },
       }
     );
-  }, [createConversation, queryClient]);
+  }, [createConversation, queryClient, toast]);
 
   const handleDelete = useCallback((id: number) => {
     deleteConversation.mutate(
@@ -447,9 +592,12 @@ export function Solve() {
           queryClient.invalidateQueries({ queryKey: getListOpenaiConversationsQueryKey() });
           if (activeId === id) setActiveId(null);
         },
+        onError: () => {
+          toast({ title: "Failed to delete session", variant: "destructive" });
+        },
       }
     );
-  }, [deleteConversation, queryClient, activeId]);
+  }, [deleteConversation, queryClient, activeId, toast]);
 
   const handleExportConversation = useCallback(() => {
     if (!activeConversation || !messages.length) {
@@ -480,15 +628,17 @@ export function Solve() {
   }, [toast]);
 
   const handleShareMessage = useCallback(() => {
-    toast({ title: "Share link copied" });
-  }, [toast]);
+    setShareModalOpen(true);
+  }, []);
 
   const handleSend = useCallback(async (content: string, depth: ResearchDepth) => {
     if (!content?.trim() || !activeId || isStreaming) return;
 
+    const savedInput = content;
     setInputValue("");
     setIsStreaming(true);
     setStreamingContent("");
+    setLastDepth(depth);
 
     // Optimistic user message
     queryClient.setQueryData(
@@ -500,23 +650,45 @@ export function Solve() {
       }
     );
 
+    let accumulated = "";
+
     try {
       const response = await fetch(`/api/openai/conversations/${activeId}/messages`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ content, research_depth: depth }),
+        body: JSON.stringify({
+          content,
+          research_depth: depth,
+          analysis_mode: analysisMode,
+          context: {
+            definitions: definitions.map((d) => ({ term: d.term, value: d.value })),
+          },
+        }),
         credentials: "include",
       });
 
+      if (response.status === 401) {
+        toast({ title: "Session expired", description: "Please log in again." });
+        window.location.href = "/login";
+        return;
+      }
+
+      if (!response.ok) {
+        const errData = await response.json().catch(() => ({}));
+        toast({ title: errData?.error || "Failed to get response", variant: "destructive" });
+        setInputValue(savedInput);
+        return;
+      }
+
       if (!response.body) {
-        toast({ title: "No response from server", variant: "destructive" });
+        toast({ title: "Server didn't respond. Please try again.", variant: "destructive" });
+        setInputValue(savedInput);
         return;
       }
 
       const reader = response.body.getReader();
       const decoder = new TextDecoder();
       let buffer = "";
-      let accumulated = "";
 
       while (true) {
         const { done, value } = await reader.read();
@@ -530,24 +702,66 @@ export function Solve() {
           const dataMatch = chunk.match(/^data: (.+)/m);
           if (!eventMatch || !dataMatch) continue;
           const event = eventMatch[1];
-          const data = JSON.parse(dataMatch[1]);
+          let data: Record<string, string>;
+          try {
+            data = JSON.parse(dataMatch[1]);
+          } catch {
+            continue; // skip malformed SSE chunks
+          }
 
           if (event === "content") {
             accumulated += data.delta;
             setStreamingContent(accumulated);
           } else if (event === "complete") {
+            // Store confidence, data sources, and source chunks on the latest assistant message
+            const completeData = data as Record<string, unknown>;
+            const confidence = typeof completeData.confidence === "number" ? completeData.confidence : undefined;
+            const dataSources = Array.isArray(completeData.data_sources) ? (completeData.data_sources as string[]) : undefined;
+            const sourcesUsed = Array.isArray(completeData.sources_used) ? (completeData.sources_used as SourceChunk[]) : undefined;
+            if (confidence !== undefined || dataSources !== undefined || sourcesUsed !== undefined) {
+              queryClient.setQueryData(
+                getGetOpenaiConversationQueryKey(activeId),
+                (old: unknown) => {
+                  if (!old || typeof old !== "object") return old;
+                  const typedOld = old as { messages: Message[] };
+                  const msgs = [...typedOld.messages];
+                  // Find last assistant message and attach metadata
+                  for (let i = msgs.length - 1; i >= 0; i--) {
+                    if (msgs[i].role === "assistant") {
+                      msgs[i] = {
+                        ...msgs[i],
+                        ...(confidence !== undefined ? { confidence } : {}),
+                        ...(dataSources !== undefined ? { dataSources } : {}),
+                        ...(sourcesUsed !== undefined ? { sources: sourcesUsed } : {}),
+                      };
+                      break;
+                    }
+                  }
+                  return { ...typedOld, messages: msgs };
+                }
+              );
+            }
             queryClient.invalidateQueries({ queryKey: getGetOpenaiConversationQueryKey(activeId) });
             queryClient.invalidateQueries({ queryKey: getListOpenaiConversationsQueryKey() });
           }
         }
       }
     } catch {
-      toast({ title: "Failed to send message", variant: "destructive" });
+      // If we received partial content, show what we got
+      if (accumulated) {
+        toast({ title: "Response interrupted", description: "Partial answer shown above. Try sending again.", variant: "destructive" });
+      } else {
+        toast({ title: "Failed to send message", description: "Check your connection and try again.", variant: "destructive" });
+        setInputValue(savedInput);
+      }
     } finally {
       setIsStreaming(false);
-      setStreamingContent("");
+      // Keep partial streaming content visible until the query refetches if we got something
+      if (!accumulated) {
+        setStreamingContent("");
+      }
     }
-  }, [activeId, isStreaming, queryClient, toast]);
+  }, [activeId, isStreaming, queryClient, toast, definitions, analysisMode]);
 
   // Auto-send pending
   useEffect(() => {
@@ -586,6 +800,13 @@ export function Solve() {
         )}
       </div>
 
+      {/* Session load error */}
+      {conversationsError && (
+        <div className="mx-4 mb-2 px-3 py-2 rounded-[var(--radius-md)] bg-[var(--error-muted)] border border-[var(--error)]/20">
+          <p className="text-caption text-[var(--error)]">Couldn't load sessions. Your messages will still work.</p>
+        </div>
+      )}
+
       {/* Chat area or empty state */}
       {activeId ? (
         <>
@@ -623,12 +844,36 @@ export function Solve() {
                           </button>
                         </div>
                       </div>
+                      <ContextIndicator
+                        sources={msg.sources}
+                        hasProfile={hasProfile}
+                        researchDepth={lastDepth}
+                      />
                       <div className="prose-warm">
-                        <ReactMarkdown>{msg.content}</ReactMarkdown>
+                        <SafeMarkdown>{msg.content}</SafeMarkdown>
                         {msg.sources && msg.sources.length > 0 && (
-                          <SourceBadges sources={msg.sources} />
+                          <SourcePanel sources={msg.sources} />
+                        )}
+                        {msg.dataSources && msg.dataSources.length > 0 && (
+                          <DataSourceBadges dataSources={msg.dataSources} />
+                        )}
+                        {msg.confidence !== undefined && (
+                          <ConfidenceBadge confidence={msg.confidence} />
                         )}
                       </div>
+                      <div className="flex flex-wrap items-center gap-2 mt-3">
+                        <QueryInspector content={msg.content} />
+                      </div>
+                      <ResponseActions content={msg.content} conversationId={activeId!} />
+                      {/* Context nudge on first AI response only */}
+                      {(() => {
+                        const aiMessages = messages.filter((m) => m.role === "assistant");
+                        const isFirst = aiMessages.length > 0 && aiMessages[0].id === msg.id;
+                        if (isFirst && !nudgeShown) {
+                          return <ContextNudge hasProfile={hasProfile} />;
+                        }
+                        return null;
+                      })()}
                     </div>
                   )}
                 </div>
@@ -644,7 +889,7 @@ export function Solve() {
                     <span className="text-caption text-[var(--text-muted)]">Stratix</span>
                   </div>
                   <div className="prose-warm">
-                    <ReactMarkdown>{streamingContent}</ReactMarkdown>
+                    <SafeMarkdown>{streamingContent}</SafeMarkdown>
                     <span className="inline-block w-0.5 h-5 bg-[var(--accent)] animate-pulse ml-0.5" />
                   </div>
                 </div>
@@ -673,6 +918,8 @@ export function Solve() {
             isStreaming={isStreaming}
             selectedFiles={selectedFiles}
             onFilesChange={setSelectedFiles}
+            analysisMode={analysisMode}
+            onAnalysisModeChange={setAnalysisMode}
           />
         </>
       ) : (
@@ -685,8 +932,20 @@ export function Solve() {
             isStreaming={false}
             selectedFiles={selectedFiles}
             onFilesChange={setSelectedFiles}
+            analysisMode={analysisMode}
+            onAnalysisModeChange={setAnalysisMode}
           />
         </>
+      )}
+
+      {/* Share modal */}
+      {activeId && (
+        <ShareModal
+          open={shareModalOpen}
+          onOpenChange={setShareModalOpen}
+          conversationId={activeId}
+          conversationTitle={activeTitle}
+        />
       )}
 
       {/* Delete confirmation dialog */}

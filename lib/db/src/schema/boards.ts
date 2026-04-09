@@ -8,7 +8,7 @@ export const boards = pgTable("boards", {
   orgId: integer("org_id")
     .notNull()
     .references(() => organizations.id, { onDelete: "cascade" }),
-  createdByUserId: integer("created_by_user_id").notNull(),
+  createdByUserId: varchar("created_by_user_id").notNull(),
   title: varchar("title").notNull(),
   description: text("description"),
   type: varchar("type").notNull().default("live"),
