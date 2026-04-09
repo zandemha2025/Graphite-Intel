@@ -800,20 +800,25 @@ function RadarTab() {
           <div className="space-y-2">
             {dailyBrief.highlights && dailyBrief.highlights.length > 0 && (
               <ul className="space-y-1.5">
-                {dailyBrief.highlights.slice(0, 5).map((h, i) => (
-                  <li key={i} className="flex items-start gap-2 text-body-sm text-[var(--text-secondary)]">
-                    <span className="text-[var(--accent)] mt-0.5 shrink-0">&bull;</span>
-                    {h}
-                  </li>
-                ))}
+                {dailyBrief.highlights.slice(0, 5).map((h: unknown, i: number) => {
+                  const text = typeof h === "string" ? h : typeof h === "object" && h !== null ? ((h as Record<string, string>).headline || (h as Record<string, string>).action || (h as Record<string, string>).competitor || JSON.stringify(h)) : String(h);
+                  return (
+                    <li key={i} className="flex items-start gap-2 text-body-sm text-[var(--text-secondary)]">
+                      <span className="text-[var(--accent)] mt-0.5 shrink-0">&bull;</span>
+                      {typeof h === "object" && h !== null && (h as Record<string, string>).competitor ? (
+                        <span><span className="font-medium text-[var(--text-primary)]">{(h as Record<string, string>).competitor}:</span> {(h as Record<string, string>).headline || (h as Record<string, string>).action}</span>
+                      ) : text}
+                    </li>
+                  );
+                })}
               </ul>
             )}
             {dailyBrief.signals && dailyBrief.signals.length > 0 && !dailyBrief.highlights && (
               <ul className="space-y-1.5">
-                {dailyBrief.signals.slice(0, 5).map((s, i) => (
+                {dailyBrief.signals.slice(0, 5).map((s: Record<string, unknown>, i: number) => (
                   <li key={i} className="flex items-start gap-2 text-body-sm text-[var(--text-secondary)]">
                     <span className="text-[var(--accent)] mt-0.5 shrink-0">&bull;</span>
-                    <span><span className="font-medium text-[var(--text-primary)]">{s.title}</span> {s.detail}</span>
+                    <span><span className="font-medium text-[var(--text-primary)]">{String(s.title || s.competitor || "")}</span> {String(s.detail || s.headline || s.summary || "")}</span>
                   </li>
                 ))}
               </ul>
@@ -906,7 +911,7 @@ function RadarTab() {
           <div className="space-y-3">
             {briefData.brief && (
               <div className="prose-warm text-body-sm text-[var(--text-secondary)] whitespace-pre-line leading-relaxed">
-                {briefData.brief}
+                {typeof briefData.brief === "string" ? briefData.brief : JSON.stringify(briefData.brief, null, 2)}
               </div>
             )}
             {briefData.generatedAt && (
