@@ -662,7 +662,15 @@ function SourcesTab() {
     ]).then(([sourcesResult, accountsResult]) => {
       if (sourcesResult.status === "fulfilled" && sourcesResult.value) {
         const raw = sourcesResult.value;
-        const list = Array.isArray(raw) ? raw : raw?.sources || raw?.data || [];
+        const arr = Array.isArray(raw) ? raw : raw?.sources || raw?.data || [];
+        // Normalize: API uses "label" but frontend expects "name"
+        const list: DataSource[] = arr.map((s: Record<string, unknown>) => ({
+          key: (s.key || s.appSlug || "") as string,
+          name: (s.name || s.label || s.key || "") as string,
+          category: (s.category || "") as string,
+          description: (s.description || "") as string,
+          icon: (s.icon || "") as string,
+        }));
         setSources(list.length > 0 ? list : FALLBACK_SOURCES);
       } else {
         setSources(FALLBACK_SOURCES);
